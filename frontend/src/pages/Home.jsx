@@ -13,7 +13,7 @@ export default function Home() {
     <div>
       <h1>Home</h1>
       <p>API says: {data}</p>
-      <img src="/uploads/sample.jpg" alt="sample" />
+      <img src="/uploads/logo-hr.png" alt="sample" width="100"/>
     </div>
   );
 }
