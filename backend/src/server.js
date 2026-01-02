@@ -1,13 +1,60 @@
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const ROOT_DIR = '/home/felipe/memos';
 
 app.use(express.json());
 
-app.get('/api/data', (req, res) => {
-  res.json({ message: 'Hello from Express!' });
+function shouldIgnoreFile(entryName) {
+  // TODO: This is custom for my current folder. Remove later.
+  if (entryName.startsWith("archived")) return true
+
+  return entryName.startsWith('.');
+}
+
+function listFilesRecursive(dir, root) {
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  const files = [];
+  for (const entry of entries) {
+    if (shouldIgnoreFile(entry.name)) continue;
+    const fullPath = path.join(dir, entry.name);
+    const relativePath = path.relative(root, fullPath);
+    if (entry.isDirectory()) {
+      files.push(...listFilesRecursive(fullPath, root));
+    } else {
+      files.push(relativePath);
+    }
+  }
+  return files;
+}
+
+app.get('/api/files', (req, res) => {
+  try {
+    const files = listFilesRecursive(ROOT_DIR, ROOT_DIR);
+    res.json({ files });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/files/content', (req, res) => {
+  try {
+    const relativePath = req.query.file;
+    if (!relativePath) {
+      return res.status(400).json({ error: 'Missing "file" query parameter' });
+    }
+    const fullPath = path.join(ROOT_DIR, relativePath);
+    if (!fullPath.startsWith(ROOT_DIR)) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+    const content = fs.readFileSync(fullPath, 'utf-8');
+    res.json({ content });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads'), { fallthrough: false }));

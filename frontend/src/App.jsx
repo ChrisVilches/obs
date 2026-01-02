@@ -1,16 +1,16 @@
 import { Routes, Route, Link } from 'react-router-dom';
 import Home from './pages/Home';
-import Dashboard from './pages/Dashboard';
+import Viewer from './pages/Viewer';
 
 export default function App() {
   return (
     <div>
       <nav>
-        <Link to="/">Home</Link> | <Link to="/dashboard">Dashboard</Link>
+        <Link to="/">Files</Link>
       </nav>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/view" element={<Viewer />} />
       </Routes>
     </div>
   );
