@@ -57,6 +57,30 @@ app.get('/api/files/content', (req, res) => {
   }
 });
 
+app.get('/api/files/raw', (req, res) => {
+  try {
+    let relativePath = req.query.file;
+    const current = req.query.current;
+    if (!relativePath) {
+      return res.status(400).json({ error: 'Missing "file" query parameter' });
+    }
+    let fullPath;
+    if (current) {
+      const noteDir = path.dirname(current);
+      const baseDir = path.resolve(ROOT_DIR, noteDir);
+      fullPath = path.resolve(baseDir, relativePath);
+    } else {
+      fullPath = path.resolve(ROOT_DIR, relativePath);
+    }
+    if (!fullPath.startsWith(ROOT_DIR)) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+    res.sendFile(fullPath);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads'), { fallthrough: false }));
 
 app.use(express.static(path.join(__dirname, '..', '..', 'frontend', 'dist')));
