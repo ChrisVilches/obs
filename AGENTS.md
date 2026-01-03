@@ -27,7 +27,7 @@ Order matters: the catch-all must be last so it does not swallow API or asset re
 
 ## Key details
 
-- `ROOT_DIR` is hardcoded to `/home/felipe/memos` in `backend/src/server.js:7`
+- `ROOT_DIR` comes from env var `DATA_ROOT_DIR` (required). Validated at startup — app crashes with fatal error if unset or directory doesn't exist.
 - Files starting with `.` or `archived` are ignored by the API (`server.js:11-16`)
 - Path traversal protection: `fullPath.startsWith(ROOT_DIR)` check on content/raw endpoints
 - Frontend dev server proxies `/api` to `http://localhost:5000` (see `frontend/vite.config.js`)

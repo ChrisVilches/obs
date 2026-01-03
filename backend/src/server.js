@@ -4,7 +4,16 @@ const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const ROOT_DIR = '/home/felipe/memos';
+
+const ROOT_DIR = process.env.DATA_ROOT_DIR;
+if (!ROOT_DIR) {
+  console.error('FATAL: DATA_ROOT_DIR environment variable is not set.');
+  process.exit(1);
+}
+if (!fs.existsSync(ROOT_DIR)) {
+  console.error(`FATAL: DATA_ROOT_DIR "${ROOT_DIR}" does not exist or is not accessible.`);
+  process.exit(1);
+}
 
 app.use(express.json());
 
@@ -30,6 +39,19 @@ function listFilesRecursive(dir, root) {
   }
   return files;
 }
+
+app.get('/api/bookmarks', (req, res) => {
+  try {
+    const bookmarksPath = path.join(ROOT_DIR, '.obsidian', 'bookmarks.json');
+    if (!fs.existsSync(bookmarksPath)) {
+      return res.json({ items: [] });
+    }
+    const data = JSON.parse(fs.readFileSync(bookmarksPath, 'utf-8'));
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 app.get('/api/files', (req, res) => {
   try {
@@ -89,4 +111,5 @@ app.use((req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Serving notes from: ${ROOT_DIR}`);
 });
