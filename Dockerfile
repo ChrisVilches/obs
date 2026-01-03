@@ -13,5 +13,4 @@ COPY --from=builder /app/backend /app/backend
 COPY --from=builder /app/frontend/dist /app/frontend/dist
 COPY --from=builder /app/package*.json /app/
 RUN npm install --omit=dev --prefix backend
-EXPOSE 5000
 CMD ["node", "backend/src/server.js"]

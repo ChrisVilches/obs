@@ -9,8 +9,9 @@ docker build -t obs-viewer .
 ## Run the container
 
 ```sh
-docker run -p 5000:5000 -e DATA_ROOT_DIR=/data -v /path/to/your/notes:/data obs-viewer
+docker run -p 8080:8080 -e PORT=8080 -e DATA_ROOT_DIR=/data -v /path/to/your/notes:/data obs-viewer
 ```
 
+- `PORT` — environment variable for the port the app listens on (defaults to `5000` if not set). Must match the host-side of `-p`.
 - `DATA_ROOT_DIR` — environment variable pointing to the directory inside the container where your notes are mounted.
 - `-v /path/to/your/notes:/data` — bind mount your local Obsidian vault to `/data` (or any path, as long as `DATA_ROOT_DIR` matches).
