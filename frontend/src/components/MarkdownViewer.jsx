@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 
-// TODO: Eventually I'll have to use a different markdown renderer because it doesn't show checklists.
-
 export default function MarkdownViewer({ file }) {
   const [content, setContent] = useState('');
   const [error, setError] = useState(null);
@@ -20,17 +18,15 @@ export default function MarkdownViewer({ file }) {
       .catch((err) => setError(err.message));
   }, [file]);
 
-  if (error) return <div style={{ padding: '1rem' }}>Error: {error}</div>;
+  if (error) return <div className="p-4 text-red-400">Error: {error}</div>;
 
   return (
-    <div style={{ padding: '1rem', maxWidth: '800px', lineHeight: '1.6' }}>
+    <div className="p-6 max-w-4xl mx-auto prose prose-invert">
       <ReactMarkdown
         components={{
           img({ node, ...props }) {
-            // Modify the image URL
             const newSrc = `api/files/raw?file=${props.src}&current=${file}`;
-
-            return <img {...props} src={newSrc} />;
+            return <img {...props} src={newSrc} className="rounded-lg shadow-md my-4" />;
           },
         }}
       >{content || ''}</ReactMarkdown>
