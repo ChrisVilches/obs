@@ -81,8 +81,6 @@ app.get('/api/files/raw', (req, res) => {
   }
 });
 
-app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads'), { fallthrough: false }));
-
 app.use(express.static(path.join(__dirname, '..', '..', 'frontend', 'dist')));
 
 app.use((req, res) => {
