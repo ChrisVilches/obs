@@ -8,7 +8,7 @@ import MarkdownViewer from '../components/MarkdownViewer';
 import Sidemenu from '../components/Sidemenu';
 import Modal from '../components/Modal';
 
-function Viewer({ file }) {
+function Viewer({ file, onBookmarkChange }) {
   const [content, setContent] = useState('');
   const [error, setError] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -16,17 +16,20 @@ function Viewer({ file }) {
   const [editContent, setEditContent] = useState('');
   const [saveMessage, setSaveMessage] = useState(null);
   const [showFileNameModal, setShowFileNameModal] = useState(false);
+  const [isBookmarked, setIsBookmarked] = useState(false);
 
   useEffect(() => {
     if (!file) return;
     setContent('');
     setError(null);
     setEditMode(false);
+    setIsBookmarked(false);
     fetch(`/api/files/content?file=${encodeURIComponent(file)}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.error) throw new Error(data.error);
         setContent(data.content);
+        setIsBookmarked(data.isBookmarked);
       })
       .catch((err) => setError(err.message));
   }, [file, refreshKey]);
@@ -61,6 +64,32 @@ function Viewer({ file }) {
       .catch((err) => setError(err.message));
   }
 
+  function handleToggleBookmark() {
+    if (isBookmarked) {
+      fetch(`/api/bookmarks?path=${encodeURIComponent(file)}`, { method: 'DELETE' })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.error) throw new Error(data.error);
+          setIsBookmarked(false);
+          if (onBookmarkChange) onBookmarkChange();
+        })
+        .catch((err) => setError(err.message));
+    } else {
+      fetch('/api/bookmarks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path: file }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.error) throw new Error(data.error);
+          setIsBookmarked(true);
+          if (onBookmarkChange) onBookmarkChange();
+        })
+        .catch((err) => setError(err.message));
+    }
+  }
+
   if (!file) {
     return null;
   }
@@ -91,7 +120,22 @@ function Viewer({ file }) {
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
             </svg>
-            Edit
+            <span className="hidden md:inline">Edit</span>
+          </button>
+        )}
+        {!editMode && (
+          <button
+            onClick={handleToggleBookmark}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium border rounded-md transition-colors mr-2 ${
+              isBookmarked
+                ? 'text-yellow-300 bg-yellow-900/30 border-yellow-700 hover:bg-yellow-900/50 hover:text-yellow-200'
+                : 'text-gray-400 bg-gray-800 border-gray-700 hover:bg-gray-700 hover:text-white'
+            }`}
+          >
+            <svg className="w-4 h-4" fill={isBookmarked ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+            </svg>
+            <span className="hidden md:inline">{isBookmarked ? 'Bookmarked' : 'Bookmark'}</span>
           </button>
         )}
         {!editMode && (
@@ -102,7 +146,7 @@ function Viewer({ file }) {
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
-            Reload
+            <span className="hidden md:inline">Reload</span>
           </button>
         )}
         {editMode && (
@@ -114,13 +158,13 @@ function Viewer({ file }) {
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
-              Save
+              <span className="hidden md:inline">Save</span>
             </button>
             <button
               onClick={handleCancel}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-300 bg-gray-800 border border-gray-700 rounded-md hover:bg-gray-700 hover:text-white transition-colors"
             >
-              Cancel
+              <span className="hidden md:inline">Cancel</span>
             </button>
           </>
         )}
@@ -148,6 +192,7 @@ function Viewer({ file }) {
 
 export default function Home() {
   const [files, setFiles] = useState([]);
+  const [folderName, setFolderName] = useState('');
   const [bookmarks, setBookmarks] = useState([]);
   const [error, setError] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -160,11 +205,12 @@ export default function Home() {
       .then((data) => {
         if (data.error) throw new Error(data.error);
         setFiles(data.files);
+        setFolderName(data.folderName);
       })
       .catch((err) => setError(err.message));
   }, []);
 
-  useEffect(() => {
+  function reloadBookmarks() {
     fetch('/api/bookmarks')
       .then((res) => res.json())
       .then((data) => {
@@ -172,6 +218,10 @@ export default function Home() {
         setBookmarks(data.items || []);
       })
       .catch((err) => setError(err.message));
+  }
+
+  useEffect(() => {
+    reloadBookmarks();
   }, []);
 
   if (error) return <div className="p-4 text-red-400">Error: {error}</div>;
@@ -209,7 +259,7 @@ export default function Home() {
             >
               <DialogPanel className="w-72 h-full bg-gray-900 border-r border-gray-800 flex flex-col">
                 <div className="flex items-center justify-between px-4 py-3 border-b border-gray-800">
-                  <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Files</h2>
+                  <Link to="/" onClick={() => setSidebarOpen(false)} className="text-sm font-semibold text-gray-400 uppercase tracking-wider hover:text-indigo-400 transition-colors">{folderName}</Link>
                   <button
                     onClick={() => setSidebarOpen(false)}
                     className="p-1 rounded-md text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
@@ -227,13 +277,13 @@ export default function Home() {
 
       <aside className="hidden md:flex w-72 flex-shrink-0 bg-gray-900 border-r border-gray-800 flex-col">
         <div className="px-4 py-3 border-b border-gray-800">
-          <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Files</h2>
+          <Link to="/" className="text-sm font-semibold text-gray-400 uppercase tracking-wider hover:text-indigo-400 transition-colors">{folderName}</Link>
         </div>
         <Sidemenu files={files} />
       </aside>
       <main className="flex-1 overflow-auto bg-gray-950 pt-12 md:pt-0">
         {selectedFile ? (
-          <Viewer file={selectedFile} />
+          <Viewer file={selectedFile} onBookmarkChange={reloadBookmarks} />
         ) : (
           <div className="p-8">
             <h2 className="text-lg font-semibold text-gray-300 mb-4">Bookmarks</h2>

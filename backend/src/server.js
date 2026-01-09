@@ -41,14 +41,65 @@ function listFilesRecursive(dir, root) {
   return files;
 }
 
+function readBookmarks() {
+  const bookmarksPath = path.join(ROOT_DIR, '.obsidian', 'bookmarks.json');
+  if (!fs.existsSync(bookmarksPath)) {
+    return { items: [] };
+  }
+  return JSON.parse(fs.readFileSync(bookmarksPath, 'utf-8'));
+}
+
 app.get('/api/bookmarks', (req, res) => {
   try {
+    res.json(readBookmarks());
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/bookmarks', (req, res) => {
+  try {
+    const { path: filePath } = req.body;
+    if (!filePath) {
+      return res.status(400).json({ error: 'Missing "path" in request body' });
+    }
+    const bookmarksPath = path.join(ROOT_DIR, '.obsidian', 'bookmarks.json');
+    const dir = path.dirname(bookmarksPath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    const data = fs.existsSync(bookmarksPath)
+      ? JSON.parse(fs.readFileSync(bookmarksPath, 'utf-8'))
+      : { items: [] };
+    if (data.items.some(item => item.path === filePath)) {
+      return res.json({ success: true, message: 'Already bookmarked' });
+    }
+    data.items.push({
+      type: 'file',
+      path: filePath,
+      title: path.basename(filePath),
+    });
+    fs.writeFileSync(bookmarksPath, JSON.stringify(data, null, 2), 'utf-8');
+    res.json({ success: true, message: 'Bookmarked' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/bookmarks', (req, res) => {
+  try {
+    const filePath = req.query.path;
+    if (!filePath) {
+      return res.status(400).json({ error: 'Missing "path" query parameter' });
+    }
     const bookmarksPath = path.join(ROOT_DIR, '.obsidian', 'bookmarks.json');
     if (!fs.existsSync(bookmarksPath)) {
-      return res.json({ items: [] });
+      return res.json({ success: true, message: 'Not found' });
     }
     const data = JSON.parse(fs.readFileSync(bookmarksPath, 'utf-8'));
-    res.json(data);
+    data.items = data.items.filter(item => item.path !== filePath);
+    fs.writeFileSync(bookmarksPath, JSON.stringify(data, null, 2), 'utf-8');
+    res.json({ success: true, message: 'Unbookmarked' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -57,7 +108,8 @@ app.get('/api/bookmarks', (req, res) => {
 app.get('/api/files', (req, res) => {
   try {
     const files = listFilesRecursive(ROOT_DIR, ROOT_DIR);
-    res.json({ files });
+    const folderName = path.basename(ROOT_DIR);
+    res.json({ files, folderName });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -74,7 +126,9 @@ app.get('/api/files/content', (req, res) => {
       return res.status(403).json({ error: 'Access denied' });
     }
     const content = fs.readFileSync(fullPath, 'utf-8');
-    res.json({ content });
+    const bookmarkData = readBookmarks();
+    const isBookmarked = bookmarkData.items.some(item => item.path === relativePath);
+    res.json({ content, isBookmarked });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
