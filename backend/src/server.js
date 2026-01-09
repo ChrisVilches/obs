@@ -20,6 +20,16 @@ if (!fs.existsSync(ROOT_DIR)) {
 
 app.use(express.json());
 
+if (process.env.NODE_ENV !== 'production') {
+  app.use((req, res, next) => {
+    const start = Date.now();
+    res.on('finish', () => {
+      console.log(`${req.method} ${req.url} ${res.statusCode} ${Date.now() - start}ms`);
+    });
+    next();
+  });
+}
+
 function shouldIgnoreFile(entryName) {
   // TODO: This is custom for my current folder. Remove later.
   if (entryName.startsWith("archived")) return true
@@ -82,6 +92,7 @@ app.post('/api/bookmarks', (req, res) => {
       title: path.basename(filePath),
     });
     fs.writeFileSync(bookmarksPath, JSON.stringify(data, null, 2), 'utf-8');
+    emit({ type: 'file_bookmarked', file: filePath, timestamp: new Date().toISOString() });
     res.json({ success: true, message: 'Bookmarked' });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -101,6 +112,7 @@ app.delete('/api/bookmarks', (req, res) => {
     const data = JSON.parse(fs.readFileSync(bookmarksPath, 'utf-8'));
     data.items = data.items.filter(item => item.path !== filePath);
     fs.writeFileSync(bookmarksPath, JSON.stringify(data, null, 2), 'utf-8');
+    emit({ type: 'file_unbookmarked', file: filePath, timestamp: new Date().toISOString() });
     res.json({ success: true, message: 'Unbookmarked' });
   } catch (err) {
     res.status(500).json({ error: err.message });
