@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const { emit } = require('./eventChannel');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -97,6 +98,7 @@ app.put('/api/files/content', (req, res) => {
       return res.json({ success: true, message: 'No changes' });
     }
     fs.writeFileSync(fullPath, content, 'utf-8');
+    emit({ type: 'file_updated', file, timestamp: new Date().toISOString() });
     res.json({ success: true, message: 'Updated' });
   } catch (err) {
     res.status(500).json({ error: err.message });
