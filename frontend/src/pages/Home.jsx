@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/react';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
@@ -200,8 +200,17 @@ export default function Home() {
   const [bookmarks, setBookmarks] = useState([]);
   const [error, setError] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarWidth, setSidebarWidth] = useState(() => {
+    const saved = localStorage.getItem('sidebarWidth');
+    return saved ? parseInt(saved, 10) : 288;
+  });
+  const sidebarRef = useRef(null);
+  const [isResizing, setIsResizing] = useState(false);
   const [searchParams] = useSearchParams();
   const selectedFile = searchParams.get('file');
+
+  const MIN_SIDEBAR = 180;
+  const MAX_SIDEBAR = 600;
 
   useEffect(() => {
     fetch('/api/files')
@@ -227,6 +236,32 @@ export default function Home() {
   useEffect(() => {
     reloadBookmarks();
   }, []);
+
+  useEffect(() => {
+    if (!isResizing) return;
+    function onMouseMove(e) {
+      if (!sidebarRef.current) return;
+      const newWidth = Math.max(MIN_SIDEBAR, Math.min(MAX_SIDEBAR, e.clientX));
+      sidebarRef.current.style.width = `${newWidth}px`;
+    }
+    function onMouseUp(e) {
+      if (!sidebarRef.current) return;
+      const finalWidth = Math.max(MIN_SIDEBAR, Math.min(MAX_SIDEBAR, e.clientX));
+      setSidebarWidth(finalWidth);
+      localStorage.setItem('sidebarWidth', finalWidth);
+      setIsResizing(false);
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    }
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+    return () => {
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    };
+  }, [isResizing]);
 
   if (error) return <div className="p-4 text-red-400">Error: {error}</div>;
 
@@ -279,7 +314,16 @@ export default function Home() {
         </Dialog>
       </Transition>
 
-      <aside className="hidden md:flex w-72 flex-shrink-0 bg-gray-900 border-r border-gray-800 flex-col">
+      <aside ref={sidebarRef} className="hidden md:flex flex-shrink-0 bg-gray-900 border-r border-gray-800 flex-col relative" style={{ width: sidebarWidth }}>
+        <div
+          onMouseDown={(e) => {
+            e.preventDefault();
+            setIsResizing(true);
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+          }}
+          className="absolute right-0 top-0 bottom-0 w-1.5 cursor-col-resize hover:bg-indigo-500/50 active:bg-indigo-500/70 z-10 shrink-0"
+        />
         <div className="px-4 py-3 border-b border-gray-800">
           <Link to="/" className="text-sm font-semibold text-gray-400 uppercase tracking-wider hover:text-indigo-400 transition-colors">{folderName}</Link>
         </div>
