@@ -31,9 +31,6 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 function shouldIgnoreFile(entryName) {
-  // TODO: This is custom for my current folder. Remove later.
-  if (entryName.startsWith("archived")) return true
-
   return entryName.startsWith('.');
 }
 
@@ -52,6 +49,14 @@ function listFilesRecursive(dir, root) {
   }
   return files;
 }
+
+function buildFileIndex() {
+  return listFilesRecursive(ROOT_DIR, ROOT_DIR);
+}
+
+// TODO: Not sure about this cache mechanism. Usually the cache would be stored
+// in a database. But I'm also unsure if I really need this.
+let fileIndex = buildFileIndex();
 
 function readBookmarks() {
   const bookmarksPath = path.join(ROOT_DIR, '.obsidian', 'bookmarks.json');
@@ -121,9 +126,8 @@ app.delete('/api/bookmarks', (req, res) => {
 
 app.get('/api/files', (req, res) => {
   try {
-    const files = listFilesRecursive(ROOT_DIR, ROOT_DIR);
     const folderName = path.basename(ROOT_DIR);
-    res.json({ files, folderName });
+    res.json({ files: fileIndex, folderName });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
