@@ -1,42 +1,44 @@
-# AGENTS.md
+# OBS (Obsidian File Viewer)
 
-## Commands
+Monorepo: Express 5 backend + React 19 / Vite 6 frontend. Views files from an Obsidian vault.
 
-```bash
-npm run install-all       # install deps in both packages
-npm run dev               # backend (port 5000) + frontend dev server concurrently
-npm run build             # frontend production build into frontend/dist
-npm start                 # production: serve frontend/dist + API on port 5000
+## Dev commands
+
+```sh
+npm run install-all   # install deps in both sub-packages
+npm run dev           # concurrently: backend (port 5000) + frontend (Vite, proxy /api -> 5000)
+npm run build         # vite build only
+npm run start         # node backend/src/server.js (production)
 ```
 
-No tests, linter, formatter, or typecheck configured in this repo.
+## Setup
 
-## Architecture
+- `DATA_ROOT_DIR` env var is **required** (path to Obsidian vault). Backend exits if missing.
+- Backend dev: `node --watch src/server.js` (auto-restart)
+- Vite proxies `/api` to `localhost:5000`
+- Backend is **CJS** (`require`). Frontend is **ESM** (`import`).
+- No linter, no typecheck, no test framework.
 
-- **Backend** (`/backend`): Express 5, CommonJS (`require`), no build step. Entry: `src/server.js`. Dev uses `node --watch`.
-- **Frontend** (`/frontend`): React 19 + Vite 6 + react-router-dom (BrowserRouter). ESM. Entry: `src/main.jsx`.
-- Monorepo uses root `concurrently` script, not npm workspaces.
+## API
 
-## Critical route order (backend `src/server.js`)
+| Method | Path | Notes |
+|--------|------|-------|
+| GET | `/api/files` | Lists all files recursively |
+| GET | `/api/files/content?file=<relpath>` | Returns `{content, isBookmarked}` |
+| PUT | `/api/files/content` | Body `{file, content}`. Writes to disk. |
+| GET | `/api/files/raw?file=<relpath>` | Binary/sendFile variant |
+| GET/POST/DELETE | `/api/bookmarks` | Reads/writes `.obsidian/bookmarks.json` |
 
-1. API (`/api/*`)
-2. Frontend static assets — `express.static` from `frontend/dist/`
-3. Catch-all `*` — serves `frontend/dist/index.html` for SPA client-side routing
+## Frontend
 
-Order matters: the catch-all must be last so it does not swallow API or asset requests.
+- TailwindCSS with `@tailwindcss/typography` plugin
+- `react-router-dom` v7 with `BrowserRouter`
+- Routes: `*` -> `Home` component (catch-all SPA routing)
+- File viewer supports: text, markdown (react-markdown), images
+- Resizable sidebar width persisted in `localStorage('sidebarWidth')`
 
-## Key details
+## Deployment
 
-- `ROOT_DIR` comes from env var `DATA_ROOT_DIR` (required). Validated at startup — app crashes with fatal error if unset or directory doesn't exist.
-- Files starting with `.` or `archived` are ignored by the API (`server.js:11-16`)
-- Path traversal protection: `fullPath.startsWith(ROOT_DIR)` check on content/raw endpoints
-- Frontend dev server proxies `/api` to `http://localhost:5000` (see `frontend/vite.config.js`)
-- File type detection in `frontend/src/utils/fileType.js`: image extensions, markdown extensions, else text
-- Backend sends file contents as JSON strings (`/api/files/content`) and raw files via `res.sendFile` (`/api/files/raw`)
-- `react-markdown` renders markdown; has a known caveat: does not render checklists (noted in `MarkdownViewer.jsx:4`)
-
-## Reusable components
-
-### Modal (`frontend/src/components/Modal.jsx`)
-
-A centered dialog with backdrop overlay using `@headlessui/react` Dialog + Transition. Props: `open`, `onClose`, `title`, `children`. Use it for any overlay/dialog needs (confirmations, full-text display, etc.) instead of creating ad-hoc dialogs.
+- Multi-stage Dockerfile (`FROM node:22-alpine`)
+- Env: `PORT` (default 5000), `DATA_ROOT_DIR`, `EVENT_CHANNEL` (stdout|stderr|file://)
+- `EVENT_CHANNEL` emits JSON-line events for file_bookmarked, file_unbookmarked, file_updated
