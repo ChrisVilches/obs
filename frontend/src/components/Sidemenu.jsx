@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import SearchBar from './SearchBar';
 
 // TODO: The API returns only files (flat paths), so folders are derived by
 // splitting file paths. Empty folders (with no files) never appear in the
@@ -116,6 +117,7 @@ function TreeNode({ node, depth, selectedFile, onClose, expandedSet, onToggle })
 export default function Sidemenu({ files, onClose }) {
   const [searchParams] = useSearchParams();
   const selectedFile = searchParams.get('file');
+  const [isSearching, setIsSearching] = useState(false);
 
   const tree = useMemo(() => buildTree(files), [files]);
 
@@ -184,19 +186,27 @@ export default function Sidemenu({ files, onClose }) {
 
   return (
     <nav className="flex-1 overflow-y-auto p-2">
-      <ul className="space-y-0.5">
-        {tree.map(node => (
-          <TreeNode
-            key={node.path || node.name}
-            node={node}
-            depth={0}
-            selectedFile={selectedFile}
-            onClose={onClose}
-            expandedSet={expandedSet}
-            onToggle={handleToggle}
-          />
-        ))}
-      </ul>
+      <SearchBar
+        files={files}
+        onClose={onClose}
+        selectedFile={selectedFile}
+        onSearchActive={setIsSearching}
+      />
+      {!isSearching && (
+        <ul className="space-y-0.5">
+          {tree.map(node => (
+            <TreeNode
+              key={node.path || node.name}
+              node={node}
+              depth={0}
+              selectedFile={selectedFile}
+              onClose={onClose}
+              expandedSet={expandedSet}
+              onToggle={handleToggle}
+            />
+          ))}
+        </ul>
+      )}
     </nav>
   );
 }
