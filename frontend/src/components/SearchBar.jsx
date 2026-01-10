@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import SearchResultItem from './SearchResultItem';
 
 // TODO: This only works if all the file paths are loaded and are in memory. If
 // not, then the search would need to be implemented in the server-side since
@@ -62,19 +62,12 @@ export default function SearchBar({ files, onClose, selectedFile, onSearchActive
           {filteredFiles.length > 0 ? (
             <ul>
               {filteredFiles.map(file => (
-                <li key={file}>
-                  <Link
-                    to={`?file=${encodeURIComponent(file)}`}
-                    onClick={onClose}
-                    className={`block px-3 py-1.5 text-sm transition-colors ${
-                      file === selectedFile
-                        ? 'bg-indigo-900/40 text-indigo-300 font-medium'
-                        : 'text-gray-400 hover:bg-gray-800 hover:text-gray-200'
-                    }`}
-                  >
-                    {file}
-                  </Link>
-                </li>
+                <SearchResultItem
+                  key={file}
+                  file={file}
+                  selectedFile={selectedFile}
+                  onClose={onClose}
+                />
               ))}
             </ul>
           ) : (
