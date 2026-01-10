@@ -310,7 +310,7 @@ export default function Home() {
                     <XMarkIcon className="w-5 h-5" />
                   </button>
                 </div>
-                <Sidemenu files={files} onClose={() => setSidebarOpen(false)} />
+                <Sidemenu files={files} onClose={() => setSidebarOpen(false)} sidebarOpen={sidebarOpen} />
               </DialogPanel>
             </TransitionChild>
           </div>

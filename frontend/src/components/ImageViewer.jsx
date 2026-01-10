@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import ErrorDisplay from './ErrorDisplay';
 
+// TODO: some images are invisible depending on the background and their color.
+
 export default function ImageViewer({ file }) {
   const [error, setError] = useState(null);
 
