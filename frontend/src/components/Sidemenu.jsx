@@ -7,6 +7,9 @@ import SearchBar from './SearchBar';
 // tree. If empty folders need to be visible, the backend would need to return
 // directory entries as well.
 
+// TODO: scroll into view feature doesn't work for mobile, presumably because
+// it needs it to be visible, but in mobile the sidemenu is closed by default.
+
 function buildTree(files) {
   const root = [];
 
