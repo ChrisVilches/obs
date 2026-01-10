@@ -148,6 +148,7 @@ export default function Sidemenu({ files, onClose }) {
 
   useEffect(() => {
     if (!selectedFile) return;
+    if (!files?.includes(selectedFile)) return;
     const parts = selectedFile.split('/');
     if (parts.length <= 1) return;
 
@@ -167,7 +168,7 @@ export default function Sidemenu({ files, onClose }) {
       }
       return changed ? next : prev;
     });
-  }, [selectedFile]);
+  }, [selectedFile, files]);
 
   return (
     <nav className="flex-1 overflow-y-auto p-2">

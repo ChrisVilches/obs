@@ -113,7 +113,7 @@ function Viewer({ file, onBookmarkChange }) {
         </div>
         <div className="flex items-center">
         {/* TODO: hide this button for binary files (check using file extension or magic bytes) */}
-        {!editMode && (
+        {!editMode && !error && (
           <button
             onClick={handleEdit}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-300 bg-gray-800 border border-gray-700 rounded-md hover:bg-gray-700 hover:text-white transition-colors mr-2"
@@ -124,7 +124,7 @@ function Viewer({ file, onBookmarkChange }) {
             <span className="hidden md:inline">Edit</span>
           </button>
         )}
-        {!editMode && (
+        {!editMode && !error && (
           <button
             onClick={handleToggleBookmark}
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium border rounded-md transition-colors mr-2 ${
