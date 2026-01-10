@@ -1,26 +1,159 @@
+import { useState, useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+
+function buildTree(files) {
+  const root = [];
+
+  for (const filePath of files) {
+    const parts = filePath.split('/');
+    let currentLevel = root;
+
+    for (let i = 0; i < parts.length; i++) {
+      const part = parts[i];
+      const isLast = i === parts.length - 1;
+
+      let node = currentLevel.find(n => n.name === part);
+
+      if (!node) {
+        if (isLast) {
+          node = { name: part, type: 'file', path: filePath };
+        } else {
+          node = {
+            name: part,
+            type: 'directory',
+            path: parts.slice(0, i + 1).join('/'),
+            children: [],
+          };
+        }
+        currentLevel.push(node);
+      }
+
+      if (!isLast) {
+        currentLevel = node.children;
+      }
+    }
+  }
+
+  function sortNodes(nodes) {
+    nodes.sort((a, b) => {
+      if (a.type !== b.type) return a.type === 'directory' ? -1 : 1;
+      return a.name.localeCompare(b.name);
+    });
+    for (const n of nodes) {
+      if (n.children) sortNodes(n.children);
+    }
+  }
+  sortNodes(root);
+
+  return root;
+}
+
+function TreeNode({ node, depth, selectedFile, onClose, expandedSet, onToggle }) {
+  if (node.type === 'file') {
+    const isSelected = node.path === selectedFile;
+    return (
+      <li>
+        <Link
+          to={`?file=${encodeURIComponent(node.path)}`}
+          onClick={onClose}
+          className={`block px-3 py-1.5 rounded-md text-sm transition-colors ${
+            isSelected
+              ? 'bg-indigo-900/40 text-indigo-300 font-medium'
+              : 'text-gray-400 hover:bg-gray-800 hover:text-gray-200'
+          }`}
+          style={{ paddingLeft: `${12 + depth * 16}px` }}
+        >
+          <span className="truncate block">{node.name}</span>
+        </Link>
+      </li>
+    );
+  }
+
+  const isExpanded = expandedSet.has(node.path);
+
+  return (
+    <li>
+      <button
+        onClick={() => onToggle(node.path)}
+        className="w-full flex items-center gap-1 px-3 py-1.5 rounded-md text-sm text-gray-400 hover:bg-gray-800 hover:text-gray-200 transition-colors"
+        style={{ paddingLeft: `${12 + depth * 16}px` }}
+      >
+        <svg
+          className={`w-3 h-3 shrink-0 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        </svg>
+        <span className="truncate">{node.name}</span>
+      </button>
+      {isExpanded && node.children.length > 0 && (
+        <ul>
+          {node.children.map(child => (
+            <TreeNode
+              key={child.path || child.name}
+              node={child}
+              depth={depth + 1}
+              selectedFile={selectedFile}
+              onClose={onClose}
+              expandedSet={expandedSet}
+              onToggle={onToggle}
+            />
+          ))}
+        </ul>
+      )}
+    </li>
+  );
+}
 
 export default function Sidemenu({ files, onClose }) {
   const [searchParams] = useSearchParams();
   const selectedFile = searchParams.get('file');
 
+  const tree = useMemo(() => buildTree(files), [files]);
+
+  const allDirPaths = useMemo(() => {
+    const paths = [];
+    function collect(nodes) {
+      for (const node of nodes) {
+        if (node.type === 'directory') {
+          paths.push(node.path);
+          collect(node.children);
+        }
+      }
+    }
+    collect(tree);
+    return paths;
+  }, [tree]);
+
+  const [expandedSet, setExpandedSet] = useState(() => new Set(allDirPaths));
+
+  function handleToggle(path) {
+    setExpandedSet(prev => {
+      const next = new Set(prev);
+      if (next.has(path)) {
+        next.delete(path);
+      } else {
+        next.add(path);
+      }
+      return next;
+    });
+  }
+
   return (
     <nav className="flex-1 overflow-y-auto p-2">
       <ul className="space-y-0.5">
-        {files.map((file) => (
-          <li key={file}>
-            <Link
-              to={`?file=${encodeURIComponent(file)}`}
-              onClick={onClose}
-              className={`block px-3 py-2 rounded-md text-sm transition-colors ${
-                file === selectedFile
-                  ? 'bg-indigo-900/40 text-indigo-300 font-medium'
-                  : 'text-gray-400 hover:bg-gray-800 hover:text-gray-200'
-              }`}
-            >
-              <span className="truncate block">{file}</span>
-            </Link>
-          </li>
+        {tree.map(node => (
+          <TreeNode
+            key={node.path || node.name}
+            node={node}
+            depth={0}
+            selectedFile={selectedFile}
+            onClose={onClose}
+            expandedSet={expandedSet}
+            onToggle={handleToggle}
+          />
         ))}
       </ul>
     </nav>
