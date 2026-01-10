@@ -198,6 +198,7 @@ export default function Home() {
   const [files, setFiles] = useState([]);
   const [folderName, setFolderName] = useState('');
   const [bookmarks, setBookmarks] = useState([]);
+  const [bookmarksLoading, setBookmarksLoading] = useState(true);
   const [error, setError] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(() => {
@@ -224,13 +225,15 @@ export default function Home() {
   }, []);
 
   function reloadBookmarks() {
+    setBookmarksLoading(true);
     fetch('/api/bookmarks')
       .then((res) => res.json())
       .then((data) => {
         if (data.error) throw new Error(data.error);
         setBookmarks(data.items || []);
       })
-      .catch((err) => setError(err.message));
+      .catch((err) => setError(err.message))
+      .finally(() => setBookmarksLoading(false));
   }
 
   useEffect(() => {
@@ -335,7 +338,9 @@ export default function Home() {
         ) : (
           <div className="p-8">
             <h2 className="text-lg font-semibold text-gray-300 mb-4">Bookmarks</h2>
-            {bookmarks.length === 0 ? (
+            {bookmarksLoading ? (
+              <p className="text-gray-500">Loading...</p>
+            ) : bookmarks.length === 0 ? (
               <p className="text-gray-500">No bookmarks found.</p>
             ) : (
               <ul className="space-y-2">
