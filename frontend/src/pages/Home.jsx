@@ -98,8 +98,8 @@ function Viewer({ file, onBookmarkChange }) {
   const type = getFileType(file);
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex items-center justify-between px-4 py-2 border-b border-gray-800 bg-gray-900">
+    <div className="min-h-full flex flex-col">
+      <div className="sticky top-0 z-10 flex items-center justify-between px-4 py-2 border-b border-gray-800 bg-gray-900">
         <div className="flex items-center gap-3 min-w-0">
           <button onClick={() => setShowFileNameModal(true)} className="text-sm text-gray-300 truncate hover:text-indigo-400 transition-colors text-left min-w-0">
             <span className="truncate block">{file}</span>
