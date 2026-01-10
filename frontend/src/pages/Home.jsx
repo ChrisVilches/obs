@@ -5,6 +5,7 @@ import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import { getFileType } from '../utils/fileType';
 import ImageViewer from '../components/ImageViewer';
 import MarkdownViewer from '../components/MarkdownViewer';
+import MediaViewer from '../components/MediaViewer';
 import Sidemenu from '../components/Sidemenu';
 import Modal from '../components/Modal';
 import ErrorDisplay from '../components/ErrorDisplay';
@@ -112,8 +113,7 @@ function Viewer({ file, onBookmarkChange }) {
           )}
         </div>
         <div className="flex items-center">
-        {/* TODO: hide this button for binary files (check using file extension or magic bytes) */}
-        {!editMode && !error && (
+        {!editMode && !error && (type === 'text' || type === 'markdown') && (
           <button
             onClick={handleEdit}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-300 bg-gray-800 border border-gray-700 rounded-md hover:bg-gray-700 hover:text-white transition-colors mr-2"
@@ -185,6 +185,8 @@ function Viewer({ file, onBookmarkChange }) {
         <ImageViewer key={refreshKey} file={file} />
       ) : type === 'markdown' ? (
         <MarkdownViewer key={refreshKey} file={file} />
+      ) : type === 'audio' || type === 'video' ? (
+        <MediaViewer key={refreshKey} file={file} type={type} />
       ) : error ? (
         <ErrorDisplay message={error} file={file} />
       ) : (
