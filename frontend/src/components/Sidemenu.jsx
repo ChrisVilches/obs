@@ -180,7 +180,7 @@ export default function Sidemenu({ files, onClose }) {
       }
     });
     return () => cancelAnimationFrame(id);
-  }, [selectedFile]);
+  }, [selectedFile, files]);
 
   return (
     <nav className="flex-1 overflow-y-auto p-2">
