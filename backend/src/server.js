@@ -31,9 +31,6 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 function shouldIgnoreFile(entryName) {
-  // TODO: This is custom for my current folder. Remove later.
-  if (entryName.startsWith("archived")) return true
-
   return entryName.startsWith('.');
 }
 

@@ -61,6 +61,7 @@ function TreeNode({ node, depth, selectedFile, onClose, expandedSet, onToggle })
         <Link
           to={`?file=${encodeURIComponent(node.path)}`}
           onClick={onClose}
+          data-selected={isSelected || undefined}
           className={`block px-3 py-1.5 rounded-md text-sm transition-colors ${
             isSelected
               ? 'bg-indigo-900/40 text-indigo-300 font-medium'
@@ -169,6 +170,17 @@ export default function Sidemenu({ files, onClose }) {
       return changed ? next : prev;
     });
   }, [selectedFile, files]);
+
+  useEffect(() => {
+    if (!selectedFile) return;
+    const id = requestAnimationFrame(() => {
+      const el = document.querySelector('[data-selected]');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    });
+    return () => cancelAnimationFrame(id);
+  }, [selectedFile]);
 
   return (
     <nav className="flex-1 overflow-y-auto p-2">
