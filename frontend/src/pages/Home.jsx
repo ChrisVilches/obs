@@ -1,9 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { getFileType } from '../utils/fileType';
+import ImageViewer from '../components/ImageViewer';
+import MarkdownViewer from '../components/MarkdownViewer';
 
 function Viewer({ file }) {
   const [content, setContent] = useState('');
   const [error, setError] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     if (!file) return;
@@ -16,11 +20,28 @@ function Viewer({ file }) {
         setContent(data.content);
       })
       .catch((err) => setError(err.message));
-  }, [file]);
+  }, [file, refreshKey]);
 
   if (!file) return <div style={{ padding: '1rem' }}>Select a file to view</div>;
-  if (error) return <div style={{ padding: '1rem' }}>Error: {error}</div>;
-  return <pre style={{ padding: '1rem' }}>{content || 'Loading...'}</pre>;
+
+  const type = getFileType(file);
+
+  return (
+    <div>
+      <div style={{ padding: '0.5rem 1rem', borderBottom: '1px solid #ccc', display: 'flex', justifyContent: 'flex-end' }}>
+        <button onClick={() => setRefreshKey((k) => k + 1)}>Reload</button>
+      </div>
+      {type === 'image' ? (
+        <ImageViewer key={refreshKey} file={file} />
+      ) : type === 'markdown' ? (
+        <MarkdownViewer key={refreshKey} file={file} />
+      ) : error ? (
+        <div style={{ padding: '1rem' }}>Error: {error}</div>
+      ) : (
+        <pre style={{ padding: '1rem' }}>{content || 'Loading...'}</pre>
+      )}
+    </div>
+  );
 }
 
 export default function Home() {
