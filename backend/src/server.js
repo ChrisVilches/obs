@@ -230,6 +230,9 @@ app.put('/api/files/content', (req, res) => {
   }
 });
 
+// TODO: Not sure about this. Some caching might be necessary to make it more
+// efficient, but I also want to be able to reload the files on demand. Audit
+// and consider optimizations.
 app.get('/api/files/raw', (req, res) => {
   try {
     let relativePath = req.query.file;
