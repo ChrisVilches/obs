@@ -92,7 +92,28 @@ function Viewer({ file, onBookmarkChange }) {
 
   if (error) return <ErrorDisplay message={error} file={file} />;
 
-  const type = info?.type;
+  if (!info) {
+    return (
+      <div className="min-h-full flex flex-col">
+        <div className="sticky top-0 z-10 flex items-center justify-between px-4 py-2 border-b border-gray-800 bg-gray-900">
+          <div className="flex items-center gap-3 min-w-0">
+            <span className="text-sm text-gray-500 truncate">{file}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-5 h-5 border-2 border-gray-600 border-t-transparent rounded-full animate-spin" />
+          </div>
+        </div>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+            <span className="text-sm text-gray-500">Loading...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const type = info.type;
 
   return (
     <div className="min-h-full flex flex-col">
@@ -183,6 +204,23 @@ function Viewer({ file, onBookmarkChange }) {
         <MarkdownViewer key={refreshKey} file={file} content={info.content} />
       ) : type === 'audio' || type === 'video' ? (
         <MediaViewer key={refreshKey} file={file} type={type} />
+      ) : type === 'binary' ? (
+        <div className="flex flex-col items-center justify-center p-12 text-center">
+          <svg className="w-16 h-16 text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+          </svg>
+          <p className="text-lg font-medium text-gray-400 mb-2">Binary file</p>
+          <p className="text-sm text-gray-500 mb-6">This file type cannot be viewed in the browser.</p>
+          <a
+            href={`/api/files/raw?file=${encodeURIComponent(file)}&attachment=true`}
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-300 bg-gray-800 border border-gray-700 rounded-md hover:bg-gray-700 hover:text-white transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Download
+          </a>
+        </div>
       ) : (
         <pre className="p-6 text-sm text-gray-300 overflow-auto whitespace-pre-wrap font-mono">{info?.content || ''}</pre>
       )}
