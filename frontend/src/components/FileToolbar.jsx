@@ -1,3 +1,4 @@
+import { ArrowPathIcon, PencilIcon, BookmarkIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import FileNameDisplay from './FileNameDisplay';
 import Button from './Button';
 
@@ -32,11 +33,7 @@ export default function FileToolbar({
         ) : error ? (
           <Button
             variant="secondary"
-            icon={
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-            }
+            icon={<ArrowPathIcon className="w-4 h-4" />}
             onClick={onReload}
           />
         ) : (
@@ -44,11 +41,7 @@ export default function FileToolbar({
             {!editMode && (type === 'text' || type === 'markdown') && (
               <Button
                 variant="secondary"
-                icon={
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                }
+                icon={<PencilIcon className="w-4 h-4" />}
                 onClick={onEdit}
               >
                 Edit
@@ -57,11 +50,7 @@ export default function FileToolbar({
             {!editMode && (
               <Button
                 variant="secondary"
-                icon={
-                  <svg className="w-4 h-4" fill={info?.isBookmarked ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-                  </svg>
-                }
+                icon={<BookmarkIcon className={`w-4 h-4 ${info?.isBookmarked ? 'fill-current' : ''}`} />}
                 onClick={onToggleBookmark}
                 className={info?.isBookmarked ? '!text-yellow-300 !bg-yellow-900/30 !border-yellow-700 hover:!bg-yellow-900/50 hover:!text-yellow-200' : ''}
               >
@@ -71,11 +60,7 @@ export default function FileToolbar({
             {!editMode && (
               <Button
                 variant="secondary"
-                icon={
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                }
+                icon={<ArrowPathIcon className="w-4 h-4" />}
                 onClick={onReload}
               >
                 Reload
@@ -85,22 +70,14 @@ export default function FileToolbar({
               <div className="flex items-center space-x-2">
                 <Button
                   variant="primary"
-                  icon={
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  }
+                  icon={<CheckIcon className="w-4 h-4" />}
                   onClick={onSave}
                 >
                   Save
                 </Button>
                 <Button
                   variant="secondary"
-                  icon={
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  }
+                  icon={<XMarkIcon className="w-4 h-4" />}
                   onClick={onCancel}
                 >
                   Cancel
