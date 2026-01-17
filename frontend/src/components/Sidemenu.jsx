@@ -202,7 +202,6 @@ export default function Sidemenu({ files, onClose, sidebarOpen }) {
   return (
     <nav className="flex-1 overflow-y-auto overflow-x-hidden p-2">
       <SearchBar
-        files={files}
         onClose={onClose}
         selectedFile={selectedFile}
         onSearchActive={setIsSearching}

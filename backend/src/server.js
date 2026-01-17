@@ -117,6 +117,28 @@ app.delete('/api/bookmarks', (req, res) => {
   }
 });
 
+app.get('/api/files/search', (req, res) => {
+  try {
+    const q = req.query.q;
+    if (!q || !q.trim()) {
+      return res.json({ files: [] });
+    }
+    const query = q.trim().toLowerCase();
+    const { execFileSync } = require('child_process');
+    const stdout = execFileSync('find', [
+      ROOT_DIR,
+      '-type', 'f',
+      '-iname', `*${query}*`,
+      '!', '-name', '.*',
+      '!', '-path', '*/.*',
+    ], { encoding: 'utf-8', maxBuffer: 10 * 1024 * 1024 });
+    const files = stdout.trim().split('\n').filter(Boolean).map(f => path.relative(ROOT_DIR, f));
+    res.json({ files });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get('/api/files', (req, res) => {
   try {
     const files = listFilesRecursive(ROOT_DIR, ROOT_DIR);
