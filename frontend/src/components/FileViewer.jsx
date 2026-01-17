@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import ErrorDisplay from './ErrorDisplay';
 import FileToolbar from './FileToolbar';
+import TextViewer from './TextViewer';
 import ImageViewer from './ImageViewer';
 import MarkdownViewer from './MarkdownViewer';
 import MediaViewer from './MediaViewer';
@@ -154,7 +155,7 @@ export default function FileViewer({ file, onBookmarkChange }) {
       ) : type === 'binary' ? (
         <BinaryFileDisplay file={file} />
       ) : (
-        <pre className="p-6 text-sm text-gray-300 overflow-auto whitespace-pre-wrap font-mono">{info?.content || ''}</pre>
+        <TextViewer key={refreshKey} content={info.content} />
       )}
     </div>
   );
