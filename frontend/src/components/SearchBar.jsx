@@ -5,7 +5,7 @@ import SearchResultItem from './SearchResultItem';
 export default function SearchBar({ onClose, selectedFile, onSearchActive }) {
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
-  const [results, setResults] = useState([]);
+  const [results, setResults] = useState({ files: [], contentMatches: [] });
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -25,7 +25,7 @@ export default function SearchBar({ onClose, selectedFile, onSearchActive }) {
 
   useEffect(() => {
     if (!debouncedQuery) {
-      setResults([]);
+      setResults({ files: [], contentMatches: [] });
       return;
     }
     let cancelled = false;
@@ -34,11 +34,11 @@ export default function SearchBar({ onClose, selectedFile, onSearchActive }) {
       .then(res => res.json())
       .then(data => {
         if (!cancelled) {
-          setResults(data.files || []);
+          setResults({ files: data.files || [], contentMatches: data.contentMatches || [] });
         }
       })
       .catch(() => {
-        if (!cancelled) setResults([]);
+        if (!cancelled) setResults({ files: [], contentMatches: [] });
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -49,8 +49,12 @@ export default function SearchBar({ onClose, selectedFile, onSearchActive }) {
   function handleClear() {
     setQuery('');
     setDebouncedQuery('');
-    setResults([]);
+    setResults({ files: [], contentMatches: [] });
   }
+
+  const hasFilenameResults = results.files.length > 0;
+  const hasContentResults = results.contentMatches.length > 0;
+  const hasAnyResults = hasFilenameResults || hasContentResults;
 
   return (
     <div>
@@ -76,17 +80,29 @@ export default function SearchBar({ onClose, selectedFile, onSearchActive }) {
         <div className="border-t border-gray-800">
           {loading ? (
             <p className="px-3 py-2 text-sm text-gray-500">Searching...</p>
-          ) : results.length > 0 ? (
-            <ul>
-              {results.map(file => (
-                <SearchResultItem
-                  key={file}
-                  file={file}
-                  selectedFile={selectedFile}
-                  onClose={onClose}
-                />
-              ))}
-            </ul>
+          ) : hasAnyResults ? (
+            <>
+              {hasFilenameResults && (
+                <div>
+                  <p className="px-3 py-1.5 text-xs font-medium text-gray-500 uppercase tracking-wider">Filenames</p>
+                  <ul>
+                    {results.files.map(file => (
+                      <SearchResultItem key={file} file={file} selectedFile={selectedFile} onClose={onClose} />
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {hasContentResults && (
+                <div className={hasFilenameResults ? 'mt-2' : ''}>
+                  <p className="px-3 py-1.5 text-xs font-medium text-gray-500 uppercase tracking-wider">Content matches</p>
+                  <ul>
+                    {results.contentMatches.map(file => (
+                      <SearchResultItem key={file} file={file} selectedFile={selectedFile} onClose={onClose} />
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </>
           ) : (
             <p className="px-3 py-2 text-sm text-gray-500">No files found</p>
           )}

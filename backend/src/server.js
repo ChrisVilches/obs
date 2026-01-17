@@ -1,10 +1,13 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const { execFileSync } = require('child_process');
 let _fileTypeFromFile;
 const { emit } = require('./eventChannel');
 
 // TODO: lots of Sync functions here. Maybe I should use async variants.
+// Yes, do it because now the search endpoint is Sync!!!!
+// TODO: Refactor logic to a services folder or something similar.
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -117,23 +120,41 @@ app.delete('/api/bookmarks', (req, res) => {
   }
 });
 
+// TODO: Not sure about this. Might be inefficient.
 app.get('/api/files/search', (req, res) => {
   try {
     const q = req.query.q;
     if (!q || !q.trim()) {
-      return res.json({ files: [] });
+      return res.json({ files: [], contentMatches: [] });
     }
     const query = q.trim().toLowerCase();
-    const { execFileSync } = require('child_process');
-    const stdout = execFileSync('find', [
-      ROOT_DIR,
-      '-type', 'f',
-      '-iname', `*${query}*`,
-      '!', '-name', '.*',
-      '!', '-path', '*/.*',
-    ], { encoding: 'utf-8', maxBuffer: 10 * 1024 * 1024 });
-    const files = stdout.trim().split('\n').filter(Boolean).map(f => path.relative(ROOT_DIR, f));
-    res.json({ files });
+
+    let files = [];
+    try {
+      const stdout = execFileSync('find', [
+        ROOT_DIR,
+        '-type', 'f',
+        '-iname', `*${query}*`,
+        '!', '-name', '.*',
+        '!', '-path', '*/.*',
+      ], { encoding: 'utf-8', maxBuffer: 10 * 1024 * 1024 });
+      files = stdout.trim().split('\n').filter(Boolean).map(f => path.relative(ROOT_DIR, f));
+    } catch (_) {}
+
+    let contentMatches = [];
+    try {
+      const escapedQuery = query.replace(/'/g, "'\\''");
+      const cmd = `grep -srilF '${escapedQuery}' '${ROOT_DIR}' --exclude-dir='.*' --exclude='.*' | head -n 50`;
+      const stdout = execFileSync('sh', ['-c', cmd], { encoding: 'utf-8' });
+      contentMatches = stdout.trim().split('\n').filter(Boolean).map(f => path.relative(ROOT_DIR, f));
+    } catch (err) {
+      contentMatches = (err.stdout || '').trim().split('\n').filter(Boolean).map(f => path.relative(ROOT_DIR, f));
+    }
+
+    const fileSet = new Set(files);
+    contentMatches = contentMatches.filter(f => !fileSet.has(f));
+
+    res.json({ files, contentMatches });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
