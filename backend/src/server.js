@@ -207,6 +207,7 @@ app.get('/api/files/content', (req, res) => {
   }
 });
 
+// TODO: Large files don't work (and the error isn't pretty, so at least fix the error)
 app.put('/api/files/content', (req, res) => {
   try {
     const { file, content } = req.body;
