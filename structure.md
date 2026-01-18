@@ -17,15 +17,13 @@ In the root `package.json`, configure the following:
 ### 3. Backend (Express) Setup
 In `/backend/src/server.js`, implement a strict route-matching order of operations to handle APIs, hosted media, static assets, and clean client-side routing:
 1. **API Routes:** Mount under `/api/...`. Add a sample `GET /api/data` endpoint.
-2. **Hosted Media/Images:** Create an `/backend/uploads/` folder. Use `express.static` to intercept and serve files from this folder whenever a request hits the `/uploads` path prefix.
-3. **Frontend UI Assets:** Use `express.static` to serve static production files out of the `/frontend/dist` directory.
+2. **Frontend UI Assets:** Use `express.static` to serve static production files out of the `/frontend/dist` directory.
 4. **React Router Catch-All:** Add a bottom-priority wildcard route (`app.get('*', ...)`) that catches all other requests and responds with the `/frontend/dist/index.html` file. This is crucial for supporting modern, non-hash HTML5 History API routing on page refreshes.
 
 ### 4. Frontend (React + Vite) Setup
 In `/frontend`:
 - Initialize a standard modern React application using Vite.
 - Set up `react-router-dom` using `BrowserRouter` (clean URLs, no hash routes). Create a couple of dummy route components (e.g., Home and Dashboard) to prove routing works on page refresh.
-- In `vite.config.js`, configure the `server.proxy` utility so that during local development, any frontend request hitting `/api` or `/uploads` is transparently proxied to the Express backend port (e.g., `http://localhost:5000`).
-- Ensure frontend components can render hosted images seamlessly via relative paths (e.g., `<img src="/uploads/sample.jpg" />`).
+- In `vite.config.js`, configure the `server.proxy` utility so that during local development, any frontend request hitting `/api` is transparently proxied to the Express backend port (e.g., `http://localhost:5000`).
 
 Please generate the complete file structures, configuration files, and starter source code for both applications based on these requirements.
