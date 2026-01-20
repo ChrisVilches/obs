@@ -23,11 +23,7 @@ function Viewer({ file }) {
   }, [file, refreshKey]);
 
   if (!file) {
-    return (
-      <div className="flex items-center justify-center h-full text-gray-500 text-lg">
-        Select a file to view
-      </div>
-    );
+    return null;
   }
 
   const type = getFileType(file);
@@ -60,6 +56,7 @@ function Viewer({ file }) {
 
 export default function Home() {
   const [files, setFiles] = useState([]);
+  const [bookmarks, setBookmarks] = useState([]);
   const [error, setError] = useState(null);
   const [searchParams] = useSearchParams();
   const selectedFile = searchParams.get('file');
@@ -70,6 +67,16 @@ export default function Home() {
       .then((data) => {
         if (data.error) throw new Error(data.error);
         setFiles(data.files);
+      })
+      .catch((err) => setError(err.message));
+  }, []);
+
+  useEffect(() => {
+    fetch('/api/bookmarks')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.error) throw new Error(data.error);
+        setBookmarks(data.items || []);
       })
       .catch((err) => setError(err.message));
   }, []);
@@ -102,7 +109,29 @@ export default function Home() {
         </nav>
       </aside>
       <main className="flex-1 overflow-auto bg-gray-950">
-        <Viewer file={selectedFile} />
+        {selectedFile ? (
+          <Viewer file={selectedFile} />
+        ) : (
+          <div className="p-8">
+            <h2 className="text-lg font-semibold text-gray-300 mb-4">Bookmarks</h2>
+            {bookmarks.length === 0 ? (
+              <p className="text-gray-500">No bookmarks found.</p>
+            ) : (
+              <ul className="space-y-2">
+                {bookmarks.map((item, index) => (
+                  <li key={index}>
+                    <Link
+                      to={`?file=${encodeURIComponent(item.path)}`}
+                      className="block px-4 py-2 rounded-md text-sm text-indigo-400 hover:bg-gray-800 hover:text-indigo-300 transition-colors"
+                    >
+                      {item.path}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
       </main>
     </div>
   );
