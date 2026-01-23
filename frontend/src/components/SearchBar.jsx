@@ -52,9 +52,25 @@ export default function SearchBar({ onClose, selectedFile, onSearchActive }) {
     setResults({ files: [], contentMatches: [] });
   }
 
+  const [tab, setTab] = useState('all');
+
+  const totalCount = results.files.length + results.contentMatches.length;
   const hasFilenameResults = results.files.length > 0;
   const hasContentResults = results.contentMatches.length > 0;
   const hasAnyResults = hasFilenameResults || hasContentResults;
+
+  const showFiles = tab === 'all' || tab === 'files';
+  const showContent = tab === 'all' || tab === 'content';
+
+  const visibleFiles = showFiles ? results.files : [];
+  const visibleContent = showContent ? results.contentMatches : [];
+  const hasVisibleResults = visibleFiles.length > 0 || visibleContent.length > 0;
+
+  const tabs = [
+    { key: 'all', label: 'All', count: totalCount },
+    { key: 'files', label: 'File names', count: results.files.length },
+    { key: 'content', label: 'Content', count: results.contentMatches.length },
+  ];
 
   return (
     <div>
@@ -82,21 +98,34 @@ export default function SearchBar({ onClose, selectedFile, onSearchActive }) {
             <p className="px-3 py-2 text-sm text-gray-500">Searching...</p>
           ) : hasAnyResults ? (
             <>
-              {hasFilenameResults && (
+              <div className="flex border-b border-gray-700">
+                {tabs.map(t => (
+                  <button
+                    key={t.key}
+                    onClick={() => setTab(t.key)}
+                    className={`flex-1 px-2 py-1.5 text-xs font-medium transition-colors ${
+                      tab === t.key
+                        ? 'text-indigo-400 border-b-2 border-indigo-400'
+                        : 'text-gray-500 hover:text-gray-300'
+                    }`}
+                  >
+                    {t.label} ({t.count})
+                  </button>
+                ))}
+              </div>
+              {showFiles && visibleFiles.length > 0 && (
                 <div>
-                  <p className="px-3 py-1.5 text-xs font-medium text-gray-500 uppercase tracking-wider">Filenames</p>
                   <ul>
-                    {results.files.map(file => (
+                    {visibleFiles.map(file => (
                       <SearchResultItem key={file} file={file} selectedFile={selectedFile} onClose={onClose} />
                     ))}
                   </ul>
                 </div>
               )}
-              {hasContentResults && (
-                <div className={hasFilenameResults ? 'mt-2' : ''}>
-                  <p className="px-3 py-1.5 text-xs font-medium text-gray-500 uppercase tracking-wider">Content matches</p>
+              {showContent && visibleContent.length > 0 && (
+                <div className={showFiles && visibleFiles.length > 0 ? 'mt-2' : ''}>
                   <ul>
-                    {results.contentMatches.map(file => (
+                    {visibleContent.map(file => (
                       <SearchResultItem key={file} file={file} selectedFile={selectedFile} onClose={onClose} />
                     ))}
                   </ul>
