@@ -7,6 +7,8 @@ import SearchResultItem from './SearchResultItem';
 // TODO: I just tried searching for test_db after putting that text inside a
 // file with the same name (test_db_dump) and it didn't find it (by content).
 
+// TODO: search is glitchy when the query changes. It should load without
+// making it blink.
 export default function SearchBar({ onClose, selectedFile, onSearchActive }) {
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
@@ -108,11 +110,10 @@ export default function SearchBar({ onClose, selectedFile, onSearchActive }) {
                   <button
                     key={t.key}
                     onClick={() => setTab(t.key)}
-                    className={`flex-1 px-2 py-1.5 text-xs font-medium transition-colors ${
-                      tab === t.key
-                        ? 'text-indigo-400 border-b-2 border-indigo-400'
-                        : 'text-gray-500 hover:text-gray-300'
-                    }`}
+                    className={`flex-1 px-2 py-1.5 text-xs font-medium transition-colors ${tab === t.key
+                      ? 'text-indigo-400 border-b-2 border-indigo-400'
+                      : 'text-gray-500 hover:text-gray-300'
+                      }`}
                   >
                     {t.label} ({t.count})
                   </button>
