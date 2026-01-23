@@ -259,6 +259,8 @@ app.get('/api/files/info', async (req, res) => {
 // TODO: Large files don't work (and the error isn't pretty, so at least fix the error)
 app.put('/api/files/content', (req, res) => {
   try {
+    // TODO: Test the force flag by pushing from PC and then editing on browser, or similar combinations.
+    // (so far I've only tested it on one PC, but I'm not sure if Git modifies the timestamps correctly).
     const { file, content, mtime, force } = req.body;
     if (!file) {
       return res.status(400).json({ error: 'Missing "file" in request body' });
