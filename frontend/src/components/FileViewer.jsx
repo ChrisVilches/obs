@@ -60,7 +60,7 @@ export default function FileViewer({ file, onBookmarkChange }) {
     })
       .then(async (res) => {
         const data = await res.json();
-        if (res.status === 409 && data.error === 'File modified by another user') {
+        if (res.status === 409 && data.error === 'VERSION_CONFLICT') {
           setShowConflictModal(true);
           return;
         }
@@ -202,7 +202,7 @@ export default function FileViewer({ file, onBookmarkChange }) {
       )}
       {info && (
         <Modal open={showConflictModal} onClose={() => setShowConflictModal(false)} title="File Modified">
-          <p>This file was modified by another user while you were editing.</p>
+          <p>A version conflict was detected. The file has changed since you started editing.</p>
           <p className="mt-2">You can force save to overwrite their changes, or cancel and reload the file to see the latest version.</p>
           <div className="mt-4 flex justify-end gap-2">
             <Button variant="secondary" onClick={() => setShowConflictModal(false)}>Cancel</Button>
