@@ -50,8 +50,7 @@ export default function FileViewer({ file, onBookmarkChange }) {
   }
 
   function handleSave() {
-    const body = { file, content: editContent };
-    if (info?.mtime) body.mtime = info.mtime;
+    const body = { file, content: editContent, mtime: info.mtime };
 
     fetch('/api/files/content', {
       method: 'PUT',
@@ -78,8 +77,7 @@ export default function FileViewer({ file, onBookmarkChange }) {
   // TODO: This is too similar to the other one. Could be implemented as just one method, with variants.
   function handleForceSave() {
     setShowConflictModal(false);
-    const body = { file, content: editContent, force: true };
-    if (info?.mtime) body.mtime = info.mtime;
+    const body = { file, content: editContent, force: true, mtime: info.mtime };
 
     fetch('/api/files/content', {
       method: 'PUT',

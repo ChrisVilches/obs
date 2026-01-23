@@ -268,12 +268,15 @@ app.put('/api/files/content', (req, res) => {
     if (content === undefined) {
       return res.status(400).json({ error: 'Missing "content" in request body' });
     }
+    if (!mtime) {
+      throw new Error('Missing "mtime" in request body');
+    }
     const fullPath = path.join(ROOT_DIR, file);
     if (!fullPath.startsWith(ROOT_DIR)) {
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    if (mtime && !force && fs.existsSync(fullPath)) {
+    if (!force && fs.existsSync(fullPath)) {
       const stat = fs.statSync(fullPath);
       if (stat.mtime.toISOString() !== mtime) {
         return res.status(409).json({ error: 'VERSION_CONFLICT' });
