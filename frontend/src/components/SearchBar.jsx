@@ -4,6 +4,9 @@ import SearchResultItem from './SearchResultItem';
 
 // TODO: Search results need to be deduplicated for the "All" tab.
 
+// TODO: I just tried searching for test_db after putting that text inside a
+// file with the same name (test_db_dump) and it didn't find it (by content).
+
 export default function SearchBar({ onClose, selectedFile, onSearchActive }) {
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
