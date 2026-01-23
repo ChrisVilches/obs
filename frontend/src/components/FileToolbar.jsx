@@ -19,6 +19,10 @@ export default function FileToolbar({
 }) {
   const type = info?.type;
 
+  // TODO: crashes without this. But how should I structure this correctly so
+  // it's not crappy like this?
+  if (!info) return "loading?"
+
   return (
     <div className="sticky top-0 z-10 flex items-center justify-between px-4 h-14 border-b border-gray-800 bg-gray-900 shrink-0">
       <FileNameDisplay
@@ -27,7 +31,7 @@ export default function FileToolbar({
         onShowFileNameModal={onShowFileNameModal}
         saveMessage={saveMessage}
       />
-      {info?.mtime && (
+      {info.mtime && (
         <span className="text-xs text-gray-600 shrink-0 ml-2">
           {new Date(info.mtime).toLocaleString()}
         </span>

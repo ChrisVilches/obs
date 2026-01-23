@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import ErrorDisplay from './ErrorDisplay';
 import FileToolbar from './FileToolbar';
+import Modal from './Modal';
+import Button from './Button';
 import TextViewer from './viewers/TextViewer';
 import ImageViewer from './viewers/ImageViewer';
 import MarkdownViewer from './viewers/MarkdownViewer';
@@ -15,6 +17,7 @@ export default function FileViewer({ file, onBookmarkChange }) {
   const [editContent, setEditContent] = useState('');
   const [saveMessage, setSaveMessage] = useState(null);
   const [showFileNameModal, setShowFileNameModal] = useState(false);
+  const [showConflictModal, setShowConflictModal] = useState(false);
 
   useEffect(() => {
     if (!file) return;
@@ -47,14 +50,48 @@ export default function FileViewer({ file, onBookmarkChange }) {
   }
 
   function handleSave() {
+    const body = { file, content: editContent };
+    if (info?.mtime) body.mtime = info.mtime;
+
     fetch('/api/files/content', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ file, content: editContent }),
+      body: JSON.stringify(body),
+    })
+      .then(async (res) => {
+        const data = await res.json();
+        if (res.status === 409 && data.error === 'File modified by another user') {
+          setShowConflictModal(true);
+          return;
+        }
+        if (data.error) throw new Error(data.error);
+        if (data.mtime) {
+          setInfo((prev) => (prev ? { ...prev, mtime: data.mtime } : prev));
+        }
+        setSaveMessage(data.message);
+        setEditMode(false);
+        setRefreshKey((k) => k + 1);
+      })
+      .catch((err) => setError(err.message));
+  }
+
+  // TODO: This is too similar to the other one. Could be implemented as just one method, with variants.
+  function handleForceSave() {
+    setShowConflictModal(false);
+    const body = { file, content: editContent, force: true };
+    if (info?.mtime) body.mtime = info.mtime;
+
+    fetch('/api/files/content', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
     })
       .then((res) => res.json())
       .then((data) => {
         if (data.error) throw new Error(data.error);
+        if (data.mtime) {
+          setInfo((prev) => (prev ? { ...prev, mtime: data.mtime } : prev));
+        }
         setSaveMessage(data.message);
         setEditMode(false);
         setRefreshKey((k) => k + 1);
@@ -162,6 +199,16 @@ export default function FileViewer({ file, onBookmarkChange }) {
         <BinaryFileViewer file={file} />
       ) : (
         <TextViewer key={refreshKey} content={info.content} />
+      )}
+      {info && (
+        <Modal open={showConflictModal} onClose={() => setShowConflictModal(false)} title="File Modified">
+          <p>This file was modified by another user while you were editing.</p>
+          <p className="mt-2">You can force save to overwrite their changes, or cancel and reload the file to see the latest version.</p>
+          <div className="mt-4 flex justify-end gap-2">
+            <Button variant="secondary" onClick={() => setShowConflictModal(false)}>Cancel</Button>
+            <Button variant="primary" onClick={handleForceSave}>Force Save</Button>
+          </div>
+        </Modal>
       )}
     </div>
   );
