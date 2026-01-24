@@ -34,6 +34,12 @@ const BOOKMARKS_FILE = path.join(ROOT_DIR, BOOKMARKS_REL);
 app.use(express.json());
 
 if (process.env.NODE_ENV !== 'production') {
+  app.use((_req, _res, next) => {
+    setTimeout(next, 500);
+  });
+}
+
+if (process.env.NODE_ENV !== 'production') {
   app.use((req, res, next) => {
     const start = Date.now();
     res.on('finish', () => {
