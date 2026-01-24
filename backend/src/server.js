@@ -5,6 +5,8 @@ const { execFileSync } = require('child_process');
 let _fileTypeFromFile;
 const { emit } = require('./eventChannel');
 
+// TODO: Somehow create unit and/or integration tests.
+
 // TODO: lots of Sync functions here. Maybe I should use async variants.
 // Yes, do it because now the search endpoint is Sync!!!!
 // TODO: Refactor logic to a services folder or something similar.
@@ -283,6 +285,9 @@ app.put('/api/files/content', (req, res) => {
       }
     }
 
+    // TODO: This is wrong. If the file doesn't exist, then another branch should be used.
+    // Maybe always consider it as different, since the file didn't exist in the first place.
+    // Using an empty string isn't always going to work properly.
     const existing = fs.existsSync(fullPath) ? fs.readFileSync(fullPath, 'utf-8') : '';
     if (existing === content) {
       return res.json({ success: true, message: 'No changes' });
