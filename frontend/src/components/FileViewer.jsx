@@ -198,7 +198,7 @@ export default function FileViewer({ file, onBookmarkChange }) {
           <p className="mt-2">You can force save to overwrite their changes, or cancel and reload the file to see the latest version.</p>
           <div className="mt-4 flex justify-end gap-2">
             <Button variant="secondary" onClick={() => setShowConflictModal(false)}>Cancel</Button>
-            <Button variant="primary" onClick={handleForceSave}>Force Save</Button>
+            <Button variant="danger" onClick={handleForceSave}>Force Save</Button>
           </div>
         </Modal>
       )}
