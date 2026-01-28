@@ -79,6 +79,30 @@ app.get('/api/files/content', (req, res) => {
   }
 });
 
+app.put('/api/files/content', (req, res) => {
+  try {
+    const { file, content } = req.body;
+    if (!file) {
+      return res.status(400).json({ error: 'Missing "file" in request body' });
+    }
+    if (content === undefined) {
+      return res.status(400).json({ error: 'Missing "content" in request body' });
+    }
+    const fullPath = path.join(ROOT_DIR, file);
+    if (!fullPath.startsWith(ROOT_DIR)) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+    const existing = fs.existsSync(fullPath) ? fs.readFileSync(fullPath, 'utf-8') : '';
+    if (existing === content) {
+      return res.json({ success: true, message: 'No changes' });
+    }
+    fs.writeFileSync(fullPath, content, 'utf-8');
+    res.json({ success: true, message: 'Updated' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get('/api/files/raw', (req, res) => {
   try {
     let relativePath = req.query.file;
