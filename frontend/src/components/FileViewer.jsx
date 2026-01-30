@@ -61,7 +61,6 @@ export default function FileViewer({ file, onBookmarkChange }) {
     setSaving(true);
     if (force) setShowConflictModal(false);
     try {
-      console.log({ content: editContent, mtime: info.mtime, force })
       const saveRes = await fetch('/api/files/content', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -89,32 +88,31 @@ export default function FileViewer({ file, onBookmarkChange }) {
     }
   }
 
-  function handleToggleBookmark() {
+  async function handleToggleBookmark() {
     setBookmarking(true);
-    if (info.isBookmarked) {
-      fetch(`/api/bookmarks?path=${encodeURIComponent(file)}`, { method: 'DELETE' })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.error) throw new Error(data.error);
-          setInfo({ ...info, isBookmarked: false });
-          if (onBookmarkChange) onBookmarkChange();
-        })
-        .catch((err) => setError(err.message))
-        .finally(() => setBookmarking(false));
-    } else {
-      fetch('/api/bookmarks', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+
+    try {
+      const isRemoving = info.isBookmarked;
+
+      const res = await fetch('/api/bookmarks', {
+        method: isRemoving ? 'DELETE' : 'POST',
+        headers: { 'Content-Type': 'application/json', },
         body: JSON.stringify({ path: file }),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.error) throw new Error(data.error);
-          setInfo({ ...info, isBookmarked: true });
-          if (onBookmarkChange) onBookmarkChange();
-        })
-        .catch((err) => setError(err.message))
-        .finally(() => setBookmarking(false));
+      });
+
+      const data = await res.json();
+
+      if (data.error) throw new Error(data.error);
+
+      setInfo({ ...info, isBookmarked: data.isBookmarked });
+
+      if (onBookmarkChange) {
+        onBookmarkChange();
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBookmarking(false);
     }
   }
 
@@ -123,7 +121,6 @@ export default function FileViewer({ file, onBookmarkChange }) {
       <div className="min-h-full flex flex-col">
         <FileToolbar
           file={file}
-          bookmarking={bookmarking}
           showFileNameModal={showFileNameModal}
           onShowFileNameModal={setShowFileNameModal}
         />
@@ -138,7 +135,6 @@ export default function FileViewer({ file, onBookmarkChange }) {
         <FileToolbar
           file={file}
           loading
-          bookmarking={bookmarking}
           showFileNameModal={showFileNameModal}
           onShowFileNameModal={setShowFileNameModal}
         />
