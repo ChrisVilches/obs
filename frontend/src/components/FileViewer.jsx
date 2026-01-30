@@ -16,6 +16,7 @@ export default function FileViewer({ file, onBookmarkChange }) {
   const [error, setError] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [bookmarking, setBookmarking] = useState(false);
   const [editContent, setEditContent] = useState('');
   const [saveMessage, setSaveMessage] = useState(null);
   const [showFileNameModal, setShowFileNameModal] = useState(false);
@@ -89,6 +90,7 @@ export default function FileViewer({ file, onBookmarkChange }) {
   }
 
   function handleToggleBookmark() {
+    setBookmarking(true);
     if (info.isBookmarked) {
       fetch(`/api/bookmarks?path=${encodeURIComponent(file)}`, { method: 'DELETE' })
         .then((res) => res.json())
@@ -97,7 +99,8 @@ export default function FileViewer({ file, onBookmarkChange }) {
           setInfo({ ...info, isBookmarked: false });
           if (onBookmarkChange) onBookmarkChange();
         })
-        .catch((err) => setError(err.message));
+        .catch((err) => setError(err.message))
+        .finally(() => setBookmarking(false));
     } else {
       fetch('/api/bookmarks', {
         method: 'POST',
@@ -110,7 +113,8 @@ export default function FileViewer({ file, onBookmarkChange }) {
           setInfo({ ...info, isBookmarked: true });
           if (onBookmarkChange) onBookmarkChange();
         })
-        .catch((err) => setError(err.message));
+        .catch((err) => setError(err.message))
+        .finally(() => setBookmarking(false));
     }
   }
 
@@ -119,6 +123,7 @@ export default function FileViewer({ file, onBookmarkChange }) {
       <div className="min-h-full flex flex-col">
         <FileToolbar
           file={file}
+          bookmarking={bookmarking}
           showFileNameModal={showFileNameModal}
           onShowFileNameModal={setShowFileNameModal}
         />
@@ -133,6 +138,7 @@ export default function FileViewer({ file, onBookmarkChange }) {
         <FileToolbar
           file={file}
           loading
+          bookmarking={bookmarking}
           showFileNameModal={showFileNameModal}
           onShowFileNameModal={setShowFileNameModal}
         />
@@ -155,6 +161,7 @@ export default function FileViewer({ file, onBookmarkChange }) {
         info={info}
         editMode={editMode}
         saving={saving}
+        bookmarking={bookmarking}
         saveMessage={saveMessage}
         showFileNameModal={showFileNameModal}
         onShowFileNameModal={setShowFileNameModal}
