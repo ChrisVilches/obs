@@ -6,6 +6,11 @@ import FileViewer from '../components/FileViewer';
 import BookmarksList from '../components/BookmarksList';
 import Sidemenu from '../components/Sidemenu';
 
+// TODO: Not sure if the scrollbar should be in the div container or
+// in the body, affecting the whole thing.
+// (I'm talking about the scrollbar stylized in this page. Should THAT
+// container be scrollable? or the body?)
+
 export default function Home() {
   const [files, setFiles] = useState([]);
   const [folderName, setFolderName] = useState('');
@@ -151,7 +156,7 @@ export default function Home() {
         <Sidemenu files={files} loading={filesLoading} />
       </aside>
       <main className="flex-1 flex flex-col bg-gray-950 pt-12 md:pt-0">
-        <div className="flex-1 overflow-auto">
+        <div className="flex-1 overflow-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600">
           {selectedFile ? (
             <FileViewer file={selectedFile} onBookmarkChange={reloadBookmarks} />
           ) : (

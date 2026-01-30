@@ -229,14 +229,14 @@ export default function Sidemenu({ files, onClose, sidebarOpen, loading }) {
 
   if (loading) {
     return (
-      <nav className="flex-1 overflow-y-auto overflow-x-hidden p-2">
+      <nav className="flex-1 overflow-y-auto overflow-x-hidden p-2 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600">
         <SidemenuSkeleton />
       </nav>
     )
   }
 
   return (
-    <nav className="flex-1 overflow-y-auto overflow-x-hidden p-2">
+    <nav className="flex-1 overflow-y-auto overflow-x-hidden p-2 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600">
       <SearchBar
         onClose={onClose}
         selectedFile={selectedFile}
