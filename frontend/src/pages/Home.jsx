@@ -9,6 +9,7 @@ import Sidemenu from '../components/Sidemenu';
 export default function Home() {
   const [files, setFiles] = useState([]);
   const [folderName, setFolderName] = useState('');
+  const [filesLoading, setFilesLoading] = useState(true);
   const [bookmarks, setBookmarks] = useState([]);
   const [bookmarksLoading, setBookmarksLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -32,8 +33,12 @@ export default function Home() {
         if (data.error) throw new Error(data.error);
         setFiles(data.files);
         setFolderName(data.folderName);
+        setFilesLoading(false);
       })
-      .catch((err) => setError(err.message));
+      .catch((err) => {
+        setError(err.message);
+        setFilesLoading(false);
+      });
   }, []);
 
   function reloadBookmarks() {
@@ -125,7 +130,7 @@ export default function Home() {
                     <XMarkIcon className="w-5 h-5" />
                   </button>
                 </div>
-                <Sidemenu files={files} onClose={() => setSidebarOpen(false)} sidebarOpen={sidebarOpen} />
+                <Sidemenu files={files} loading={filesLoading} onClose={() => setSidebarOpen(false)} sidebarOpen={sidebarOpen} />
               </DialogPanel>
             </TransitionChild>
           </div>
@@ -143,7 +148,7 @@ export default function Home() {
           className="absolute right-0 top-0 bottom-0 w-1.5 cursor-col-resize hover:bg-indigo-500/50 active:bg-indigo-500/70 z-10 shrink-0"
         />
         <Link to="/" className="px-4 h-14 flex items-center border-b border-gray-800 shrink-0 text-sm font-semibold text-gray-400 uppercase tracking-wider hover:text-indigo-400 transition-colors">{folderName}</Link>
-        <Sidemenu files={files} />
+        <Sidemenu files={files} loading={filesLoading} />
       </aside>
       <main className="flex-1 flex flex-col bg-gray-950 pt-12 md:pt-0">
         <div className="flex-1 overflow-auto">
