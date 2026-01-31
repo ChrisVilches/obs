@@ -60,7 +60,7 @@ app.get('/api/files', (_req, res) => {
 });
 
 app.get('/api/files/info', async (req, res) => {
-  const { file } = z.object({ path: pathSchema }).parse(req.query);
+  const { file } = z.object({ file: pathSchema }).parse(req.query);
   res.json(await getFileInfo(ROOT_DIR, BOOKMARKS_FILE, file));
 });
 
