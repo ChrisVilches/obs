@@ -4,40 +4,43 @@ const { emit } = require('../eventChannel');
 
 const defaultBookmarkFileContent = { items: [] }
 
-function writeDefaultValue() {
-  fs.writeFileSync(bookmarksFile, JSON.stringify(defaultBookmarkFileContent, null, 2), 'utf-8');
-}
-
-function getBookmarks(bookmarksFile) {
-  const dir = path.dirname(bookmarksFile);
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-  if (!fs.existsSync(bookmarksFile)) {
-    writeDefaultValue();
+async function getBookmarks(bookmarksFile) {
+  async function reset() {
+    await fs.promises.writeFile(bookmarksFile, JSON.stringify(defaultBookmarkFileContent, null, 2), 'utf-8');
     return defaultBookmarkFileContent;
   }
-  const raw = fs.readFileSync(bookmarksFile, 'utf-8').trim();
-  if (!raw) {
-    writeDefaultValue()
-    return defaultBookmarkFileContent;
+
+  await fs.promises.mkdir(path.dirname(bookmarksFile), { recursive: true });
+
+  try {
+    const raw = await fs.promises.readFile(bookmarksFile, 'utf-8');
+    const trimmed = raw.trim();
+
+    return trimmed
+      ? JSON.parse(trimmed)
+      : reset();
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      return reset();
+    }
+
+    throw err;
   }
-  return JSON.parse(raw);
 }
 
-function addBookmark(bookmarksFile, filePath) {
-  const data = getBookmarks(bookmarksFile);
+async function addBookmark(bookmarksFile, filePath) {
+  const data = await getBookmarks(bookmarksFile);
   if (!data.items.some(item => item.path === filePath)) {
     data.items.push({ type: 'file', path: filePath });
-    fs.writeFileSync(bookmarksFile, JSON.stringify(data, null, 2), 'utf-8');
+    await fs.promises.writeFile(bookmarksFile, JSON.stringify(data, null, 2), 'utf-8');
   }
   emit({ type: 'file_bookmarked', file: filePath, timestamp: new Date().toISOString() });
 }
 
-function removeBookmark(bookmarksFile, filePath) {
-  const data = getBookmarks(bookmarksFile);
+async function removeBookmark(bookmarksFile, filePath) {
+  const data = await getBookmarks(bookmarksFile);
   data.items = data.items.filter(item => item.path !== filePath);
-  fs.writeFileSync(bookmarksFile, JSON.stringify(data, null, 2), 'utf-8');
+  await fs.promises.writeFile(bookmarksFile, JSON.stringify(data, null, 2), 'utf-8');
   emit({ type: 'file_unbookmarked', file: filePath, timestamp: new Date().toISOString() });
 }
 
