@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/react';
+import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import { getFileType } from '../utils/fileType';
 import ImageViewer from '../components/ImageViewer';
 import MarkdownViewer from '../components/MarkdownViewer';
+import Sidemenu from '../components/Sidemenu';
 
 function Viewer({ file }) {
   const [content, setContent] = useState('');
@@ -139,6 +142,7 @@ export default function Home() {
   const [files, setFiles] = useState([]);
   const [bookmarks, setBookmarks] = useState([]);
   const [error, setError] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchParams] = useSearchParams();
   const selectedFile = searchParams.get('file');
 
@@ -166,30 +170,60 @@ export default function Home() {
 
   return (
     <div className="flex h-screen bg-gray-950">
-      <aside className="w-72 flex-shrink-0 bg-gray-900 border-r border-gray-800 flex flex-col">
+      <button
+        onClick={() => setSidebarOpen(true)}
+        className="fixed top-3 left-3 z-40 md:hidden p-2 rounded-md text-gray-400 bg-gray-900 border border-gray-800 hover:text-white hover:bg-gray-800 transition-colors"
+        aria-label="Open sidebar"
+      >
+        <Bars3Icon className="w-5 h-5" />
+      </button>
+
+      <Transition show={sidebarOpen}>
+        <Dialog onClose={setSidebarOpen} className="relative z-50 md:hidden">
+          <TransitionChild
+            enter="transition-opacity duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="transition-opacity duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
+          </TransitionChild>
+          <div className="fixed inset-0 flex">
+            <TransitionChild
+              enter="transition-transform duration-300"
+              enterFrom="-translate-x-full"
+              enterTo="translate-x-0"
+              leave="transition-transform duration-200"
+              leaveFrom="translate-x-0"
+              leaveTo="-translate-x-full"
+            >
+              <DialogPanel className="w-72 h-full bg-gray-900 border-r border-gray-800 flex flex-col">
+                <div className="flex items-center justify-between px-4 py-3 border-b border-gray-800">
+                  <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Files</h2>
+                  <button
+                    onClick={() => setSidebarOpen(false)}
+                    className="p-1 rounded-md text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
+                    aria-label="Close sidebar"
+                  >
+                    <XMarkIcon className="w-5 h-5" />
+                  </button>
+                </div>
+                <Sidemenu files={files} onClose={() => setSidebarOpen(false)} />
+              </DialogPanel>
+            </TransitionChild>
+          </div>
+        </Dialog>
+      </Transition>
+
+      <aside className="hidden md:flex w-72 flex-shrink-0 bg-gray-900 border-r border-gray-800 flex-col">
         <div className="px-4 py-3 border-b border-gray-800">
           <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Files</h2>
         </div>
-        <nav className="flex-1 overflow-y-auto p-2">
-          <ul className="space-y-0.5">
-            {files.map((file) => (
-              <li key={file}>
-                <Link
-                  to={`?file=${encodeURIComponent(file)}`}
-                  className={`block px-3 py-2 rounded-md text-sm transition-colors ${
-                    file === selectedFile
-                      ? 'bg-indigo-900/40 text-indigo-300 font-medium'
-                      : 'text-gray-400 hover:bg-gray-800 hover:text-gray-200'
-                  }`}
-                >
-                  <span className="truncate block">{file}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
+        <Sidemenu files={files} />
       </aside>
-      <main className="flex-1 overflow-auto bg-gray-950">
+      <main className="flex-1 overflow-auto bg-gray-950 pt-12 md:pt-0">
         {selectedFile ? (
           <Viewer file={selectedFile} />
         ) : (
@@ -203,6 +237,7 @@ export default function Home() {
                   <li key={index}>
                     <Link
                       to={`?file=${encodeURIComponent(item.path)}`}
+                      onClick={() => setSidebarOpen(false)}
                       className="block px-4 py-2 rounded-md text-sm text-indigo-400 hover:bg-gray-800 hover:text-indigo-300 transition-colors"
                     >
                       {item.path}
