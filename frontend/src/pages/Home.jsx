@@ -68,9 +68,10 @@ function Viewer({ file }) {
   return (
     <div className="h-full flex flex-col">
       <div className="flex items-center justify-between px-4 py-2 border-b border-gray-800 bg-gray-900">
-        <div>
+        <div className="flex items-center gap-3 min-w-0">
+          <span className="text-sm text-gray-300 truncate">{file}</span>
           {saveMessage && (
-            <span className="text-sm text-gray-400">{saveMessage}</span>
+            <span className="text-sm text-gray-500 shrink-0">{saveMessage}</span>
           )}
         </div>
         <div className="flex items-center">
