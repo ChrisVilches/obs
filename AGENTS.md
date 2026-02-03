@@ -34,3 +34,9 @@ Order matters: the catch-all must be last so it does not swallow API or asset re
 - File type detection in `frontend/src/utils/fileType.js`: image extensions, markdown extensions, else text
 - Backend sends file contents as JSON strings (`/api/files/content`) and raw files via `res.sendFile` (`/api/files/raw`)
 - `react-markdown` renders markdown; has a known caveat: does not render checklists (noted in `MarkdownViewer.jsx:4`)
+
+## Reusable components
+
+### Modal (`frontend/src/components/Modal.jsx`)
+
+A centered dialog with backdrop overlay using `@headlessui/react` Dialog + Transition. Props: `open`, `onClose`, `title`, `children`. Use it for any overlay/dialog needs (confirmations, full-text display, etc.) instead of creating ad-hoc dialogs.

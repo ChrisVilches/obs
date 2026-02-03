@@ -6,6 +6,7 @@ import { getFileType } from '../utils/fileType';
 import ImageViewer from '../components/ImageViewer';
 import MarkdownViewer from '../components/MarkdownViewer';
 import Sidemenu from '../components/Sidemenu';
+import Modal from '../components/Modal';
 
 function Viewer({ file }) {
   const [content, setContent] = useState('');
@@ -14,6 +15,7 @@ function Viewer({ file }) {
   const [editMode, setEditMode] = useState(false);
   const [editContent, setEditContent] = useState('');
   const [saveMessage, setSaveMessage] = useState(null);
+  const [showFileNameModal, setShowFileNameModal] = useState(false);
 
   useEffect(() => {
     if (!file) return;
@@ -69,7 +71,12 @@ function Viewer({ file }) {
     <div className="h-full flex flex-col">
       <div className="flex items-center justify-between px-4 py-2 border-b border-gray-800 bg-gray-900">
         <div className="flex items-center gap-3 min-w-0">
-          <span className="text-sm text-gray-300 truncate">{file}</span>
+          <button onClick={() => setShowFileNameModal(true)} className="text-sm text-gray-300 truncate hover:text-indigo-400 transition-colors text-left min-w-0">
+            <span className="truncate block">{file}</span>
+          </button>
+          <Modal open={showFileNameModal} onClose={() => setShowFileNameModal(false)} title="File name">
+            {file}
+          </Modal>
           {saveMessage && (
             <span className="text-sm text-gray-500 shrink-0">{saveMessage}</span>
           )}
