@@ -66,13 +66,17 @@ export default function FileViewer({ file, onBookmarkChange }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ file, content: editContent, mtime: info.mtime, force }),
       });
+
       const saveData = await saveRes.json();
 
-      if (saveData.error === 'VERSION_CONFLICT') {
-        setShowConflictModal(true);
-        return;
+      if (!saveRes.ok) {
+        if (saveData.code === 'VERSION_CONFLICT') {
+          setShowConflictModal(true);
+          return;
+        }
+
+        if (saveData.error) throw new Error(saveData.error);
       }
-      if (saveData.error) throw new Error(saveData.error);
 
       const res = await fetch(`/api/files/info?file=${encodeURIComponent(file)}`);
       const data = await res.json();
