@@ -108,6 +108,10 @@ function createFileWriter(filePath) {
   return { write, cleanup };
 }
 
+// To add a new transport (Redis, TCP, etc.), create a factory function
+// like createStdoutWriter/createFileWriter that returns { write, cleanup },
+// then add an else-if branch below matching the EVENT_CHANNEL scheme.
+
 if (!channelConfig) {
   writeFn = null;
 
