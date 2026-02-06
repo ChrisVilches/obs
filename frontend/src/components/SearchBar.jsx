@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { XMarkIcon } from '@heroicons/react/24/outline';
+import { EllipsisHorizontalIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import SearchResultItem from './SearchResultItem';
 
 // TODO: Search results need to be deduplicated for the "All" tab.
@@ -7,8 +7,6 @@ import SearchResultItem from './SearchResultItem';
 // TODO: I just tried searching for test_db after putting that text inside a
 // file with the same name (test_db_dump) and it didn't find it (by content).
 
-// TODO: search is glitchy when the query changes. It should load without
-// making it blink.
 export default function SearchBar({ onClose, selectedFile, onSearchActive }) {
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
@@ -90,20 +88,24 @@ export default function SearchBar({ onClose, selectedFile, onSearchActive }) {
           className="w-full bg-gray-800 text-gray-200 text-sm rounded-md px-3 py-1.5 pr-8 border border-gray-700 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
         />
         {query && (
-          <button
-            onClick={handleClear}
-            aria-label="Clear search"
-            className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center p-1 text-gray-400 hover:text-gray-200 transition-colors"
-          >
-            <XMarkIcon className="w-4 h-4" />
-          </button>
+          loading ? (
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center p-1">
+              <EllipsisHorizontalIcon className="animate-spin w-4 h-4 text-gray-400" />
+            </div>
+          ) : (
+            <button
+              onClick={handleClear}
+              aria-label="Clear search"
+              className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center p-1 text-gray-400 hover:text-gray-200 transition-colors"
+            >
+              <XMarkIcon className="w-4 h-4" />
+            </button>
+          )
         )}
       </div>
       {debouncedQuery && (
         <div className="border-t border-gray-800">
-          {loading ? (
-            <p className="px-3 py-2 text-sm text-gray-500">Searching...</p>
-          ) : hasAnyResults ? (
+          {hasAnyResults ? (
             <>
               <div className="flex border-b border-gray-700">
                 {tabs.map(t => (
@@ -138,6 +140,8 @@ export default function SearchBar({ onClose, selectedFile, onSearchActive }) {
                 </div>
               )}
             </>
+          ) : loading ? (
+            <p className="px-3 py-2 text-sm text-gray-500">Searching...</p>
           ) : (
             <p className="px-3 py-2 text-sm text-gray-500">No files found</p>
           )}
