@@ -13,6 +13,8 @@ import Sidemenu from '../components/Sidemenu';
 // Remember that on mobile the layout is weird as hell (very buggy)
 // so maybe the bug is caused by some weird layout structure.
 
+// TODO: I don't want to load all bookmarks all the time like this. I think I
+// can avoid doing that.
 export default function Home() {
   const [files, setFiles] = useState([]);
   const [folderName, setFolderName] = useState('');

@@ -7,6 +7,9 @@ const { z } = require('zod');
 const { fromError, createErrorMap } = require('zod-validation-error');
 const initApp = require('./initApp');
 
+// TODO: try to add a formatter and linter, but a very simple one since I'm
+// mostly vibe coding.
+
 const { app, ROOT_DIR, BOOKMARKS_FILE, PORT } = initApp();
 
 z.config({
@@ -17,7 +20,9 @@ const pathSchema = z.string().min(1)
 
 if (process.env.NODE_ENV !== 'production') {
   app.use((_req, _res, next) => {
-    setTimeout(next, 800);
+    // TODO: Try this random time
+    const time = (Math.random() * 400) + 600
+    setTimeout(next, time);
   });
 }
 
@@ -75,6 +80,7 @@ app.put('/api/files/content', async (req, res) => {
   res.json({ success: true, message: changed ? 'Updated' : 'No changes' });
 });
 
+// TODO: maybe some caching. We know the timestamp of the file so maybe use that somehow? lmfao
 app.get('/api/files/raw', (req, res) => {
   const { file, current, attachment } = z.object({
     file: pathSchema,
