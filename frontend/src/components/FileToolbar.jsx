@@ -69,14 +69,16 @@ export default function FileToolbar({
   const canBeEdited = info?.type === 'text' || info?.type === 'markdown';
 
   return (
-    <div className="sticky top-0 z-10 flex items-center justify-between px-4 h-14 border-b border-gray-800 bg-gray-900 shrink-0">
-      <FileNameDisplay
-        file={file}
-        info={info}
-        showFileNameModal={showFileNameModal}
-        onShowFileNameModal={onShowFileNameModal}
-        saveMessage={saveMessage}
-      />
+    <div className="sticky top-0 z-10 flex items-center px-4 h-14 border-b border-gray-800 bg-gray-900 shrink-0 pl-12 md:pl-4">
+      <div className="flex-1 flex justify-center md:justify-start min-w-0">
+        <FileNameDisplay
+          file={file}
+          info={info}
+          showFileNameModal={showFileNameModal}
+          onShowFileNameModal={onShowFileNameModal}
+          saveMessage={saveMessage}
+        />
+      </div>
       <div className="flex items-center">
         <div className="flex items-center space-x-2">
           {loading ? (

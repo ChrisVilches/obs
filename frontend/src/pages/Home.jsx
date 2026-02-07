@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/react';
 import { Bars3Icon } from '@heroicons/react/24/outline';
 import FileViewer from '../components/FileViewer';
@@ -96,16 +96,13 @@ export default function Home() {
 
   return (
     <div className="flex h-screen bg-gray-950">
-      <div className="fixed top-0 left-0 right-0 z-40 md:hidden flex items-center gap-2 px-3 h-12 bg-gray-900 border-b border-gray-800">
-        <button
-          onClick={() => setSidebarOpen(true)}
-          className="p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-800 transition-colors shrink-0"
-          aria-label="Open sidebar"
-        >
-          <Bars3Icon className="w-5 h-5" />
-        </button>
-        <Link to="/" className="text-sm font-semibold text-gray-400 uppercase tracking-wider truncate hover:text-indigo-400 transition-colors">{folderName}</Link>
-      </div>
+      <button
+        onClick={() => setSidebarOpen(true)}
+        className="fixed top-2 left-2 z-50 md:hidden p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
+        aria-label="Open sidebar"
+      >
+        <Bars3Icon className="w-5 h-5" />
+      </button>
 
       <Transition show={sidebarOpen}>
         <Dialog onClose={setSidebarOpen} className="relative z-50 md:hidden">
@@ -148,7 +145,7 @@ export default function Home() {
         />
         <Sidemenu files={files} loading={filesLoading} folderName={folderName} />
       </aside>
-      <main className="flex-1 flex flex-col bg-gray-950 pt-12 md:pt-0">
+      <main className="flex-1 flex flex-col bg-gray-950">
         <div className="flex-1 overflow-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600">
           {selectedFile ? (
             <FileViewer file={selectedFile} onBookmarkChange={reloadBookmarks} />
