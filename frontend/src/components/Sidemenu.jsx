@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { ChevronRightIcon, BookmarkIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import SearchBar from './SearchBar';
+import Modal from './Modal';
 
 const GITHUB_URL = 'https://github.com/ChrisVilches/obs';
 
@@ -23,7 +24,7 @@ function SidemenuFooter() {
   );
 }
 
-function SidemenuHeader({ folderName, onClose }) {
+function SidemenuHeader({ folderName, onClose, onSearchClick }) {
   return (
     <div className="flex items-center justify-between px-4 h-14 border-b border-gray-800 shrink-0">
       <div className="flex items-center gap-2">
@@ -48,6 +49,7 @@ function SidemenuHeader({ folderName, onClose }) {
           <BookmarkIcon className="w-5 h-5" />
         </Link>
         <button
+          onClick={onSearchClick}
           className="p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
           aria-label="Search"
           title="Search"
@@ -221,7 +223,7 @@ export default function Sidemenu({ files, onClose, sidebarOpen, loading, folderN
   const navRef = useRef(null);
   const [searchParams] = useSearchParams();
   const selectedFile = searchParams.get('file');
-  const [isSearching, setIsSearching] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const tree = useMemo(() => buildTree(files), [files]);
 
@@ -292,41 +294,46 @@ export default function Sidemenu({ files, onClose, sidebarOpen, loading, folderN
   if (loading) {
     return (
       <div className="flex flex-col flex-1 min-h-0">
-        <SidemenuHeader folderName={folderName} onClose={onClose} />
+        <SidemenuHeader folderName={folderName} onClose={onClose} onSearchClick={() => setSearchOpen(true)} />
         <nav className="flex-1 overflow-y-auto overflow-x-hidden p-2 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600" style={{ scrollbarGutter: 'stable' }}>
           <SidemenuSkeleton />
         </nav>
         <SidemenuFooter />
+        <Modal open={searchOpen} onClose={() => setSearchOpen(false)} title="Search" className="h-[70vh] flex flex-col overflow-hidden" childrenClass="flex-1 min-h-0">
+          <SearchBar
+            onClose={() => { setSearchOpen(false); onClose?.(); }}
+            selectedFile={selectedFile}
+          />
+        </Modal>
       </div>
     )
   }
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
-      <SidemenuHeader folderName={folderName} onClose={onClose} />
+      <SidemenuHeader folderName={folderName} onClose={onClose} onSearchClick={() => setSearchOpen(true)} />
       <nav ref={navRef} className="flex-1 overflow-y-auto overflow-x-hidden p-2 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600" style={{ scrollbarGutter: 'stable' }}>
-        <SearchBar
-          onClose={onClose}
-          selectedFile={selectedFile}
-          onSearchActive={setIsSearching}
-        />
-        {!isSearching && (
-          <ul className="space-y-0.5">
-            {tree.map(node => (
-              <TreeNode
-                key={node.path || node.name}
-                node={node}
-                depth={0}
-                selectedFile={selectedFile}
-                onClose={onClose}
-                expandedSet={expandedSet}
-                onToggle={handleToggle}
-              />
-            ))}
-          </ul>
-        )}
+        <ul className="space-y-0.5">
+          {tree.map(node => (
+            <TreeNode
+              key={node.path || node.name}
+              node={node}
+              depth={0}
+              selectedFile={selectedFile}
+              onClose={onClose}
+              expandedSet={expandedSet}
+              onToggle={handleToggle}
+            />
+          ))}
+        </ul>
       </nav>
       <SidemenuFooter />
+      <Modal open={searchOpen} onClose={() => setSearchOpen(false)} title="Search" className="h-[70vh] flex flex-col overflow-hidden" childrenClass="flex-1 min-h-0">
+        <SearchBar
+          onClose={() => { setSearchOpen(false); onClose?.(); }}
+          selectedFile={selectedFile}
+        />
+      </Modal>
     </div>
   );
 }

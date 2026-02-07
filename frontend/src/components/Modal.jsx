@@ -1,7 +1,7 @@
 import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 
-export default function Modal({ open, onClose, title, children }) {
+export default function Modal({ open, onClose, title, children, className = '', childrenClass = '' }) {
   return (
     <Transition show={open}>
       <Dialog onClose={onClose} className="relative z-50">
@@ -24,8 +24,8 @@ export default function Modal({ open, onClose, title, children }) {
             leaveFrom="scale-100 opacity-100"
             leaveTo="scale-95 opacity-0"
           >
-            <DialogPanel className="w-full max-w-md bg-gray-900 border border-gray-800 rounded-xl shadow-xl">
-              <div className="flex items-center justify-between px-5 py-4 border-b border-gray-800">
+            <DialogPanel className={`w-full max-w-md bg-gray-900 border border-gray-800 rounded-xl shadow-xl ${className}`}>
+              <div className="flex items-center justify-between px-5 py-4 border-b border-gray-800 shrink-0">
                 <DialogTitle className="text-sm font-semibold text-gray-300">
                   {title}
                 </DialogTitle>
@@ -37,7 +37,7 @@ export default function Modal({ open, onClose, title, children }) {
                   <XMarkIcon className="w-5 h-5" />
                 </button>
               </div>
-              <div className="px-5 py-4 text-sm text-gray-400 break-all">
+              <div className={`px-5 py-4 text-sm text-gray-400 break-all ${childrenClass}`}>
                 {children}
               </div>
             </DialogPanel>
