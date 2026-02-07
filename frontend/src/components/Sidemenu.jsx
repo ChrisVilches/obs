@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { ChevronRightIcon } from '@heroicons/react/24/outline';
 import SearchBar from './SearchBar';
@@ -162,6 +162,7 @@ function SidemenuSkeleton() {
 }
 
 export default function Sidemenu({ files, onClose, sidebarOpen, loading }) {
+  const navRef = useRef(null);
   const [searchParams] = useSearchParams();
   const selectedFile = searchParams.get('file');
   const [isSearching, setIsSearching] = useState(false);
@@ -206,10 +207,13 @@ export default function Sidemenu({ files, onClose, sidebarOpen, loading }) {
     });
   }, [selectedFile, files]);
 
+  // TODO: I replaced this useEffect with the navRef, but not the other one (for mobile)
+  // anyway there should just be one useEffect for both.
   useEffect(() => {
-    if (!selectedFile) return;
+    if (!selectedFile || !navRef.current) return;
+
     const id = requestAnimationFrame(() => {
-      const el = document.querySelector('[data-selected]');
+      const el = navRef.current.querySelector('[data-selected]');
       if (el) {
         el.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
@@ -238,7 +242,7 @@ export default function Sidemenu({ files, onClose, sidebarOpen, loading }) {
   }
 
   return (
-    <nav className="flex-1 overflow-y-auto overflow-x-hidden p-2 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600" style={{ scrollbarGutter: 'stable' }}>
+    <nav ref={navRef} className="flex-1 overflow-y-auto overflow-x-hidden p-2 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600" style={{ scrollbarGutter: 'stable' }}>
       <SearchBar
         onClose={onClose}
         selectedFile={selectedFile}
