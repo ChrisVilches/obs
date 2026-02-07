@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/react';
-import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
+import { Bars3Icon } from '@heroicons/react/24/outline';
 import FileViewer from '../components/FileViewer';
 import BookmarksList from '../components/BookmarksList';
 import Sidemenu from '../components/Sidemenu';
@@ -129,17 +129,7 @@ export default function Home() {
               leaveTo="-translate-x-full"
             >
               <DialogPanel className="w-72 h-full bg-gray-900 border-r border-gray-800 flex flex-col">
-                <div className="flex items-center justify-between px-4 h-14 border-b border-gray-800 shrink-0">
-                  <Link to="/" onClick={() => setSidebarOpen(false)} className="text-sm font-semibold text-gray-400 uppercase tracking-wider hover:text-indigo-400 transition-colors">{folderName}</Link>
-                  <button
-                    onClick={() => setSidebarOpen(false)}
-                    className="p-1 rounded-md text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
-                    aria-label="Close sidebar"
-                  >
-                    <XMarkIcon className="w-5 h-5" />
-                  </button>
-                </div>
-                <Sidemenu files={files} loading={filesLoading} onClose={() => setSidebarOpen(false)} sidebarOpen={sidebarOpen} />
+                <Sidemenu files={files} loading={filesLoading} onClose={() => setSidebarOpen(false)} sidebarOpen={sidebarOpen} folderName={folderName} />
               </DialogPanel>
             </TransitionChild>
           </div>
@@ -156,8 +146,7 @@ export default function Home() {
           }}
           className="absolute right-0 top-0 bottom-0 w-1.5 cursor-col-resize hover:bg-indigo-500/50 active:bg-indigo-500/70 z-10 shrink-0"
         />
-        <Link to="/" className="px-4 h-14 flex items-center border-b border-gray-800 shrink-0 text-sm font-semibold text-gray-400 uppercase tracking-wider hover:text-indigo-400 transition-colors">{folderName}</Link>
-        <Sidemenu files={files} loading={filesLoading} />
+        <Sidemenu files={files} loading={filesLoading} folderName={folderName} />
       </aside>
       <main className="flex-1 flex flex-col bg-gray-950 pt-12 md:pt-0">
         <div className="flex-1 overflow-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600">
