@@ -13,7 +13,7 @@ const channelConfig = process.env.EVENT_CHANNEL;
 let writeFn = null;
 let cleanupFn = null;
 
-function noop() {}
+function noop() { }
 
 function createStdoutWriter(stream) {
   return (data) => {
@@ -26,7 +26,9 @@ function createFileWriter(filePath) {
   // (Safe even if target is a FIFO.)
   try {
     fs.mkdirSync(path.dirname(filePath), { recursive: true });
-  } catch {}
+  } catch {
+    // TODO: do something with the error
+  }
 
   let stream = null;
   let opening = false;
