@@ -127,7 +127,9 @@ export default function FileViewer({ file, onBookmarkChange }) {
           showFileNameModal={showFileNameModal}
           onShowFileNameModal={setShowFileNameModal}
         />
-        <ErrorDisplay message={error} file={file} />
+        <div className="flex-1 flex items-center justify-center p-4">
+          <ErrorDisplay message={error} file={file} />
+        </div>
       </div>
     );
   }
