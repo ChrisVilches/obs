@@ -7,6 +7,7 @@ import ImageViewer from '../components/ImageViewer';
 import MarkdownViewer from '../components/MarkdownViewer';
 import Sidemenu from '../components/Sidemenu';
 import Modal from '../components/Modal';
+import ErrorDisplay from '../components/ErrorDisplay';
 
 function Viewer({ file, onBookmarkChange }) {
   const [content, setContent] = useState('');
@@ -164,6 +165,9 @@ function Viewer({ file, onBookmarkChange }) {
               onClick={handleCancel}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-300 bg-gray-800 border border-gray-700 rounded-md hover:bg-gray-700 hover:text-white transition-colors"
             >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
               <span className="hidden md:inline">Cancel</span>
             </button>
           </>
@@ -182,7 +186,7 @@ function Viewer({ file, onBookmarkChange }) {
       ) : type === 'markdown' ? (
         <MarkdownViewer key={refreshKey} file={file} />
       ) : error ? (
-        <div className="p-4 text-red-400">Error: {error}</div>
+        <ErrorDisplay message={error} file={file} />
       ) : (
         <pre className="p-6 text-sm text-gray-300 overflow-auto whitespace-pre-wrap font-mono">{content || 'Loading...'}</pre>
       )}

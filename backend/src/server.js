@@ -3,6 +3,8 @@ const path = require('path');
 const fs = require('fs');
 const { emit } = require('./eventChannel');
 
+// TODO: lots of Sync functions here. Maybe I should use async variants.
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -130,6 +132,9 @@ app.get('/api/files/content', (req, res) => {
     const isBookmarked = bookmarkData.items.some(item => item.path === relativePath);
     res.json({ content, isBookmarked });
   } catch (err) {
+    if (err.code === 'ENOENT') {
+      return res.status(404).json({ error: 'File not found' });
+    }
     res.status(500).json({ error: err.message });
   }
 });
@@ -179,6 +184,9 @@ app.get('/api/files/raw', (req, res) => {
     }
     res.sendFile(fullPath);
   } catch (err) {
+    if (err.code === 'ENOENT') {
+      return res.status(404).json({ error: 'File not found' });
+    }
     res.status(500).json({ error: err.message });
   }
 });

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
+import ErrorDisplay from './ErrorDisplay';
 
 function isExternalURL(url) {
   return url.startsWith('http://') || url.startsWith('https://');
@@ -22,7 +23,7 @@ export default function MarkdownViewer({ file }) {
       .catch((err) => setError(err.message));
   }, [file]);
 
-  if (error) return <div className="p-4 text-red-400">Error: {error}</div>;
+  if (error) return <ErrorDisplay message={error} file={file} />;
 
   return (
     <div className="p-6 max-w-4xl mx-auto prose prose-invert">
