@@ -1,7 +1,11 @@
 const path = require('path');
 const fs = require('fs');
+const { execFile } = require('child_process');
+const { promisify } = require('util');
 const { emit } = require('../eventChannel');
 const { getBookmarks } = require('./bookmarkService');
+
+const execFileAsync = promisify(execFile);
 
 let _fileTypeFromFile;
 
@@ -41,6 +45,29 @@ async function listFiles(rootDir) {
   const files = await listRecursive(rootDir);
   const folderName = path.basename(rootDir);
   return { files, folderName };
+}
+
+async function getRecentFiles(rootDir, n) {
+  const { stdout } = await execFileAsync('find', [
+    rootDir,
+    '-type', 'f',
+    '!', '-path', '*/.*',
+    '-printf', '%T@\t%p\n',
+  ], { encoding: 'utf-8', maxBuffer: 10 * 1024 * 1024 });
+
+  const files = stdout.trim().split('\n')
+    .filter(Boolean)
+    .map(line => {
+      const tabIndex = line.indexOf('\t');
+      return {
+        path: path.relative(rootDir, line.substring(tabIndex + 1)),
+        mtime: new Date(parseFloat(line.substring(0, tabIndex)) * 1000).toISOString(),
+      };
+    })
+    .sort((a, b) => b.mtime.localeCompare(a.mtime))
+    .slice(0, n);
+
+  return { recent: files };
 }
 
 function assertPathInsideRoot(rootDir, fullPath) {
@@ -124,4 +151,4 @@ function resolveRawPath(rootDir, relativePath, current) {
   return fullPath;
 }
 
-module.exports = { listFiles, getFileInfo, writeFileContent, resolveRawPath, VersionConflictError, FileAccessDeniedError };
+module.exports = { listFiles, getRecentFiles, getFileInfo, writeFileContent, resolveRawPath, VersionConflictError, FileAccessDeniedError };
