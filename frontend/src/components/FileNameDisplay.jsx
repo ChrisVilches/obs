@@ -13,7 +13,7 @@ function formatLocalDateTime(isoString) {
   );
 }
 
-export default function FileNameDisplay({ file, info, showFileNameModal, onShowFileNameModal, saveMessage }) {
+export default function FileNameDisplay({ file, info, showFileNameModal, onShowFileNameModal }) {
   return (
     <div className="flex items-center gap-3 min-w-0">
       <button
@@ -40,9 +40,6 @@ export default function FileNameDisplay({ file, info, showFileNameModal, onShowF
           )}
         </div>
       </Modal>
-      {saveMessage && (
-        <span className="text-sm text-gray-500 shrink-0">{saveMessage}</span>
-      )}
     </div>
   );
 }

@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
+import { CheckCircleIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
 import ErrorDisplay from './ErrorDisplay';
 import FileToolbar from './FileToolbar';
 import Modal from './Modal';
@@ -18,7 +20,6 @@ export default function FileViewer({ file, onBookmarkChange }) {
   const [saving, setSaving] = useState(false);
   const [bookmarking, setBookmarking] = useState(false);
   const [editContent, setEditContent] = useState('');
-  const [saveMessage, setSaveMessage] = useState(null);
   const [showFileNameModal, setShowFileNameModal] = useState(false);
   const [showConflictModal, setShowConflictModal] = useState(false);
 
@@ -29,7 +30,6 @@ export default function FileViewer({ file, onBookmarkChange }) {
     setInfo(null);
     setError(null);
     setEditMode(false);
-    setSaveMessage(null);
 
     try {
       const res = await fetch(`/api/files/info?file=${encodeURIComponent(file)}`);
@@ -49,7 +49,6 @@ export default function FileViewer({ file, onBookmarkChange }) {
   function handleEdit() {
     setEditContent(info.content);
     setEditMode(true);
-    setSaveMessage(null);
   }
 
   function handleCancel() {
@@ -82,7 +81,24 @@ export default function FileViewer({ file, onBookmarkChange }) {
       if (data.error) throw new Error(data.error);
       setInfo(data);
 
-      setSaveMessage(saveData.message);
+      const modified = saveData.modified;
+      toast.custom((t) => {
+        const Icon = modified ? CheckCircleIcon : InformationCircleIcon;
+        return (
+          <div
+            className={`${
+              t.visible ? 'animate-enter' : 'animate-leave'
+            } max-w-sm w-full bg-gray-800 shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
+          >
+            <div className="flex-1 w-0 p-3">
+              <div className="flex items-center">
+                <Icon className={`h-5 w-5 ${modified ? 'text-green-400' : 'text-gray-400'}`} />
+                <p className="ml-2 text-sm font-medium text-gray-200">{modified ? 'Updated' : 'No changes'}</p>
+              </div>
+            </div>
+          </div>
+        );
+      });
       setEditMode(false)
     } catch (err) {
       setError(err.message);
@@ -163,7 +179,6 @@ export default function FileViewer({ file, onBookmarkChange }) {
         editMode={editMode}
         saving={saving}
         bookmarking={bookmarking}
-        saveMessage={saveMessage}
         showFileNameModal={showFileNameModal}
         onShowFileNameModal={setShowFileNameModal}
         onEdit={handleEdit}
