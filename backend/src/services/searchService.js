@@ -2,6 +2,9 @@ const path = require('path');
 const { execFile } = require('child_process');
 const { promisify } = require('util');
 
+// TODO: searching "fzf" finds .aac files by content. It should
+// skip binary files.
+
 const execFileAsync = promisify(execFile);
 
 async function searchFiles(rootDir, query) {
@@ -15,7 +18,7 @@ async function searchFiles(rootDir, query) {
       '!', '-path', '*/.*',
     ], { encoding: 'utf-8', maxBuffer: 10 * 1024 * 1024 });
     files = stdout.trim().split('\n').filter(Boolean).map(f => path.relative(rootDir, f));
-  } catch (_) {}
+  } catch (_) { }
 
   let contentMatches = [];
   try {

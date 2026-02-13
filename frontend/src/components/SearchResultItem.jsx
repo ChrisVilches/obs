@@ -8,7 +8,7 @@ export default function SearchResultItem({ file, selectedFile, onClose }) {
   return (
     <li>
       <Link
-        to={`?file=${encodeURIComponent(file)}`}
+        to={`/file?f=${encodeURIComponent(file)}`}
         onClick={onClose}
         className={`block px-3 py-1.5 transition-colors ${
           file === selectedFile

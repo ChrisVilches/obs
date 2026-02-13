@@ -128,7 +128,7 @@ function TreeNode({ node, depth, selectedFile, onClose, expandedSet, onToggle })
     return (
       <li>
         <Link
-          to={`?file=${encodeURIComponent(node.path)}`}
+          to={`/file?f=${encodeURIComponent(node.path)}`}
           onClick={onClose}
           data-selected={isSelected || undefined}
           className={`block px-3 py-1.5 rounded-md text-sm transition-colors ${isSelected
@@ -222,7 +222,7 @@ function SidemenuSkeleton() {
 export default function Sidemenu({ files, onClose, sidebarOpen, loading, folderName, onBookmarkClick }) {
   const navRef = useRef(null);
   const [searchParams] = useSearchParams();
-  const selectedFile = searchParams.get('file');
+  const selectedFile = searchParams.get('f');
   const [searchOpen, setSearchOpen] = useState(false);
 
   const tree = useMemo(() => buildTree(files), [files]);

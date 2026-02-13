@@ -1,23 +1,21 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, Outlet, useOutletContext } from 'react-router-dom';
 import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/react';
-import { Bars3Icon, BookmarkIcon } from '@heroicons/react/24/outline';
-import FileViewer from '../components/FileViewer';
+import { Bars3Icon } from '@heroicons/react/24/outline';
 import Sidemenu from '../components/Sidemenu';
-import PageHeader from '../components/PageHeader';
-import Button from '../components/Button';
 import Modal from '../components/Modal';
 
-// TODO: Not sure if the scrollbar should be in the div container or
-// in the body, affecting the whole thing.
-// (I'm talking about the scrollbar stylized in this page. Should THAT
-// container be scrollable? or the body?)
-// Remember that on mobile the layout is weird as hell (very buggy)
-// so maybe the bug is caused by some weird layout structure.
+export function useLayoutContext() {
+  return useOutletContext();
+}
 
-// TODO: I don't want to load all bookmarks all the time like this. I think I
-// can avoid doing that.
-export default function Home() {
+// TODO: This looks extremely messy and I need to audit it.
+
+// TODO: I still think it's not necessary to load bookmarks all the time like that.
+
+// TODO: If I remove the need for reloading bookmarks like this, then the context
+//       also becomes unnecessary! I'd need to cleanup a lot of things.
+export default function Layout() {
   const [files, setFiles] = useState([]);
   const [folderName, setFolderName] = useState('');
   const [filesLoading, setFilesLoading] = useState(true);
@@ -32,8 +30,6 @@ export default function Home() {
   });
   const sidebarRef = useRef(null);
   const [isResizing, setIsResizing] = useState(false);
-  const [searchParams] = useSearchParams();
-  const selectedFile = searchParams.get('file');
 
   const MIN_SIDEBAR = 180;
   const MAX_SIDEBAR = 600;
@@ -158,29 +154,13 @@ export default function Home() {
         />
         <Sidemenu files={files} loading={filesLoading} folderName={folderName} onBookmarkClick={openBookmarksModal} />
       </aside>
+
       <main className="flex-1 flex flex-col bg-gray-950">
         <div className="flex-1 overflow-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600">
-          {selectedFile ? (
-            <FileViewer file={selectedFile} onBookmarkChange={reloadBookmarks} />
-          ) : (
-            <div className="min-h-full flex flex-col">
-              <PageHeader
-                title={<h1 className="text-sm font-semibold text-gray-300">Home</h1>}
-                actions={
-                  <Button variant="secondary" icon={<BookmarkIcon className="w-4 h-4" />} onClick={openBookmarksModal}>
-                    Bookmarks
-                  </Button>
-                }
-              />
-              <div className="flex-1 flex items-center justify-center">
-                <p className="text-gray-500">Select a file from the sidebar to view its contents.</p>
-              </div>
-            </div>
-          )}
+          <Outlet context={{ openBookmarksModal, reloadBookmarks }} />
         </div>
       </main>
-      {/* TODO: clicking a bookmark link should close the mobile sidebar if it's open (setSidebarOpen(false)),
-          but it's tricky to wire up because the sidebar state lives here while the modal is its own layer. */}
+
       <Modal open={bookmarksModalOpen} onClose={() => setBookmarksModalOpen(false)} title="Bookmarks" className="h-[70vh] flex flex-col overflow-hidden" childrenClass="flex-1 min-h-0 overflow-y-auto">
         {modalBookmarksLoading ? (
           <p className="text-gray-500">Loading...</p>
@@ -191,7 +171,7 @@ export default function Home() {
             {modalBookmarks.map((item, index) => (
               <li key={index}>
                 <Link
-                  to={`?file=${encodeURIComponent(item.path)}`}
+                  to={`/file?f=${encodeURIComponent(item.path)}`}
                   onClick={() => setBookmarksModalOpen(false)}
                   className="block px-4 py-2 rounded-md text-sm text-indigo-400 hover:bg-gray-800 hover:text-indigo-300 transition-colors"
                 >
