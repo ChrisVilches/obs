@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { EllipsisHorizontalIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import SearchResultItem from './SearchResultItem';
+import FileList from './FileList';
 
 // TODO: Search results need to be deduplicated for the "All" tab.
 
@@ -60,16 +60,11 @@ export default function SearchBar({ onClose, selectedFile, onSearchActive }) {
   const [tab, setTab] = useState('all');
 
   const totalCount = results.files.length + results.contentMatches.length;
-  const hasFilenameResults = results.files.length > 0;
-  const hasContentResults = results.contentMatches.length > 0;
-  const hasAnyResults = hasFilenameResults || hasContentResults;
+  const hasAnyResults = results.files.length > 0 || results.contentMatches.length > 0;
 
-  const showFiles = tab === 'all' || tab === 'files';
-  const showContent = tab === 'all' || tab === 'content';
-
-  const visibleFiles = showFiles ? results.files : [];
-  const visibleContent = showContent ? results.contentMatches : [];
-  const hasVisibleResults = visibleFiles.length > 0 || visibleContent.length > 0;
+  const allItems = [...new Set([...results.files, ...results.contentMatches])].map(p => ({ path: p }));
+  const fileItems = results.files.map(p => ({ path: p }));
+  const contentItems = results.contentMatches.map(p => ({ path: p }));
 
   const tabs = [
     { key: 'all', label: 'All', count: totalCount },
@@ -89,26 +84,30 @@ export default function SearchBar({ onClose, selectedFile, onSearchActive }) {
             placeholder="Search files..."
             className="w-full bg-gray-800 text-gray-200 text-sm rounded-md px-3 py-1.5 pr-8 border border-gray-700 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
           />
-        {query && (
-          loading ? (
-            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center p-1">
-              <EllipsisHorizontalIcon className="animate-spin w-4 h-4 text-gray-400" />
-            </div>
-          ) : (
-            <button
-              onClick={handleClear}
-              aria-label="Clear search"
-              className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center p-1 text-gray-400 hover:text-gray-200 transition-colors"
-            >
-              <XMarkIcon className="w-4 h-4" />
-            </button>
-          )
-        )}
-      </div>
+          {query && (
+            loading ? (
+              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center p-1">
+                <EllipsisHorizontalIcon className="animate-spin w-4 h-4 text-gray-400" />
+              </div>
+            ) : (
+              <button
+                onClick={handleClear}
+                aria-label="Clear search"
+                className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center p-1 text-gray-400 hover:text-gray-200 transition-colors"
+              >
+                <XMarkIcon className="w-4 h-4" />
+              </button>
+            )
+          )}
+        </div>
       </div>
       {debouncedQuery && (
         <div className="border-t border-gray-800 flex flex-col flex-1 min-h-0">
-          {hasAnyResults ? (
+          {loading ? (
+            <div className="overflow-y-auto flex-1 min-h-0">
+              <FileList loading emptyMessage="" />
+            </div>
+          ) : hasAnyResults ? (
             <>
               <div className="shrink-0">
                 <div className="flex border-b border-gray-700">
@@ -127,28 +126,17 @@ export default function SearchBar({ onClose, selectedFile, onSearchActive }) {
                 </div>
               </div>
               <div className="overflow-y-auto flex-1 min-h-0 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600">
-                {showFiles && visibleFiles.length > 0 && (
-                  <div>
-                    <ul>
-                      {visibleFiles.map(file => (
-                        <SearchResultItem key={file} file={file} selectedFile={selectedFile} onClose={onClose} />
-                      ))}
-                    </ul>
-                  </div>
+                {tab === 'all' && (
+                  <FileList items={allItems} onItemClick={onClose} emptyMessage="" />
                 )}
-                {showContent && visibleContent.length > 0 && (
-                  <div className={showFiles && visibleFiles.length > 0 ? 'mt-2' : ''}>
-                    <ul>
-                      {visibleContent.map(file => (
-                        <SearchResultItem key={file} file={file} selectedFile={selectedFile} onClose={onClose} />
-                      ))}
-                    </ul>
-                  </div>
+                {tab === 'files' && (
+                  <FileList items={fileItems} onItemClick={onClose} emptyMessage="No filename matches." />
+                )}
+                {tab === 'content' && (
+                  <FileList items={contentItems} onItemClick={onClose} emptyMessage="No content matches." />
                 )}
               </div>
             </>
-          ) : loading ? (
-            <p className="px-3 py-2 text-sm text-gray-500">Searching...</p>
           ) : (
             <p className="px-3 py-2 text-sm text-gray-500">No files found</p>
           )}
