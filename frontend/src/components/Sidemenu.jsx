@@ -61,6 +61,10 @@ function SidemenuHeader({ folderName, onClose, onSearchClick, onBookmarkClick })
   );
 }
 
+// TODO: (mobile) open, expand tree, close, open again.
+// Expected: nodes should remain expanded
+// Current: tree is resetted.
+
 // TODO: scrollbar is hard to grab because of the resize functionality
 
 // TODO: The API returns only files (flat paths), so folders are derived by
@@ -291,6 +295,8 @@ export default function Sidemenu({ files, onClose, sidebarOpen, loading, folderN
     return () => clearTimeout(id);
   }, [sidebarOpen, selectedFile]);
 
+  // TODO: This is weird. If it's loading, then just replace the filesystem tree. This may
+  // be rendering two different search bars. (and the code is duplicated)
   if (loading) {
     return (
       <div className="flex flex-col flex-1 min-h-0">
