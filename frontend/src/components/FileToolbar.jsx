@@ -4,7 +4,7 @@ import Button from './Button';
 import PageHeader from './PageHeader';
 
 function EditModeButtons({ onSave, onCancel, saving }) {
-  return (<div className="flex items-center space-x-2">
+  return (<div className="flex items-center">
     <Button
       variant="primary"
       icon={saving ? <div className="w-4 h-4 border-2 border-green-300 border-t-transparent rounded-full animate-spin" /> : <CheckIcon className="w-4 h-4" />}
