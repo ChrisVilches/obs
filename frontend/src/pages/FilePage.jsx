@@ -1,10 +1,8 @@
 import { useSearchParams } from 'react-router-dom';
-import { useLayoutContext } from './Layout';
 import FileViewer from '../components/FileViewer';
 
 export default function FilePage() {
   const [searchParams] = useSearchParams();
-  const { reloadBookmarks } = useLayoutContext();
   const file = searchParams.get('f');
 
   if (!file) {
@@ -17,5 +15,5 @@ export default function FilePage() {
     );
   }
 
-  return <FileViewer file={file} onBookmarkChange={reloadBookmarks} />;
+  return <FileViewer file={file} />;
 }
