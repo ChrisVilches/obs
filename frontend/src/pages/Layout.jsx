@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link, Outlet, useOutletContext } from 'react-router-dom';
+import { Outlet, useOutletContext } from 'react-router-dom';
 import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/react';
 import { Bars3Icon } from '@heroicons/react/24/outline';
 import Sidemenu from '../components/Sidemenu';
 import Modal from '../components/Modal';
+import FileList from '../components/FileList';
 
 export function useLayoutContext() {
   return useOutletContext();
@@ -162,25 +163,7 @@ export default function Layout() {
       </main>
 
       <Modal open={bookmarksModalOpen} onClose={() => setBookmarksModalOpen(false)} title="Bookmarks" className="h-[70vh] flex flex-col overflow-hidden" childrenClass="flex-1 min-h-0 overflow-y-auto">
-        {modalBookmarksLoading ? (
-          <p className="text-gray-500">Loading...</p>
-        ) : modalBookmarks.length === 0 ? (
-          <p className="text-gray-500">No bookmarks found.</p>
-        ) : (
-          <ul className="space-y-2">
-            {modalBookmarks.map((item, index) => (
-              <li key={index}>
-                <Link
-                  to={`/file?f=${encodeURIComponent(item.path)}`}
-                  onClick={() => setBookmarksModalOpen(false)}
-                  className="block px-4 py-2 rounded-md text-sm text-indigo-400 hover:bg-gray-800 hover:text-indigo-300 transition-colors"
-                >
-                  {item.path}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
+        <FileList items={modalBookmarks} loading={modalBookmarksLoading} emptyMessage="No bookmarks found." onItemClick={() => setBookmarksModalOpen(false)} />
       </Modal>
     </div>
   );
