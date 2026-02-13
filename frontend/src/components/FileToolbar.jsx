@@ -1,6 +1,7 @@
 import { PencilIcon, BookmarkIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import FileNameDisplay from './FileNameDisplay';
 import Button from './Button';
+import PageHeader from './PageHeader';
 
 function EditModeButtons({ onSave, onCancel, saving }) {
   return (<div className="flex items-center space-x-2">
@@ -69,8 +70,8 @@ export default function FileToolbar({
   const canBeEdited = info?.type === 'text' || info?.type === 'markdown';
 
   return (
-    <div className="sticky top-0 z-10 flex items-center px-4 h-14 border-b border-gray-800 bg-gray-900 shrink-0 pl-12 md:pl-4">
-      <div className="flex-1 flex justify-center md:justify-start min-w-0">
+    <PageHeader
+      title={
         <FileNameDisplay
           file={file}
           info={info}
@@ -78,8 +79,8 @@ export default function FileToolbar({
           onShowFileNameModal={onShowFileNameModal}
           saveMessage={saveMessage}
         />
-      </div>
-      <div className="flex items-center">
+      }
+      actions={
         <div className="flex items-center space-x-2">
           {loading ? (
             <div className="w-5 h-5 border-2 border-gray-600 border-t-transparent rounded-full animate-spin" />
@@ -99,8 +100,7 @@ export default function FileToolbar({
             )
           )}
         </div>
-
-      </div>
-    </div >
+      }
+    />
   );
 }
