@@ -5,7 +5,7 @@ import FileNameDisplay from './FileNameDisplay';
 import Button from './Button';
 
 function EditModeButtons({ onSave, onCancel, saving }) {
-  return (<div className="flex items-center">
+  return (<>
     <Button
       variant="primary"
       icon={saving ? <div className="w-4 h-4 border-2 border-green-300 border-t-transparent rounded-full animate-spin" /> : <CheckIcon className="w-4 h-4" />}
@@ -22,7 +22,7 @@ function EditModeButtons({ onSave, onCancel, saving }) {
     >
       Cancel
     </Button>
-  </div>)
+  </>)
 }
 
 function ButtonsWhenFileExists({ onToggleBookmark, canBeEdited, isBookmarked, onEdit, bookmarking }) {
@@ -105,7 +105,7 @@ export default function FileToolbar({
 
     // return () => setHeaderContent({ title: 'Default', extra: null });
     // TODO: and maybe other dependencies too
-  }, [file, canBeEdited, loading]);
+  }, [file, canBeEdited, loading, editMode]);
 
 
   // TODO: Instead of rendering null, we can put all this logic in the component that USES this component,
