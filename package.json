@@ -9,8 +9,5 @@
   },
   "devDependencies": {
     "concurrently": "^9.2.1"
-  },
-  "dependencies": {
-    "zod-validation-error": "^5.0.0"
   }
 }
