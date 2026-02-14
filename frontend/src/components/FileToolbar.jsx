@@ -105,7 +105,7 @@ export default function FileToolbar({
 
     // return () => setHeaderContent({ title: 'Default', extra: null });
     // TODO: and maybe other dependencies too
-  }, [file, canBeEdited, loading, editMode]);
+  }, [file, canBeEdited, loading, editMode, saving, bookmarking, info]);
 
 
   // TODO: Instead of rendering null, we can put all this logic in the component that USES this component,

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { CheckCircleIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
 import ErrorDisplay from './ErrorDisplay';
@@ -19,7 +19,8 @@ export default function FileViewer({ file }) {
   const [editMode, setEditMode] = useState(false);
   const [saving, setSaving] = useState(false);
   const [bookmarking, setBookmarking] = useState(false);
-  const [editContent, setEditContent] = useState('');
+  // const [editContent, setEditContent] = useState('');
+  const fileContentRef = useRef(null)
   const [showFileNameModal, setShowFileNameModal] = useState(false);
   const [showConflictModal, setShowConflictModal] = useState(false);
 
@@ -47,9 +48,19 @@ export default function FileViewer({ file }) {
   }, [file]);
 
   function handleEdit() {
-    setEditContent(info.content);
     setEditMode(true);
   }
+
+  useEffect(() => {
+    if (!fileContentRef.current || !editMode) return
+    fileContentRef.current.value = info.content;
+
+    // Automatically focus on the first character.
+    fileContentRef.current.focus();
+    fileContentRef.current.setSelectionRange(0, 0);
+    fileContentRef.current.scrollTop = 0;
+
+  }, [editMode]);
 
   function handleCancel() {
     setEditMode(false);
@@ -62,7 +73,7 @@ export default function FileViewer({ file }) {
       const saveRes = await fetch('/api/files/content', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ file, content: editContent, mtime: info.mtime, force }),
+        body: JSON.stringify({ file, content: fileContentRef.current.value, mtime: info.mtime, force }),
       });
 
       const saveData = await saveRes.json();
@@ -183,8 +194,7 @@ export default function FileViewer({ file }) {
       />
       {editMode ? (
         <textarea
-          value={editContent}
-          onChange={(e) => setEditContent(e.target.value)}
+          ref={fileContentRef}
           onKeyDown={(e) => {
             if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
               e.preventDefault();
