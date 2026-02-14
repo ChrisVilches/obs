@@ -32,6 +32,7 @@ export default function Layout() {
   });
   const sidebarRef = useRef(null);
   const [isResizing, setIsResizing] = useState(false);
+  const [layoutTopContent, setLayoutTopContent] = useState({ title: 'Default', extra: null });
 
   const MIN_SIDEBAR = 180;
   const MAX_SIDEBAR = 600;
@@ -101,13 +102,7 @@ export default function Layout() {
 
   return (
     <div className="flex h-screen bg-gray-950">
-      <button
-        onClick={() => setSidebarOpen(true)}
-        className="fixed top-0 left-0 z-50 md:hidden w-12 h-14 flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
-        aria-label="Open sidebar"
-      >
-        <Bars3Icon className="w-5 h-5" />
-      </button>
+
 
       <Transition show={sidebarOpen}>
         <Dialog onClose={setSidebarOpen} className="relative z-50 md:hidden">
@@ -151,9 +146,27 @@ export default function Layout() {
         <Sidemenu files={files} loading={filesLoading} folderName={folderName} onBookmarkClick={openBookmarksModal} onSearchClick={openSearchModal} />
       </aside>
 
+      <div className="sticky top-0 z-10 flex items-center gap-3 px-4 h-14 border-b border-gray-800 bg-gray-900 shrink-0 pl-12 md:pl-4">
+        <button
+          onClick={() => setSidebarOpen(true)}
+          className="md:hidden top-0 left-0 z-50 w-12 h-14 flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
+          aria-label="Open sidebar"
+        >
+          <Bars3Icon className="w-5 h-5" />
+        </button>
+        <div className="flex-1 flex justify-center md:justify-start min-w-0">
+          {layoutTopContent.title}
+        </div>
+        {layoutTopContent.extra && (
+          <div className="flex items-center flex-shrink-0">
+            {layoutTopContent.extra}
+          </div>
+        )}
+      </div>
+
       <main className="flex-1 flex flex-col bg-gray-950 min-w-0">
         <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600">
-          <Outlet />
+          <Outlet context={{ setLayoutTopContent }} />
         </div>
       </main>
 

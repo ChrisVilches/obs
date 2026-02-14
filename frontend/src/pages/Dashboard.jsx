@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import PageHeader from '../components/PageHeader';
+import { useOutletContext } from 'react-router-dom';
 import FileList from '../components/FileList';
 
 export default function Dashboard() {
@@ -7,9 +7,19 @@ export default function Dashboard() {
   const [recentLoading, setRecentLoading] = useState(true);
   const [bookmarks, setBookmarks] = useState([]);
   const [bookmarksLoading, setBookmarksLoading] = useState(true);
+  const { setLayoutTopContent } = useOutletContext();
 
   const [, setTick] = useState(0);
   const intervalRef = useRef(null);
+
+  useEffect(() => {
+    console.log("dashboard init")
+    setLayoutTopContent({
+      title: <h1 className="text-sm font-semibold text-gray-300">Dashboard</h1>
+    });
+
+    // return () => setHeaderContent({ title: 'Default', extra: null });
+  }, []);
 
   useEffect(() => {
     fetch('/api/files/recent?n=10')
@@ -38,9 +48,6 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-full flex flex-col">
-      <PageHeader
-        title={<h1 className="text-sm font-semibold text-gray-300">Dashboard</h1>}
-      />
       <div className="flex-1 overflow-y-auto p-6 space-y-8">
         <section>
           <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Recently Modified</h2>
