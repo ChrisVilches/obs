@@ -68,10 +68,8 @@ export default function Layout() {
   const [searchParams] = useSearchParams();
   const selectedFile = searchParams.get('f');
 
-  function openSearchModal() {
-    setSearchModalOpen(true);
-  }
-
+  // TODO: Maybe extract into a hook file.
+  // (same for other big hooks that are generic enough to be extracted).
   useEffect(() => {
     if (!isResizing) return;
     function onMouseMove(e) {
@@ -126,7 +124,7 @@ export default function Layout() {
               leaveTo="-translate-x-full"
             >
               <DialogPanel className="w-72 h-full bg-gray-900 border-r border-gray-800 flex flex-col">
-                <Sidemenu files={files} loading={filesLoading} onClose={() => setSidebarOpen(false)} sidebarOpen={sidebarOpen} folderName={folderName} onBookmarkClick={() => { setSidebarOpen(false); openBookmarksModal(); }} onSearchClick={() => { setSidebarOpen(false); openSearchModal(); }} />
+                <Sidemenu files={files} loading={filesLoading} onClose={() => setSidebarOpen(false)} sidebarOpen={sidebarOpen} folderName={folderName} onBookmarkClick={() => { setSidebarOpen(false); openBookmarksModal(); }} onSearchClick={() => { setSidebarOpen(false); setSearchModalOpen(true); }} />
               </DialogPanel>
             </TransitionChild>
           </div>
@@ -143,7 +141,7 @@ export default function Layout() {
           }}
           className="absolute right-0 top-0 bottom-0 w-1.5 cursor-col-resize hover:bg-indigo-500/50 active:bg-indigo-500/70 z-10 shrink-0"
         />
-        <Sidemenu files={files} loading={filesLoading} folderName={folderName} onBookmarkClick={openBookmarksModal} onSearchClick={openSearchModal} />
+        <Sidemenu files={files} loading={filesLoading} folderName={folderName} onBookmarkClick={openBookmarksModal} onSearchClick={() => setSearchModalOpen(true)} />
       </aside>
 
       <div className="flex flex-col flex-1 min-w-0">
