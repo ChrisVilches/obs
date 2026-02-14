@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { PencilIcon, BookmarkIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import FileNameDisplay from './FileNameDisplay';
-import Button from './Button';
+import FileNameDisplay from '../components/FileNameDisplay';
+import Button from '../components/Button';
 
 function EditModeButtons({ onSave, onCancel, saving }) {
   return (<>
