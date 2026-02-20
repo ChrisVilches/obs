@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { EllipsisHorizontalIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import FileList from './FileList';
 
@@ -8,6 +8,12 @@ import FileList from './FileList';
 // file with the same name (test_db_dump) and it didn't find it (by content).
 
 export default function SearchBar({ onClose, selectedFile, onSearchActive }) {
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [results, setResults] = useState({ files: [], contentMatches: [] });
@@ -77,7 +83,7 @@ export default function SearchBar({ onClose, selectedFile, onSearchActive }) {
       <div className="shrink-0">
         <div className="relative mb-2">
           <input
-            autoFocus
+            ref={inputRef}
             type="text"
             value={query}
             onChange={e => setQuery(e.target.value)}
