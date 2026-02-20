@@ -18,7 +18,9 @@ async function searchFiles(rootDir, query) {
       '!', '-path', '*/.*',
     ], { encoding: 'utf-8', maxBuffer: 10 * 1024 * 1024 });
     files = stdout.trim().split('\n').filter(Boolean).map(f => path.relative(rootDir, f));
-  } catch (_) { }
+  } catch (e) {
+    console.error(e)
+  }
 
   let contentMatches = [];
   try {
