@@ -100,36 +100,14 @@ export default function Layout() {
 
   return (
     <div className="flex h-screen bg-gray-950">
-
-
-      <Transition show={sidebarOpen}>
-        <Dialog onClose={setSidebarOpen} className="relative z-50 md:hidden">
-          <TransitionChild
-            enter="transition-opacity duration-300"
-            enterFrom="opacity-0"
-            enterTo="opacity-100"
-            leave="transition-opacity duration-200"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
-          >
-            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
-          </TransitionChild>
-          <div className="fixed inset-0 flex">
-            <TransitionChild
-              enter="transition-transform duration-300"
-              enterFrom="-translate-x-full"
-              enterTo="translate-x-0"
-              leave="transition-transform duration-200"
-              leaveFrom="translate-x-0"
-              leaveTo="-translate-x-full"
-            >
-              <DialogPanel className="w-72 h-full bg-gray-900 border-r border-gray-800 flex flex-col">
-                <Sidemenu files={files} loading={filesLoading} onClose={() => setSidebarOpen(false)} sidebarOpen={sidebarOpen} folderName={folderName} onBookmarkClick={() => { setSidebarOpen(false); openBookmarksModal(); }} onSearchClick={() => { setSidebarOpen(false); setSearchModalOpen(true); }} />
-              </DialogPanel>
-            </TransitionChild>
-          </div>
-        </Dialog>
-      </Transition>
+      <Dialog open={sidebarOpen} onClose={setSidebarOpen} className="relative z-50 md:hidden">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
+        <div className="fixed inset-0 flex">
+          <DialogPanel className="w-72 h-full bg-gray-900 border-r border-gray-800 flex flex-col">
+            <Sidemenu files={files} loading={filesLoading} onClose={() => setSidebarOpen(false)} sidebarOpen={sidebarOpen} folderName={folderName} onBookmarkClick={() => { setSidebarOpen(false); openBookmarksModal(); }} onSearchClick={() => { setSidebarOpen(false); setSearchModalOpen(true); }} />
+          </DialogPanel>
+        </div>
+      </Dialog>
 
       <aside ref={sidebarRef} className="hidden md:flex flex-shrink-0 bg-gray-900 border-r border-gray-800 flex-col relative overflow-hidden" style={{ width: sidebarWidth }}>
         <div
