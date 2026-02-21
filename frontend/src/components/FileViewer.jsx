@@ -65,7 +65,6 @@ export default function FileViewer({ file }) {
     setSaving(true);
     if (force) setShowConflictModal(false);
     try {
-      console.log({ file, content: fileContentRef.current.value, mtime: info.mtime, force })
       const saveRes = await fetch('/api/files/content', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },

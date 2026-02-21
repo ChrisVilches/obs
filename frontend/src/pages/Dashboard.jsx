@@ -13,12 +13,9 @@ export default function Dashboard() {
   const intervalRef = useRef(null);
 
   useEffect(() => {
-    console.log("dashboard init")
     setLayoutTopContent({
       title: <h1 className="text-sm font-semibold text-gray-300">Dashboard</h1>
     });
-
-    // return () => setHeaderContent({ title: 'Default', extra: null });
   }, []);
 
   useEffect(() => {
