@@ -2,9 +2,6 @@ const path = require('path');
 const { execFile } = require('child_process');
 const { promisify } = require('util');
 
-// TODO: searching "fzf" finds .aac files by content. It should
-// skip binary files.
-
 const execFileAsync = promisify(execFile);
 
 // TODO: Searching by content isn't working in production I think.

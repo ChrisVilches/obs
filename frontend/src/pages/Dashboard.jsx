@@ -31,6 +31,7 @@ export default function Dashboard() {
       .catch(() => setRecentLoading(false));
   }, []);
 
+  // TODO: doesn't handle 4xx errors, etc.
   useEffect(() => {
     fetch('/api/bookmarks')
       .then(res => res.json())
