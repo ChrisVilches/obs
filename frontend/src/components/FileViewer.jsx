@@ -140,43 +140,31 @@ export default function FileViewer({ file }) {
     }
   }, [file, info]);
 
-  // TODO: This code is trash. Should be more compact.
-  let toolbarConfig = {}
+  const isLoading = !info && !error;
 
-  if (error) {
-    toolbarConfig = {
-      file,
-      showFileNameModal,
-      onShowFileNameModal: setShowFileNameModal
-    }
-  } else if (!info) {
-    toolbarConfig = {
-      file,
-      loading: true,
-      showFileNameModal,
-      onShowFileNameModal: setShowFileNameModal
-    }
-  } else {
-    toolbarConfig = {
-      file,
-      info,
-      editMode,
-      saving,
-      bookmarking,
-      showFileNameModal,
-      onShowFileNameModal: setShowFileNameModal,
-      onEdit: handleEdit,
-      onCancel: handleCancel,
-      onSave: handleTrySave,
-      onToggleBookmark: handleToggleBookmark
-    }
-  }
+  useFileToolbar({
+    file,
+    loading: isLoading,
+    info,
+    editMode,
+    saving,
+    bookmarking,
+    showFileNameModal,
+    onShowFileNameModal: setShowFileNameModal,
+    onEdit: handleEdit,
+    onCancel: handleCancel,
+    onSave: handleTrySave,
+    onToggleBookmark: handleToggleBookmark
+  })
 
-
-  useFileToolbar(toolbarConfig)
-
-  if (error) return <ErrorDisplay message={error} file={file} />;
-  if (!info) {
+  if (error) return (
+    <div className="min-h-full flex flex-col">
+      <div className="flex-1 flex items-center justify-center">
+        <ErrorDisplay message={error} file={file} />
+      </div>
+    </div>
+  );
+  if (isLoading) {
     return (
       <div className="min-h-full flex flex-col">
         <div className="flex-1 flex items-center justify-center">

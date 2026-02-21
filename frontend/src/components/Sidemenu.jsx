@@ -63,8 +63,6 @@ function SidemenuHeader({ folderName, onClose, onSearchClick, onBookmarkClick })
 // Expected: nodes should remain expanded
 // Current: tree is resetted.
 
-// TODO: scrollbar is hard to grab because of the resize functionality
-
 // TODO: There are two effects to scroll, however I'm under the impression that they both
 // execute for both sidebars (desktop and mobile), since there's no way to distinguish.
 // I should audit this code more and improve it.
