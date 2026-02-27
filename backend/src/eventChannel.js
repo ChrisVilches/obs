@@ -25,6 +25,18 @@ function createFileWriter(filePath) {
     // TODO: do something with the error
   }
 
+  // Fail immediately if the target exists as a directory (e.g. Docker bind
+  // mount of a non-existent file creates one). User must fix the setup.
+  try {
+    const stat = fs.statSync(filePath);
+    if (stat.isDirectory()) {
+      console.error(`[event-channel] cannot open "${filePath}": path is a directory, expected a regular file or FIFO`);
+      process.exit(1);
+    }
+  } catch {
+    // Path does not exist yet — will be created by createWriteStream
+  }
+
   let stream = null;
   let opening = false;
   let queue = [];
@@ -56,6 +68,12 @@ function createFileWriter(filePath) {
     s.on('error', (err) => {
       opening = false;
       stream = null;
+
+      if (err.code === 'EISDIR') {
+        console.error(`[event-channel] cannot open "${filePath}": path is a directory, expected a regular file or FIFO`);
+        process.exit(1);
+        return;
+      }
 
       // Avoid crashing app because of event transport
       console.error('[event-channel]', err.message);
