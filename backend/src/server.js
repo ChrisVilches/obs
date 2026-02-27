@@ -3,6 +3,7 @@ const express = require('express');
 const { listFiles, getRecentFiles, getFileInfo, writeFileContent, resolveRawPath, VersionConflictError, FileAccessDeniedError } = require('./services/fileService');
 const { getBookmarks, addBookmark, removeBookmark } = require('./services/bookmarkService');
 const { searchFiles } = require('./services/searchService');
+const { getStatus } = require('./services/statusService');
 const { z } = require('zod');
 const { fromError, createErrorMap } = require('zod-validation-error');
 const initApp = require('./initApp');
@@ -97,6 +98,10 @@ app.get('/api/files/raw', (req, res) => {
     res.attachment(path.basename(file));
   }
   res.sendFile(fullPath);
+});
+
+app.get('/api', (req, res) => {
+  res.json(getStatus());
 });
 
 app.use(express.static(path.join(__dirname, '..', '..', 'frontend', 'dist')));

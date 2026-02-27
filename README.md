@@ -11,6 +11,9 @@
 
 No runtime dependencies. The frontend is compiled to static files and served by the backend.
 
+TODO: Explain how to deploy the frontend and backend individually so that the
+web server (Apache, Nginx) renders static files instead of Node.
+
 ## Deployment
 
 ### Build the Docker image
