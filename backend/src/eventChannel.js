@@ -5,6 +5,8 @@ const channelConfig = process.env.EVENT_CHANNEL;
 
 let writeFn = null;
 let cleanupFn = null;
+const recentEvents = [];
+const MAX_RECENT_EVENTS = 5;
 
 function noop() { }
 
@@ -138,6 +140,11 @@ if (!channelConfig) {
 }
 
 function emit(event) {
+  recentEvents.push(event);
+  if (recentEvents.length > MAX_RECENT_EVENTS) {
+    recentEvents.shift();
+  }
+
   if (!writeFn) return;
 
   try {
@@ -146,6 +153,10 @@ function emit(event) {
     // Never let event emission crash the app
     console.error('[event-channel emit]', err.message);
   }
+}
+
+function getRecentEvents() {
+  return recentEvents;
 }
 
 function shutdown() {
@@ -165,4 +176,4 @@ process.on('SIGTERM', () => {
   process.exit(0);
 });
 
-module.exports = { emit };
+module.exports = { emit, getRecentEvents };

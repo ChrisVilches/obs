@@ -1,4 +1,5 @@
 const { execSync } = require('child_process');
+const { getRecentEvents } = require('../eventChannel');
 
 function getStatus() {
   let grepOk = false, findOk = false;
@@ -16,6 +17,7 @@ function getStatus() {
       grep: grepOk,
       find: findOk,
     },
+    recentEvents: getRecentEvents(),
   };
 }
 
