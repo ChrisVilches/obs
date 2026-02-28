@@ -1,6 +1,7 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import FileList from '../components/FileList';
+import useInterval from '../hooks/useInterval';
 
 export default function Dashboard() {
   const [recent, setRecent] = useState([]);
@@ -10,7 +11,8 @@ export default function Dashboard() {
   const { setLayoutTopContent } = useOutletContext();
 
   const [, setTick] = useState(0);
-  const intervalRef = useRef(null);
+
+  useInterval(() => setTick(t => t + 1), 60000);
 
   useEffect(() => {
     setLayoutTopContent({
@@ -37,11 +39,6 @@ export default function Dashboard() {
         setBookmarksLoading(false);
       })
       .catch(() => setBookmarksLoading(false));
-  }, []);
-
-  useEffect(() => {
-    intervalRef.current = setInterval(() => setTick(t => t + 1), 60000);
-    return () => clearInterval(intervalRef.current);
   }, []);
 
   return (

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet, useSearchParams } from 'react-router-dom';
 import { Dialog, DialogPanel } from '@headlessui/react';
 import { Bars3Icon } from '@heroicons/react/24/outline';
@@ -6,8 +6,7 @@ import Sidemenu from '../components/Sidemenu';
 import Modal from '../components/Modal';
 import FileList from '../components/FileList';
 import SearchBar from '../components/SearchBar';
-
-// TODO: This looks extremely messy and I need to audit it.
+import useResizable from '../hooks/useResizable';
 
 export default function Layout() {
   const [files, setFiles] = useState([]);
@@ -19,16 +18,13 @@ export default function Layout() {
   const [modalBookmarksLoading, setModalBookmarksLoading] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarWidth, setSidebarWidth] = useState(() => {
-    const saved = localStorage.getItem('sidebarWidth');
-    return saved ? parseInt(saved, 10) : 288;
+  const { ref: sidebarRef, size: sidebarWidth, onHandleMouseDown } = useResizable({
+    defaultValue: 288,
+    min: 180,
+    max: 600,
+    storageKey: 'sidebarWidth',
   });
-  const sidebarRef = useRef(null);
-  const [isResizing, setIsResizing] = useState(false);
   const [layoutTopContent, setLayoutTopContent] = useState({ title: '', extra: null });
-
-  const MIN_SIDEBAR = 180;
-  const MAX_SIDEBAR = 600;
 
   useEffect(() => {
     fetch('/api/files')
@@ -61,34 +57,6 @@ export default function Layout() {
   const [searchParams] = useSearchParams();
   const selectedFile = searchParams.get('f');
 
-  // TODO: Maybe extract into a hook file.
-  // (same for other big hooks that are generic enough to be extracted).
-  useEffect(() => {
-    if (!isResizing) return;
-    function onMouseMove(e) {
-      if (!sidebarRef.current) return;
-      const newWidth = Math.max(MIN_SIDEBAR, Math.min(MAX_SIDEBAR, e.clientX));
-      sidebarRef.current.style.width = `${newWidth}px`;
-    }
-    function onMouseUp(e) {
-      if (!sidebarRef.current) return;
-      const finalWidth = Math.max(MIN_SIDEBAR, Math.min(MAX_SIDEBAR, e.clientX));
-      setSidebarWidth(finalWidth);
-      localStorage.setItem('sidebarWidth', finalWidth);
-      setIsResizing(false);
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
-      document.body.style.cursor = '';
-      document.body.style.userSelect = '';
-    }
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);
-    return () => {
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
-    };
-  }, [isResizing]);
-
   if (error) return <div className="p-4 text-red-400">Error: {error}</div>;
 
   return (
@@ -104,12 +72,7 @@ export default function Layout() {
 
       <aside ref={sidebarRef} className="hidden md:flex flex-shrink-0 bg-gray-900 border-r border-gray-800 flex-col relative" style={{ width: sidebarWidth }}>
         <div
-          onMouseDown={(e) => {
-            e.preventDefault();
-            setIsResizing(true);
-            document.body.style.cursor = 'col-resize';
-            document.body.style.userSelect = 'none';
-          }}
+          onMouseDown={onHandleMouseDown}
           className="absolute right-[-4px] top-0 bottom-0 w-1 cursor-col-resize hover:bg-indigo-500/50 active:bg-indigo-500/70 z-10 shrink-0"
         />
         <Sidemenu files={files} loading={filesLoading} folderName={folderName} onBookmarkClick={openBookmarksModal} onSearchClick={() => setSearchModalOpen(true)} />

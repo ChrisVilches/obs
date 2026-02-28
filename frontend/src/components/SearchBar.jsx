@@ -1,35 +1,17 @@
 import { useState, useEffect, useRef } from 'react';
 import { EllipsisHorizontalIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import FileList from './FileList';
+import useDebounce from '../hooks/useDebounce';
+import useAutoFocus from '../hooks/useAutoFocus';
 
 export default function SearchBar({ onClose, onSearchActive }) {
   const inputRef = useRef(null);
-
-  // NOTE: Unfortunately, this hack is necessary for mobile. It works without
-  // it on desktop but not on mobile.
-  useEffect(() => {
-    inputRef.current?.focus();
-    const id = setTimeout(() => {
-      inputRef.current?.focus();
-    }, 200);
-    return () => clearTimeout(id);
-  }, []);
+  useAutoFocus(inputRef, { delay: 200 });
 
   const [query, setQuery] = useState('');
-  const [debouncedQuery, setDebouncedQuery] = useState('');
+  const debouncedQuery = useDebounce(query, 150);
   const [results, setResults] = useState({ files: [], contentMatches: [] });
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (query === '') {
-      setDebouncedQuery('');
-    } else {
-      const timer = setTimeout(() => {
-        setDebouncedQuery(query);
-      }, 150);
-      return () => clearTimeout(timer);
-    }
-  }, [query]);
 
   useEffect(() => {
     onSearchActive?.(debouncedQuery.length > 0);
@@ -60,7 +42,6 @@ export default function SearchBar({ onClose, onSearchActive }) {
 
   function handleClear() {
     setQuery('');
-    setDebouncedQuery('');
     setResults({ files: [], contentMatches: [] });
   }
 
