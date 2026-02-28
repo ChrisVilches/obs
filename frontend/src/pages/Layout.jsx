@@ -4,6 +4,7 @@ import { Dialog, DialogPanel } from '@headlessui/react';
 import { Bars3Icon } from '@heroicons/react/24/outline';
 import useSWR from 'swr';
 import { useSWRConfig } from 'swr';
+import { fetcher } from '../utils/fetcher';
 import Sidemenu from '../components/Sidemenu';
 import Modal from '../components/Modal';
 import FileList from '../components/FileList';
@@ -32,7 +33,7 @@ export default function Layout() {
     setBookmarksModalOpen(true);
     setModalBookmarksLoading(true);
     try {
-      const data = await mutate('/api/bookmarks');
+      const data = await mutate('/api/bookmarks', fetcher('/api/bookmarks'));
       setModalBookmarks(data?.items || []);
     } catch {
       // silently handled
