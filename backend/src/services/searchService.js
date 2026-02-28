@@ -4,7 +4,6 @@ const { promisify } = require('util');
 
 const execFileAsync = promisify(execFile);
 
-// TODO: Searching by content isn't working in production I think.
 async function searchFiles(rootDir, query) {
   let files = [];
   try {
