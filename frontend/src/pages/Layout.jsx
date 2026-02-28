@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Outlet, useSearchParams } from 'react-router-dom';
 import { Dialog, DialogPanel } from '@headlessui/react';
 import { Bars3Icon } from '@heroicons/react/24/outline';
+import useSWR from 'swr';
+import { useSWRConfig } from 'swr';
 import Sidemenu from '../components/Sidemenu';
 import Modal from '../components/Modal';
 import FileList from '../components/FileList';
@@ -9,10 +11,10 @@ import SearchBar from '../components/SearchBar';
 import useResizable from '../hooks/useResizable';
 
 export default function Layout() {
-  const [files, setFiles] = useState([]);
-  const [folderName, setFolderName] = useState('');
-  const [filesLoading, setFilesLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { mutate } = useSWRConfig();
+  const { data: filesData, isLoading: filesLoading, error: filesError } = useSWR('/api/files');
+  const files = filesData?.files || [];
+  const folderName = filesData?.folderName || '';
   const [bookmarksModalOpen, setBookmarksModalOpen] = useState(false);
   const [modalBookmarks, setModalBookmarks] = useState([]);
   const [modalBookmarksLoading, setModalBookmarksLoading] = useState(false);
@@ -26,38 +28,23 @@ export default function Layout() {
   });
   const [layoutTopContent, setLayoutTopContent] = useState({ title: '', extra: null });
 
-  useEffect(() => {
-    fetch('/api/files')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.error) throw new Error(data.error);
-        setFiles(data.files);
-        setFolderName(data.folderName);
-        setFilesLoading(false);
-      })
-      .catch((err) => {
-        setError(err.message);
-        setFilesLoading(false);
-      });
-  }, []);
-
-  function openBookmarksModal() {
+  async function openBookmarksModal() {
     setBookmarksModalOpen(true);
     setModalBookmarksLoading(true);
-    fetch('/api/bookmarks')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.error) throw new Error(data.error);
-        setModalBookmarks(data.items || []);
-      })
-      .catch((err) => setError(err.message))
-      .finally(() => setModalBookmarksLoading(false));
+    try {
+      const data = await mutate('/api/bookmarks');
+      setModalBookmarks(data?.items || []);
+    } catch {
+      // silently handled
+    } finally {
+      setModalBookmarksLoading(false);
+    }
   }
 
   const [searchParams] = useSearchParams();
   const selectedFile = searchParams.get('f');
 
-  if (error) return <div className="p-4 text-red-400">Error: {error}</div>;
+  if (filesError) return <div className="p-4 text-red-400">Error: {filesError.message}</div>;
 
   return (
     <div className="flex h-screen bg-gray-950">
