@@ -76,7 +76,7 @@ export default function FileViewer({ file }) {
     try {
       const saveData = await fetcher('/api/files/content', {
         method: 'PUT',
-        body: JSON.stringify({ file, content: fileContentRef.current.value, mtime: info.mtime, force }),
+        body: { file, content: fileContentRef.current.value, mtime: info.mtime, force },
       });
 
       await mutate(infoKey);
@@ -103,7 +103,7 @@ export default function FileViewer({ file }) {
     try {
       const data = await fetcher('/api/bookmarks', {
         method: info.isBookmarked ? 'DELETE' : 'POST',
-        body: JSON.stringify({ path: file }),
+        body: { path: file },
       });
 
       mutate(infoKey, { ...info, isBookmarked: data.isBookmarked }, { revalidate: false });
