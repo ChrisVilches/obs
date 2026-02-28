@@ -2,9 +2,9 @@ const { execSync } = require('child_process');
 const { getRecentEvents } = require('../eventChannel');
 
 function getStatus() {
-  let grepOk = false, findOk = false;
+  let rgOk = false, findOk = false;
   try {
-    grepOk = execSync('grep --version', { encoding: 'utf8' }).includes('GNU');
+    rgOk = execSync('rg --version', { encoding: 'utf8' }).includes('ripgrep');
   } catch {}
   try {
     findOk = execSync('find --version', { encoding: 'utf8' }).includes('GNU');
@@ -14,7 +14,7 @@ function getStatus() {
     env: process.env.NODE_ENV || null,
     nodeVersion: process.version,
     dependencies: {
-      grep: grepOk,
+      rg: rgOk,
       find: findOk,
     },
     recentEvents: getRecentEvents(),

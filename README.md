@@ -3,7 +3,7 @@
 ### Backend (Node.js server)
 
 - **Node.js** v24.16.0 — runtime
-- **GNU grep** — required for certain backend operations (e.g., searching file contents)
+- **ripgrep (rg)** — required for certain backend operations (e.g., searching file contents)
 - **GNU find (findutils)** — required for listing recently modified files
 - Packages installed via `npm` (see `backend/package.json`)
 

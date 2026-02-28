@@ -27,7 +27,7 @@ RUN npm run build
 # STAGE 2: Production Runtime (Lean & Clean)
 # ==========================================
 FROM node:22-alpine
-RUN apk add --no-cache grep findutils
+RUN apk add --no-cache ripgrep findutils
 WORKDIR /app
 
 # Copy root package files needed for 'npm run start'
