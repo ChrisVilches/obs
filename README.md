@@ -11,8 +11,24 @@
 
 No runtime dependencies. The frontend is compiled to static files and served by the backend.
 
-TODO: Explain how to deploy the frontend and backend individually so that the
-web server (Apache, Nginx) renders static files instead of Node.
+### Serving static files with Nginx
+
+After running `npm run build`, the `frontend/dist/` directory contains the compiled React SPA. Point Nginx's `root` there and proxy `/api` to the Node backend:
+
+```nginx
+server {
+    listen 80;
+    server_name example.com;
+    root /path/to/frontend/dist;
+    try_files $uri /index.html;
+
+    location /api {
+        proxy_pass http://127.0.0.1:5000;
+    }
+}
+```
+
+The backend also serves the frontend when you run it directly (via `npm run start`), so both deployment styles are supported — Nginx for production serving, Node for development or simpler setups.
 
 ## Deployment
 
