@@ -1,4 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
+import useSWR from 'swr';
+import { useSWRConfig } from 'swr';
 import toast from 'react-hot-toast';
 import { CheckCircleIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
 import ErrorDisplay from './ErrorDisplay';
@@ -14,37 +16,23 @@ import BinaryFileViewer from './viewers/BinaryFileViewer';
 // TODO: when and why is "file" null? I want to make it strictly required
 // (and validate the parent).
 export default function FileViewer({ file }) {
-  const [info, setInfo] = useState(null);
-  const [error, setError] = useState(null);
+  const { mutate } = useSWRConfig();
+  const infoKey = `/api/files/info?file=${encodeURIComponent(file)}`;
+  const { data: info, isLoading, error } = useSWR(infoKey);
   const [editMode, setEditMode] = useState(false);
   const [saving, setSaving] = useState(false);
   const [bookmarking, setBookmarking] = useState(false);
-  // const [editContent, setEditContent] = useState('');
-  const fileContentRef = useRef(null)
+  const [errorMessage, setErrorMessage] = useState(null);
+  const fileContentRef = useRef(null);
   const [showFileNameModal, setShowFileNameModal] = useState(false);
   const [showConflictModal, setShowConflictModal] = useState(false);
 
   // TODO: remove this later
   if (!file) throw new Error("fatal. File is null")
 
-  async function loadFile() {
-    setInfo(null);
-    setError(null);
-    setEditMode(false);
-
-    try {
-      const res = await fetch(`/api/files/info?file=${encodeURIComponent(file)}`);
-      const data = await res.json();
-
-      if (data.error) throw new Error(data.error);
-      setInfo(data);
-    } catch (err) {
-      setError(err.message);
-    }
-  }
-
   useEffect(() => {
-    loadFile();
+    setEditMode(false);
+    setErrorMessage(null);
   }, [file]);
 
   const handleEdit = useCallback(() => setEditMode(true), [setEditMode])
@@ -82,10 +70,7 @@ export default function FileViewer({ file }) {
         if (saveData.error) throw new Error(saveData.error);
       }
 
-      const res = await fetch(`/api/files/info?file=${encodeURIComponent(file)}`);
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-      setInfo(data);
+      await mutate(infoKey);
 
       const modified = saveData.modified;
       toast.custom((t) => {
@@ -106,11 +91,11 @@ export default function FileViewer({ file }) {
       });
       setEditMode(false)
     } catch (err) {
-      setError(err.message);
+      setErrorMessage(err.message);
     } finally {
       setSaving(false);
     }
-  }, [file, info]);
+  }, [file, info, infoKey, mutate]);
 
   const handleTrySave = useCallback(() => saveFile(false), [saveFile]);
   const handleSaveForce = useCallback(() => saveFile(true), [saveFile]);
@@ -131,15 +116,16 @@ export default function FileViewer({ file }) {
 
       if (data.error) throw new Error(data.error);
 
-      setInfo({ ...info, isBookmarked: data.isBookmarked });
+      mutate(infoKey, { ...info, isBookmarked: data.isBookmarked }, false);
+      mutate('/api/bookmarks');
     } catch (err) {
-      setError(err.message);
+      setErrorMessage(err.message);
     } finally {
       setBookmarking(false);
     }
-  }, [file, info]);
+  }, [file, info, infoKey, mutate]);
 
-  const isLoading = !info && !error;
+  const displayError = error?.message || errorMessage;
 
   useFileToolbar({
     file,
@@ -156,10 +142,10 @@ export default function FileViewer({ file }) {
     onToggleBookmark: handleToggleBookmark
   })
 
-  if (error) return (
+  if (displayError) return (
     <div className="min-h-full flex flex-col">
       <div className="flex-1 flex items-center justify-center">
-        <ErrorDisplay message={error} file={file} />
+        <ErrorDisplay message={displayError} file={file} />
       </div>
     </div>
   );
