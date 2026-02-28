@@ -116,7 +116,7 @@ export default function FileViewer({ file }) {
 
       if (data.error) throw new Error(data.error);
 
-      mutate(infoKey, { ...info, isBookmarked: data.isBookmarked }, false);
+      mutate(infoKey, { ...info, isBookmarked: data.isBookmarked }, { revalidate: false });
     } catch (err) {
       setErrorMessage(err.message);
     } finally {
