@@ -7,7 +7,7 @@ import FilePage from './pages/FilePage';
 
 export default function App() {
   return (
-    <SWRConfig value={{ fetcher }}>
+    <SWRConfig value={{ fetcher, revalidateOnFocus: false }}>
       <Routes>
         <Route element={<Layout />}>
           <Route index element={<Dashboard />} />
