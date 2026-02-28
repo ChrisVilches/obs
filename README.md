@@ -11,25 +11,6 @@
 
 No runtime dependencies. The frontend is compiled to static files and served by the backend.
 
-### Serving static files with Nginx
-
-After running `npm run build`, the `frontend/dist/` directory contains the compiled React SPA. Point Nginx's `root` there and proxy `/api` to the Node backend:
-
-```nginx
-server {
-    listen 80;
-    server_name example.com;
-    root /path/to/frontend/dist;
-    try_files $uri /index.html;
-
-    location /api {
-        proxy_pass http://127.0.0.1:5000;
-    }
-}
-```
-
-The backend also serves the frontend when you run it directly (via `npm run start`), so both deployment styles are supported — Nginx for production serving, Node for development or simpler setups.
-
 ## Deployment
 
 ### Build the Docker image
@@ -72,3 +53,22 @@ docker run -d -p 6001:6001 \
 ```
 
 Note: When using `EVENT_CHANNEL=file:///event-channel`, the `/event-channel` file must exist inside the container before starting. You can create it as a regular file (`touch /tmp/event-channel`) or a named pipe (`mkfifo /tmp/event-channel`) on the host — the bind mount makes it available at `/event-channel`.
+
+### Serving static files with Nginx
+
+After running `npm run build`, the `frontend/dist/` directory contains the compiled React SPA. Point Nginx's `root` there and proxy `/api` to the Node backend:
+
+```nginx
+server {
+    listen 80;
+    server_name example.com;
+    root /path/to/frontend/dist;
+    try_files $uri /index.html;
+
+    location /api {
+        proxy_pass http://127.0.0.1:5000;
+    }
+}
+```
+
+The backend also serves the frontend when you run it directly (via `npm run start`), so both deployment styles are supported — Nginx for production serving, Node for development or simpler setups.
