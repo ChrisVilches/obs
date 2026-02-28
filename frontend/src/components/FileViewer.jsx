@@ -139,9 +139,11 @@ export default function FileViewer({ file }) {
     }
   }, [file, info]);
 
+  const isLoading = !info && !error;
+
   useFileToolbar({
     file,
-    loading: !info && !error,
+    loading: isLoading,
     info,
     editMode,
     saving,
@@ -161,7 +163,7 @@ export default function FileViewer({ file }) {
       </div>
     </div>
   );
-  if (!info && !error) {
+  if (isLoading) {
     return (
       <div className="min-h-full flex flex-col">
         <div className="flex-1 flex items-center justify-center">
