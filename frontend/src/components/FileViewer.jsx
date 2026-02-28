@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import useSWR from 'swr';
 import { useSWRConfig } from 'swr';
 import toast from 'react-hot-toast';
+import { fetcher } from '../utils/fetcher';
 import { CheckCircleIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
 import ErrorDisplay from './ErrorDisplay';
 import useFileToolbar from '../hooks/useFileToolbar';
@@ -12,6 +13,25 @@ import ImageViewer from './viewers/ImageViewer';
 import MarkdownViewer from './viewers/MarkdownViewer';
 import MediaViewer from './viewers/MediaViewer';
 import BinaryFileViewer from './viewers/BinaryFileViewer';
+
+function showModifiedToast(modified) {
+  toast.custom((t) => {
+    const Icon = modified ? CheckCircleIcon : InformationCircleIcon;
+    return (
+      <div
+        className={`${t.visible ? 'animate-enter' : 'animate-leave'
+          } max-w-sm w-full bg-gray-800 shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
+      >
+        <div className="flex-1 w-0 p-3">
+          <div className="flex items-center">
+            <Icon className={`h-5 w-5 ${modified ? 'text-green-400' : 'text-gray-400'}`} />
+            <p className="ml-2 text-sm font-medium text-gray-200">{modified ? 'Updated' : 'No changes'}</p>
+          </div>
+        </div>
+      </div>
+    );
+  });
+}
 
 // TODO: when and why is "file" null? I want to make it strictly required
 // (and validate the parent).
@@ -51,46 +71,23 @@ export default function FileViewer({ file }) {
 
   const saveFile = useCallback(async (force) => {
     setSaving(true);
-    if (force) setShowConflictModal(false);
+    setShowConflictModal(false);
+
     try {
-      const saveRes = await fetch('/api/files/content', {
+      const saveData = await fetcher('/api/files/content', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ file, content: fileContentRef.current.value, mtime: info.mtime, force }),
       });
 
-      const saveData = await saveRes.json();
-
-      if (!saveRes.ok) {
-        if (saveData.code === 'VERSION_CONFLICT') {
-          setShowConflictModal(true);
-          return;
-        }
-
-        if (saveData.error) throw new Error(saveData.error);
-      }
-
       await mutate(infoKey);
 
-      const modified = saveData.modified;
-      toast.custom((t) => {
-        const Icon = modified ? CheckCircleIcon : InformationCircleIcon;
-        return (
-          <div
-            className={`${t.visible ? 'animate-enter' : 'animate-leave'
-              } max-w-sm w-full bg-gray-800 shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
-          >
-            <div className="flex-1 w-0 p-3">
-              <div className="flex items-center">
-                <Icon className={`h-5 w-5 ${modified ? 'text-green-400' : 'text-gray-400'}`} />
-                <p className="ml-2 text-sm font-medium text-gray-200">{modified ? 'Updated' : 'No changes'}</p>
-              </div>
-            </div>
-          </div>
-        );
-      });
+      showModifiedToast(saveData.modified)
       setEditMode(false)
     } catch (err) {
+      if (err.code === 'VERSION_CONFLICT') {
+        setShowConflictModal(true);
+        return;
+      }
       setErrorMessage(err.message);
     } finally {
       setSaving(false);
@@ -104,17 +101,10 @@ export default function FileViewer({ file }) {
     setBookmarking(true);
 
     try {
-      const isRemoving = info.isBookmarked;
-
-      const res = await fetch('/api/bookmarks', {
-        method: isRemoving ? 'DELETE' : 'POST',
-        headers: { 'Content-Type': 'application/json', },
+      const data = await fetcher('/api/bookmarks', {
+        method: info.isBookmarked ? 'DELETE' : 'POST',
         body: JSON.stringify({ path: file }),
       });
-
-      const data = await res.json();
-
-      if (data.error) throw new Error(data.error);
 
       mutate(infoKey, { ...info, isBookmarked: data.isBookmarked }, { revalidate: false });
     } catch (err) {
