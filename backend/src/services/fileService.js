@@ -1,29 +1,27 @@
-const path = require('path');
-const fs = require('fs');
-const { execFile } = require('child_process');
-const { promisify } = require('util');
-const { emit } = require('../eventChannel');
+const path = require("path");
+const fs = require("fs");
+const { execFile } = require("child_process");
+const { promisify } = require("util");
+const { emit } = require("../eventChannel");
 
 const execFileAsync = promisify(execFile);
-const { getBookmarks } = require('./bookmarkService');
+const { getBookmarks } = require("./bookmarkService");
 
 let _fileTypeFromFile;
 
-class VersionConflictError extends Error { }
-class FileAccessDeniedError extends Error { }
+class VersionConflictError extends Error {}
+class FileAccessDeniedError extends Error {}
 
 function shouldIgnoreFile(entryName) {
-  return entryName.startsWith('.');
+  return entryName.startsWith(".");
 }
 
-function ensureTrailingNewline(fileContent = '') {
-  if (fileContent === '') {
-    return '';
+function ensureTrailingNewline(fileContent = "") {
+  if (fileContent === "") {
+    return "";
   }
 
-  return fileContent.endsWith('\n')
-    ? fileContent
-    : fileContent + '\n';
+  return fileContent.endsWith("\n") ? fileContent : fileContent + "\n";
 }
 
 async function listFiles(rootDir) {
@@ -35,7 +33,7 @@ async function listFiles(rootDir) {
       const fullPath = path.join(dir, entry.name);
       const relativePath = path.relative(rootDir, fullPath);
       if (entry.isDirectory()) {
-        files.push(...await listRecursive(fullPath));
+        files.push(...(await listRecursive(fullPath)));
       } else {
         files.push(relativePath);
       }
@@ -48,20 +46,23 @@ async function listFiles(rootDir) {
 }
 
 async function getRecentFiles(rootDir, n) {
-  const { stdout } = await execFileAsync('find', [
-    rootDir,
-    '-type', 'f',
-    '!', '-path', '*/.*',
-    '-printf', '%T@\t%p\n',
-  ], { encoding: 'utf-8', maxBuffer: 10 * 1024 * 1024 });
+  const { stdout } = await execFileAsync(
+    "find",
+    [rootDir, "-type", "f", "!", "-path", "*/.*", "-printf", "%T@\t%p\n"],
+    { encoding: "utf-8", maxBuffer: 10 * 1024 * 1024 },
+  );
 
-  const files = stdout.trim().split('\n')
+  const files = stdout
+    .trim()
+    .split("\n")
     .filter(Boolean)
-    .map(line => {
-      const tabIndex = line.indexOf('\t');
+    .map((line) => {
+      const tabIndex = line.indexOf("\t");
       return {
         path: path.relative(rootDir, line.substring(tabIndex + 1)),
-        mtime: new Date(parseFloat(line.substring(0, tabIndex)) * 1000).toISOString(),
+        mtime: new Date(
+          parseFloat(line.substring(0, tabIndex)) * 1000,
+        ).toISOString(),
       };
     })
     .sort((a, b) => b.mtime.localeCompare(a.mtime))
@@ -78,22 +79,22 @@ function assertPathInsideRoot(rootDir, fullPath) {
 
 async function classifyFile(fullPath) {
   if (!_fileTypeFromFile) {
-    _fileTypeFromFile = (await import('file-type')).fileTypeFromFile;
+    _fileTypeFromFile = (await import("file-type")).fileTypeFromFile;
   }
   const result = await _fileTypeFromFile(fullPath);
   if (result) {
     const mime = result.mime;
-    if (mime.startsWith('image/')) return 'image';
-    if (mime.startsWith('audio/')) return 'audio';
-    if (mime.startsWith('video/')) return 'video';
-    return 'binary';
+    if (mime.startsWith("image/")) return "image";
+    if (mime.startsWith("audio/")) return "audio";
+    if (mime.startsWith("video/")) return "video";
+    return "binary";
   }
   const ext = path.extname(fullPath).toLowerCase();
-  if (ext === '.md') return 'markdown';
-  return 'text';
+  if (ext === ".md") return "markdown";
+  return "text";
 }
 
-const TEXT_TYPES = new Set(['text', 'markdown']);
+const TEXT_TYPES = new Set(["text", "markdown"]);
 
 async function getFileInfo(rootDir, bookmarksFile, relativePath) {
   const fullPath = path.join(rootDir, relativePath);
@@ -107,34 +108,36 @@ async function getFileInfo(rootDir, bookmarksFile, relativePath) {
     getBookmarks(bookmarksFile),
   ]);
 
-  const isBookmarked = bookmarkData.items.some(item => item.path === relativePath);
+  const isBookmarked = bookmarkData.items.some(
+    (item) => item.path === relativePath,
+  );
 
   const result = { type, isBookmarked, mtime: stat.mtime.toISOString() };
 
   if (TEXT_TYPES.has(type)) {
-    result.content = await fs.promises.readFile(fullPath, 'utf-8');
+    result.content = await fs.promises.readFile(fullPath, "utf-8");
   }
 
   return result;
 }
 
 async function writeFileContent(rootDir, file, content, mtime, force) {
-  content = ensureTrailingNewline(content)
+  content = ensureTrailingNewline(content);
   const fullPath = path.join(rootDir, file);
   assertPathInsideRoot(rootDir, fullPath);
   if (!force) {
     const stat = await fs.promises.stat(fullPath);
     if (stat.mtime.toISOString() !== mtime) {
-      throw new VersionConflictError()
+      throw new VersionConflictError();
     }
   }
 
-  if (await fs.promises.readFile(fullPath, 'utf-8') === content) {
+  if ((await fs.promises.readFile(fullPath, "utf-8")) === content) {
     return false;
   }
 
-  await fs.promises.writeFile(fullPath, content, 'utf-8');
-  emit({ type: 'file_updated', file, timestamp: new Date().toISOString() });
+  await fs.promises.writeFile(fullPath, content, "utf-8");
+  emit({ type: "file_updated", file, timestamp: new Date().toISOString() });
   return true;
 }
 
@@ -151,4 +154,12 @@ function resolveRawPath(rootDir, relativePath, current) {
   return fullPath;
 }
 
-module.exports = { listFiles, getRecentFiles, getFileInfo, writeFileContent, resolveRawPath, VersionConflictError, FileAccessDeniedError };
+module.exports = {
+  listFiles,
+  getRecentFiles,
+  getFileInfo,
+  writeFileContent,
+  resolveRawPath,
+  VersionConflictError,
+  FileAccessDeniedError,
+};

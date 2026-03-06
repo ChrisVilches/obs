@@ -1,13 +1,13 @@
 function withJsonHeaders(opts) {
   const headers = new Headers(opts.headers);
-  if (!headers.has('Content-Type')) {
-    headers.set('Content-Type', 'application/json');
+  if (!headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
   }
   return { ...opts, headers };
 }
 
 function withSerializedBody(opts) {
-  if (opts.body && typeof opts.body === 'object') {
+  if (opts.body && typeof opts.body === "object") {
     return { ...opts, body: JSON.stringify(opts.body) };
   }
   return opts;
@@ -16,13 +16,13 @@ function withSerializedBody(opts) {
 async function parseResponse(res) {
   // 204 No Content (and similar) have no body — return null rather than
   // attempting a parse that will throw or produce garbage.
-  if (res.status === 204 || res.headers.get('Content-Length') === '0') {
+  if (res.status === 204 || res.headers.get("Content-Length") === "0") {
     return null;
   }
 
-  const contentType = res.headers.get('Content-Type') ?? '';
+  const contentType = res.headers.get("Content-Type") ?? "";
 
-  if (contentType.includes('application/json')) {
+  if (contentType.includes("application/json")) {
     // Let JSON parse errors surface — a malformed body is a real problem,
     // not something that should silently collapse to {}.
     return res.json();

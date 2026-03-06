@@ -1,13 +1,14 @@
-const { execSync } = require('child_process');
-const { getRecentEvents } = require('../eventChannel');
+const { execSync } = require("child_process");
+const { getRecentEvents } = require("../eventChannel");
 
 function getStatus() {
-  let rgOk = false, findOk = false;
+  let rgOk = false,
+    findOk = false;
   try {
-    rgOk = execSync('rg --version', { encoding: 'utf8' }).includes('ripgrep');
+    rgOk = execSync("rg --version", { encoding: "utf8" }).includes("ripgrep");
   } catch {}
   try {
-    findOk = execSync('find --version', { encoding: 'utf8' }).includes('GNU');
+    findOk = execSync("find --version", { encoding: "utf8" }).includes("GNU");
   } catch {}
 
   return {

@@ -1,14 +1,10 @@
 export default function MediaViewer({ file, type }) {
   const src = `/api/files/raw?file=${encodeURIComponent(file)}`;
 
-  if (type === 'audio') {
+  if (type === "audio") {
     return (
       <div className="flex-1 flex items-center justify-center p-4">
-        <audio
-          src={src}
-          controls
-          className="w-full max-w-lg"
-        />
+        <audio src={src} controls className="w-full max-w-lg" />
       </div>
     );
   }

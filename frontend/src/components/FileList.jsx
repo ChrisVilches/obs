@@ -1,27 +1,58 @@
-import { Link } from 'react-router-dom';
-import { DocumentTextIcon, PhotoIcon, VideoCameraIcon, MusicalNoteIcon, DocumentIcon } from '@heroicons/react/24/outline';
+import {
+  DocumentIcon,
+  DocumentTextIcon,
+  MusicalNoteIcon,
+  PhotoIcon,
+  VideoCameraIcon,
+} from "@heroicons/react/24/outline";
+import { Link } from "react-router-dom";
 
 const extToIcon = {
   // images
-  jpg: PhotoIcon, jpeg: PhotoIcon, png: PhotoIcon, gif: PhotoIcon,
-  webp: PhotoIcon, svg: PhotoIcon, bmp: PhotoIcon, ico: PhotoIcon, avif: PhotoIcon,
+  jpg: PhotoIcon,
+  jpeg: PhotoIcon,
+  png: PhotoIcon,
+  gif: PhotoIcon,
+  webp: PhotoIcon,
+  svg: PhotoIcon,
+  bmp: PhotoIcon,
+  ico: PhotoIcon,
+  avif: PhotoIcon,
   // video
-  mp4: VideoCameraIcon, webm: VideoCameraIcon, avi: VideoCameraIcon,
-  mov: VideoCameraIcon, mkv: VideoCameraIcon, wmv: VideoCameraIcon,
-  flv: VideoCameraIcon, m4v: VideoCameraIcon,
+  mp4: VideoCameraIcon,
+  webm: VideoCameraIcon,
+  avi: VideoCameraIcon,
+  mov: VideoCameraIcon,
+  mkv: VideoCameraIcon,
+  wmv: VideoCameraIcon,
+  flv: VideoCameraIcon,
+  m4v: VideoCameraIcon,
   // audio
-  mp3: MusicalNoteIcon, wav: MusicalNoteIcon, ogg: MusicalNoteIcon,
-  flac: MusicalNoteIcon, aac: MusicalNoteIcon, wma: MusicalNoteIcon,
-  m4a: MusicalNoteIcon, opus: MusicalNoteIcon,
+  mp3: MusicalNoteIcon,
+  wav: MusicalNoteIcon,
+  ogg: MusicalNoteIcon,
+  flac: MusicalNoteIcon,
+  aac: MusicalNoteIcon,
+  wma: MusicalNoteIcon,
+  m4a: MusicalNoteIcon,
+  opus: MusicalNoteIcon,
   // documents
-  md: DocumentTextIcon, mdx: DocumentTextIcon, txt: DocumentTextIcon,
-  pdf: DocumentTextIcon, csv: DocumentTextIcon, json: DocumentTextIcon,
-  xml: DocumentTextIcon, yaml: DocumentTextIcon, yml: DocumentTextIcon,
-  toml: DocumentTextIcon, log: DocumentTextIcon, rtf: DocumentTextIcon,
+  md: DocumentTextIcon,
+  mdx: DocumentTextIcon,
+  txt: DocumentTextIcon,
+  pdf: DocumentTextIcon,
+  csv: DocumentTextIcon,
+  json: DocumentTextIcon,
+  xml: DocumentTextIcon,
+  yaml: DocumentTextIcon,
+  yml: DocumentTextIcon,
+  toml: DocumentTextIcon,
+  log: DocumentTextIcon,
+  rtf: DocumentTextIcon,
 };
 
 function getFileIcon(path) {
-  const ext = path.split('.').pop().toLowerCase();
+  const ext = path.split(".").pop().toLowerCase();
   return extToIcon[ext] || DocumentIcon;
 }
 
@@ -31,13 +62,13 @@ function FileIcon({ path, className }) {
 }
 
 function dirPath(path) {
-  return path.includes('/') ? '/' + path.slice(0, path.lastIndexOf('/')) : '/';
+  return path.includes("/") ? "/" + path.slice(0, path.lastIndexOf("/")) : "/";
 }
 
 function formatRelativeTime(isoString) {
   const diff = Date.now() - new Date(isoString).getTime();
   const minutes = Math.floor(diff / 60000);
-  if (minutes < 1) return 'just now';
+  if (minutes < 1) return "just now";
   if (minutes < 60) return `${minutes}m ago`;
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return `${hours}h ago`;
@@ -47,7 +78,13 @@ function formatRelativeTime(isoString) {
   return `${months}mo ago`;
 }
 
-export default function FileList({ items, showTime = false, loading = false, emptyMessage = 'No files found.', onItemClick }) {
+export default function FileList({
+  items,
+  showTime = false,
+  loading = false,
+  emptyMessage = "No files found.",
+  onItemClick,
+}) {
   if (loading) {
     return (
       <div className="space-y-2">
@@ -73,11 +110,17 @@ export default function FileList({ items, showTime = false, loading = false, emp
           >
             <FileIcon path={item.path} className="w-4 h-4 shrink-0" />
             <div className="flex-1 min-w-0">
-              <span className="truncate block">{item.path.split('/').pop()}</span>
-              <span className="text-xs text-gray-600 truncate block">{dirPath(item.path)}</span>
+              <span className="truncate block">
+                {item.path.split("/").pop()}
+              </span>
+              <span className="text-xs text-gray-600 truncate block">
+                {dirPath(item.path)}
+              </span>
             </div>
             {showTime && item.mtime && (
-              <span className="text-xs text-gray-600 shrink-0">{formatRelativeTime(item.mtime)}</span>
+              <span className="text-xs text-gray-600 shrink-0">
+                {formatRelativeTime(item.mtime)}
+              </span>
             )}
           </Link>
         </li>

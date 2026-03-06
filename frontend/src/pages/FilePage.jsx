@@ -1,9 +1,9 @@
-import { useSearchParams } from 'react-router-dom';
-import FileViewer from '../components/FileViewer';
+import { useSearchParams } from "react-router-dom";
+import FileViewer from "../components/FileViewer";
 
 export default function FilePage() {
   const [searchParams] = useSearchParams();
-  const file = searchParams.get('f');
+  const file = searchParams.get("f");
 
   if (!file) {
     return (

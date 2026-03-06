@@ -1,5 +1,5 @@
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
 const channelConfig = process.env.EVENT_CHANNEL;
 
@@ -8,11 +8,11 @@ let cleanupFn = null;
 const recentEvents = [];
 const MAX_RECENT_EVENTS = 5;
 
-function noop() { }
+function noop() {}
 
 function createStdoutWriter(stream) {
   return (data) => {
-    stream.write(data + '\n');
+    stream.write(data + "\n");
   };
 }
 
@@ -30,7 +30,9 @@ function createFileWriter(filePath) {
   try {
     const stat = fs.statSync(filePath);
     if (stat.isDirectory()) {
-      console.error(`[event-channel] cannot open "${filePath}": path is a directory, expected a regular file or FIFO`);
+      console.error(
+        `[event-channel] cannot open "${filePath}": path is a directory, expected a regular file or FIFO`,
+      );
       process.exit(1);
     }
   } catch {
@@ -48,12 +50,12 @@ function createFileWriter(filePath) {
     opening = true;
 
     const s = fs.createWriteStream(filePath, {
-      flags: 'a',
-      encoding: 'utf8',
+      flags: "a",
+      encoding: "utf8",
       autoClose: true,
     });
 
-    s.on('open', () => {
+    s.on("open", () => {
       opening = false;
       stream = s;
 
@@ -65,24 +67,26 @@ function createFileWriter(filePath) {
       queue = [];
     });
 
-    s.on('error', (err) => {
+    s.on("error", (err) => {
       opening = false;
       stream = null;
 
-      if (err.code === 'EISDIR') {
-        console.error(`[event-channel] cannot open "${filePath}": path is a directory, expected a regular file or FIFO`);
+      if (err.code === "EISDIR") {
+        console.error(
+          `[event-channel] cannot open "${filePath}": path is a directory, expected a regular file or FIFO`,
+        );
         process.exit(1);
         return;
       }
 
       // Avoid crashing app because of event transport
-      console.error('[event-channel]', err.message);
+      console.error("[event-channel]", err.message);
 
       // Retry later
       setTimeout(openStream, 1000);
     });
 
-    s.on('close', () => {
+    s.on("close", () => {
       stream = null;
 
       // FIFOs may disconnect when reader disappears.
@@ -96,7 +100,7 @@ function createFileWriter(filePath) {
   openStream();
 
   const write = (data) => {
-    const line = data + '\n';
+    const line = data + "\n";
 
     // If stream not ready yet, buffer events
     if (!stream) {
@@ -115,7 +119,7 @@ function createFileWriter(filePath) {
 
     // Backpressure handling
     if (!ok) {
-      stream.once('drain', noop);
+      stream.once("drain", noop);
     }
   };
 
@@ -136,14 +140,11 @@ function createFileWriter(filePath) {
 
 if (!channelConfig) {
   writeFn = null;
-
-} else if (channelConfig === 'stdout') {
+} else if (channelConfig === "stdout") {
   writeFn = createStdoutWriter(process.stdout);
-
-} else if (channelConfig === 'stderr') {
+} else if (channelConfig === "stderr") {
   writeFn = createStdoutWriter(process.stderr);
-
-} else if (channelConfig.startsWith('file://')) {
+} else if (channelConfig.startsWith("file://")) {
   const url = new URL(channelConfig);
   const filePath = url.pathname;
 
@@ -151,7 +152,6 @@ if (!channelConfig) {
 
   writeFn = write;
   cleanupFn = cleanup;
-
 } else {
   console.error(`[event-channel] unsupported channel: ${channelConfig}`);
   process.exit(1);
@@ -169,7 +169,7 @@ function emit(event) {
     writeFn(JSON.stringify(event));
   } catch (err) {
     // Never let event emission crash the app
-    console.error('[event-channel emit]', err.message);
+    console.error("[event-channel emit]", err.message);
   }
 }
 
@@ -183,13 +183,13 @@ function shutdown() {
   }
 }
 
-process.on('exit', shutdown);
-process.on('SIGINT', () => {
+process.on("exit", shutdown);
+process.on("SIGINT", () => {
   shutdown();
   process.exit(0);
 });
 
-process.on('SIGTERM', () => {
+process.on("SIGTERM", () => {
   shutdown();
   process.exit(0);
 });

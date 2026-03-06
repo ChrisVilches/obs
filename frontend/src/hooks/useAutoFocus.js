@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect } from "react";
 
 export default function useAutoFocus(ref, { enabled = true, delay = 0 } = {}) {
   useEffect(() => {

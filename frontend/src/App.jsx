@@ -1,9 +1,9 @@
-import { SWRConfig } from 'swr';
-import { Routes, Route } from 'react-router';
-import { fetcher } from './utils/fetcher';
-import Layout from './pages/Layout';
-import Dashboard from './pages/Dashboard';
-import FilePage from './pages/FilePage';
+import { Route, Routes } from "react-router";
+import { SWRConfig } from "swr";
+import Dashboard from "./pages/Dashboard";
+import FilePage from "./pages/FilePage";
+import Layout from "./pages/Layout";
+import { fetcher } from "./utils/fetcher";
 
 export default function App() {
   return (

@@ -1,8 +1,13 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
-import { ChevronRightIcon, BookmarkIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import {
+  BookmarkIcon,
+  ChevronRightIcon,
+  MagnifyingGlassIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 
-const GITHUB_URL = 'https://github.com/ChrisVilches/obs';
+const GITHUB_URL = "https://github.com/ChrisVilches/obs";
 
 function SidemenuFooter() {
   return (
@@ -22,7 +27,12 @@ function SidemenuFooter() {
   );
 }
 
-function SidemenuHeader({ folderName, onClose, onSearchClick, onBookmarkClick }) {
+function SidemenuHeader({
+  folderName,
+  onClose,
+  onSearchClick,
+  onBookmarkClick,
+}) {
   return (
     <div className="flex items-center justify-between px-4 h-14 border-b border-gray-800 shrink-0">
       <div className="flex items-center gap-2">
@@ -35,7 +45,13 @@ function SidemenuHeader({ folderName, onClose, onSearchClick, onBookmarkClick })
             <XMarkIcon className="w-5 h-5" />
           </button>
         )}
-        <Link to="/" onClick={onClose} className="text-sm font-semibold text-gray-400 uppercase tracking-wider hover:text-indigo-400 transition-colors">{folderName}</Link>
+        <Link
+          to="/"
+          onClick={onClose}
+          className="text-sm font-semibold text-gray-400 uppercase tracking-wider hover:text-indigo-400 transition-colors"
+        >
+          {folderName}
+        </Link>
       </div>
       <div className="flex items-center gap-1">
         <button
@@ -71,23 +87,23 @@ function buildTree(files) {
   const root = [];
 
   for (const filePath of files) {
-    const parts = filePath.split('/');
+    const parts = filePath.split("/");
     let currentLevel = root;
 
     for (let i = 0; i < parts.length; i++) {
       const part = parts[i];
       const isLast = i === parts.length - 1;
 
-      let node = currentLevel.find(n => n.name === part);
+      let node = currentLevel.find((n) => n.name === part);
 
       if (!node) {
         if (isLast) {
-          node = { name: part, type: 'file', path: filePath };
+          node = { name: part, type: "file", path: filePath };
         } else {
           node = {
             name: part,
-            type: 'directory',
-            path: parts.slice(0, i + 1).join('/'),
+            type: "directory",
+            path: parts.slice(0, i + 1).join("/"),
             children: [],
           };
         }
@@ -102,7 +118,7 @@ function buildTree(files) {
 
   function sortNodes(nodes) {
     nodes.sort((a, b) => {
-      if (a.type !== b.type) return a.type === 'directory' ? -1 : 1;
+      if (a.type !== b.type) return a.type === "directory" ? -1 : 1;
       return a.name.localeCompare(b.name);
     });
     for (const n of nodes) {
@@ -114,8 +130,15 @@ function buildTree(files) {
   return root;
 }
 
-function TreeNode({ node, depth, selectedFile, onClose, expandedSet, onToggle }) {
-  if (node.type === 'file') {
+function TreeNode({
+  node,
+  depth,
+  selectedFile,
+  onClose,
+  expandedSet,
+  onToggle,
+}) {
+  if (node.type === "file") {
     const isSelected = node.path === selectedFile;
     return (
       <li>
@@ -123,10 +146,11 @@ function TreeNode({ node, depth, selectedFile, onClose, expandedSet, onToggle })
           to={`/file?f=${encodeURIComponent(node.path)}`}
           onClick={onClose}
           data-selected={isSelected || undefined}
-          className={`block px-3 py-1.5 rounded-md text-sm transition-colors ${isSelected
-            ? 'bg-indigo-900/40 text-indigo-300 font-medium'
-            : 'text-gray-400 hover:bg-gray-800 hover:text-gray-200'
-            }`}
+          className={`block px-3 py-1.5 rounded-md text-sm transition-colors ${
+            isSelected
+              ? "bg-indigo-900/40 text-indigo-300 font-medium"
+              : "text-gray-400 hover:bg-gray-800 hover:text-gray-200"
+          }`}
           style={{ paddingLeft: `${12 + depth * 16}px` }}
         >
           <span className="truncate block">{node.name}</span>
@@ -145,13 +169,13 @@ function TreeNode({ node, depth, selectedFile, onClose, expandedSet, onToggle })
         style={{ paddingLeft: `${12 + depth * 16}px` }}
       >
         <ChevronRightIcon
-          className={`w-3 h-3 shrink-0 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
+          className={`w-3 h-3 shrink-0 transition-transform ${isExpanded ? "rotate-90" : ""}`}
         />
         <span className="truncate">{node.name}</span>
       </button>
       {isExpanded && node.children.length > 0 && (
         <ul>
-          {node.children.map(child => (
+          {node.children.map((child) => (
             <TreeNode
               key={child.path || child.name}
               node={child}
@@ -170,28 +194,28 @@ function TreeNode({ node, depth, selectedFile, onClose, expandedSet, onToggle })
 
 function SidemenuSkeleton() {
   const items = [
-    { depth: 0, width: 'w-3/4', folder: true },
-    { depth: 0, width: 'w-1/2', folder: true },
-    { depth: 1, width: 'w-2/3', folder: false },
-    { depth: 1, width: 'w-1/3', folder: false },
-    { depth: 1, width: 'w-3/5', folder: false },
-    { depth: 0, width: 'w-2/5', folder: true },
-    { depth: 1, width: 'w-1/2', folder: false },
-    { depth: 1, width: 'w-3/4', folder: false },
-    { depth: 1, width: 'w-2/5', folder: false },
-    { depth: 1, width: 'w-1/3', folder: false },
-    { depth: 2, width: 'w-1/2', folder: false },
-    { depth: 2, width: 'w-2/5', folder: false },
-    { depth: 0, width: 'w-3/5', folder: true },
-    { depth: 1, width: 'w-1/2', folder: false },
-    { depth: 1, width: 'w-2/3', folder: false },
-    { depth: 2, width: 'w-3/4', folder: false },
-    { depth: 2, width: 'w-2/5', folder: false },
-    { depth: 0, width: 'w-2/3', folder: true },
-    { depth: 1, width: 'w-3/5', folder: false },
-    { depth: 1, width: 'w-1/3', folder: false },
-    { depth: 2, width: 'w-1/2', folder: false },
-    { depth: 2, width: 'w-3/5', folder: false },
+    { depth: 0, width: "w-3/4", folder: true },
+    { depth: 0, width: "w-1/2", folder: true },
+    { depth: 1, width: "w-2/3", folder: false },
+    { depth: 1, width: "w-1/3", folder: false },
+    { depth: 1, width: "w-3/5", folder: false },
+    { depth: 0, width: "w-2/5", folder: true },
+    { depth: 1, width: "w-1/2", folder: false },
+    { depth: 1, width: "w-3/4", folder: false },
+    { depth: 1, width: "w-2/5", folder: false },
+    { depth: 1, width: "w-1/3", folder: false },
+    { depth: 2, width: "w-1/2", folder: false },
+    { depth: 2, width: "w-2/5", folder: false },
+    { depth: 0, width: "w-3/5", folder: true },
+    { depth: 1, width: "w-1/2", folder: false },
+    { depth: 1, width: "w-2/3", folder: false },
+    { depth: 2, width: "w-3/4", folder: false },
+    { depth: 2, width: "w-2/5", folder: false },
+    { depth: 0, width: "w-2/3", folder: true },
+    { depth: 1, width: "w-3/5", folder: false },
+    { depth: 1, width: "w-1/3", folder: false },
+    { depth: 2, width: "w-1/2", folder: false },
+    { depth: 2, width: "w-3/5", folder: false },
   ];
 
   return (
@@ -202,7 +226,9 @@ function SidemenuSkeleton() {
             className="flex items-center gap-1 px-3 py-1.5"
             style={{ paddingLeft: `${12 + item.depth * 16}px` }}
           >
-            {item.folder && <div className="w-3 h-3 rounded-sm bg-gray-800 shrink-0" />}
+            {item.folder && (
+              <div className="w-3 h-3 rounded-sm bg-gray-800 shrink-0" />
+            )}
             <div className={`h-3 rounded bg-gray-800 ${item.width}`} />
           </div>
         </li>
@@ -211,17 +237,25 @@ function SidemenuSkeleton() {
   );
 }
 
-export default function Sidemenu({ files, onClose, sidebarOpen, loading, folderName, onBookmarkClick, onSearchClick }) {
+export default function Sidemenu({
+  files,
+  onClose,
+  sidebarOpen,
+  loading,
+  folderName,
+  onBookmarkClick,
+  onSearchClick,
+}) {
   const navRef = useRef(null);
   const [searchParams] = useSearchParams();
-  const selectedFile = searchParams.get('f');
+  const selectedFile = searchParams.get("f");
 
   const tree = useMemo(() => buildTree(files), [files]);
 
   const [expandedSet, setExpandedSet] = useState(() => new Set());
 
   function handleToggle(path) {
-    setExpandedSet(prev => {
+    setExpandedSet((prev) => {
       const next = new Set(prev);
       if (next.has(path)) {
         next.delete(path);
@@ -235,15 +269,15 @@ export default function Sidemenu({ files, onClose, sidebarOpen, loading, folderN
   useEffect(() => {
     if (!selectedFile) return;
     if (!files?.includes(selectedFile)) return;
-    const parts = selectedFile.split('/');
+    const parts = selectedFile.split("/");
     if (parts.length <= 1) return;
 
     const ancestors = [];
     for (let i = 0; i < parts.length - 1; i++) {
-      ancestors.push(parts.slice(0, i + 1).join('/'));
+      ancestors.push(parts.slice(0, i + 1).join("/"));
     }
 
-    setExpandedSet(prev => {
+    setExpandedSet((prev) => {
       const next = new Set(prev);
       let changed = false;
       for (const path of ancestors) {
@@ -262,9 +296,9 @@ export default function Sidemenu({ files, onClose, sidebarOpen, loading, folderN
     if (!selectedFile || !navRef.current) return;
 
     const id = requestAnimationFrame(() => {
-      const el = navRef.current.querySelector('[data-selected]');
+      const el = navRef.current.querySelector("[data-selected]");
       if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
       }
     });
     return () => cancelAnimationFrame(id);
@@ -274,9 +308,9 @@ export default function Sidemenu({ files, onClose, sidebarOpen, loading, folderN
   useEffect(() => {
     if (!sidebarOpen || !selectedFile) return;
     const id = setTimeout(() => {
-      const el = document.querySelector('[data-selected]');
+      const el = document.querySelector("[data-selected]");
       if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
       }
     }, 350);
     return () => clearTimeout(id);
@@ -284,13 +318,22 @@ export default function Sidemenu({ files, onClose, sidebarOpen, loading, folderN
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
-      <SidemenuHeader folderName={folderName} onClose={onClose} onSearchClick={onSearchClick} onBookmarkClick={onBookmarkClick} />
-      <nav ref={navRef} className="flex-1 overflow-y-auto overflow-x-hidden p-2 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600" style={{ scrollbarGutter: 'stable' }}>
+      <SidemenuHeader
+        folderName={folderName}
+        onClose={onClose}
+        onSearchClick={onSearchClick}
+        onBookmarkClick={onBookmarkClick}
+      />
+      <nav
+        ref={navRef}
+        className="flex-1 overflow-y-auto overflow-x-hidden p-2 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600"
+        style={{ scrollbarGutter: "stable" }}
+      >
         {loading ? (
           <SidemenuSkeleton />
         ) : (
           <ul className="space-y-0.5">
-            {tree.map(node => (
+            {tree.map((node) => (
               <TreeNode
                 key={node.path || node.name}
                 node={node}
@@ -305,6 +348,6 @@ export default function Sidemenu({ files, onClose, sidebarOpen, loading, folderN
         )}
       </nav>
       <SidemenuFooter />
-    </div >
+    </div>
   );
 }

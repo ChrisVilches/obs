@@ -1,7 +1,7 @@
-import ReactMarkdown from 'react-markdown';
+import ReactMarkdown from "react-markdown";
 
 function isExternalURL(url) {
-  return url.startsWith('http://') || url.startsWith('https://');
+  return url.startsWith("http://") || url.startsWith("https://");
 }
 
 export default function MarkdownViewer({ file, content }) {
@@ -10,11 +10,21 @@ export default function MarkdownViewer({ file, content }) {
       <ReactMarkdown
         components={{
           img({ node, ...props }) {
-            const newSrc = isExternalURL(props.src) ? props.src : `api/files/raw?file=${props.src}&current=${file}`;
-            return <img {...props} src={newSrc} className="rounded-lg shadow-md my-4" />;
+            const newSrc = isExternalURL(props.src)
+              ? props.src
+              : `api/files/raw?file=${props.src}&current=${file}`;
+            return (
+              <img
+                {...props}
+                src={newSrc}
+                className="rounded-lg shadow-md my-4"
+              />
+            );
           },
         }}
-      >{content || ''}</ReactMarkdown>
+      >
+        {content || ""}
+      </ReactMarkdown>
     </div>
   );
 }

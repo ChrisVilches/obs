@@ -5,9 +5,13 @@
     "install-all": "npm --prefix backend install && npm --prefix frontend install",
     "dev": "concurrently -n backend,frontend -c blue,green \"npm --prefix backend run dev\" \"npm --prefix frontend run dev\"",
     "build": "npm --prefix frontend run build",
-    "start": "npm --prefix backend start"
+    "start": "npm --prefix backend start",
+    "lint": "biome check --write .",
+    "format": "biome format --write .",
+    "check": "biome check ."
   },
   "devDependencies": {
+    "@biomejs/biome": "2.4.15",
     "concurrently": "^9.2.1"
   }
 }

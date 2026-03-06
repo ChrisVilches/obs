@@ -1,11 +1,11 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export default function useResizable({
   defaultValue = 288,
   min = 180,
   max = 600,
   storageKey,
-  axis = 'x',
+  axis = "x",
 } = {}) {
   const [size, setSize] = useState(() => {
     if (storageKey) {
@@ -20,8 +20,8 @@ export default function useResizable({
   useEffect(() => {
     if (!isResizing) return;
 
-    const getPos = (e) => (axis === 'x' ? e.clientX : e.clientY);
-    const styleProp = axis === 'x' ? 'width' : 'height';
+    const getPos = (e) => (axis === "x" ? e.clientX : e.clientY);
+    const styleProp = axis === "x" ? "width" : "height";
 
     function onMouseMove(e) {
       if (!ref.current) return;
@@ -35,17 +35,17 @@ export default function useResizable({
       setSize(finalSize);
       if (storageKey) localStorage.setItem(storageKey, finalSize);
       setIsResizing(false);
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
-      document.body.style.cursor = '';
-      document.body.style.userSelect = '';
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
     }
 
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
     return () => {
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
     };
   }, [isResizing, min, max, storageKey, axis]);
 
@@ -53,10 +53,10 @@ export default function useResizable({
     (e) => {
       e.preventDefault();
       setIsResizing(true);
-      document.body.style.cursor = axis === 'x' ? 'col-resize' : 'row-resize';
-      document.body.style.userSelect = 'none';
+      document.body.style.cursor = axis === "x" ? "col-resize" : "row-resize";
+      document.body.style.userSelect = "none";
     },
-    [axis]
+    [axis],
   );
 
   return { size, isResizing, ref, onHandleMouseDown };

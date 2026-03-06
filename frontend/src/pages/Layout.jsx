@@ -1,39 +1,49 @@
-import { useState } from 'react';
-import { Outlet, useSearchParams } from 'react-router-dom';
-import { Dialog, DialogPanel } from '@headlessui/react';
-import { Bars3Icon } from '@heroicons/react/24/outline';
-import useSWR from 'swr';
-import { useSWRConfig } from 'swr';
-import { fetcher } from '../utils/fetcher';
-import Sidemenu from '../components/Sidemenu';
-import Modal from '../components/Modal';
-import FileList from '../components/FileList';
-import SearchBar from '../components/SearchBar';
-import useResizable from '../hooks/useResizable';
+import { Dialog, DialogPanel } from "@headlessui/react";
+import { Bars3Icon } from "@heroicons/react/24/outline";
+import { useState } from "react";
+import { Outlet, useSearchParams } from "react-router-dom";
+import useSWR, { useSWRConfig } from "swr";
+import FileList from "../components/FileList";
+import Modal from "../components/Modal";
+import SearchBar from "../components/SearchBar";
+import Sidemenu from "../components/Sidemenu";
+import useResizable from "../hooks/useResizable";
+import { fetcher } from "../utils/fetcher";
 
 export default function Layout() {
   const { mutate } = useSWRConfig();
-  const { data: filesData, isLoading: filesLoading, error: filesError } = useSWR('/api/files');
+  const {
+    data: filesData,
+    isLoading: filesLoading,
+    error: filesError,
+  } = useSWR("/api/files");
   const files = filesData?.files || [];
-  const folderName = filesData?.folderName || '';
+  const folderName = filesData?.folderName || "";
   const [bookmarksModalOpen, setBookmarksModalOpen] = useState(false);
   const [modalBookmarks, setModalBookmarks] = useState([]);
   const [modalBookmarksLoading, setModalBookmarksLoading] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { ref: sidebarRef, size: sidebarWidth, onHandleMouseDown } = useResizable({
+  const {
+    ref: sidebarRef,
+    size: sidebarWidth,
+    onHandleMouseDown,
+  } = useResizable({
     defaultValue: 288,
     min: 180,
     max: 600,
-    storageKey: 'sidebarWidth',
+    storageKey: "sidebarWidth",
   });
-  const [layoutTopContent, setLayoutTopContent] = useState({ title: '', extra: null });
+  const [layoutTopContent, setLayoutTopContent] = useState({
+    title: "",
+    extra: null,
+  });
 
   async function openBookmarksModal() {
     setBookmarksModalOpen(true);
     setModalBookmarksLoading(true);
     try {
-      const data = await mutate('/api/bookmarks', fetcher('/api/bookmarks'));
+      const data = await mutate("/api/bookmarks", fetcher("/api/bookmarks"));
       setModalBookmarks(data?.items || []);
     } catch {
       // silently handled
@@ -43,27 +53,56 @@ export default function Layout() {
   }
 
   const [searchParams] = useSearchParams();
-  const selectedFile = searchParams.get('f');
+  const selectedFile = searchParams.get("f");
 
-  if (filesError) return <div className="p-4 text-red-400">Error: {filesError.message}</div>;
+  if (filesError)
+    return <div className="p-4 text-red-400">Error: {filesError.message}</div>;
 
   return (
     <div className="flex h-screen bg-gray-950">
-      <Dialog open={sidebarOpen} onClose={setSidebarOpen} className="relative z-50 md:hidden">
+      <Dialog
+        open={sidebarOpen}
+        onClose={setSidebarOpen}
+        className="relative z-50 md:hidden"
+      >
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
         <div className="fixed inset-0 flex">
           <DialogPanel className="w-72 h-full bg-gray-900 border-r border-gray-800 flex flex-col">
-            <Sidemenu files={files} loading={filesLoading} onClose={() => setSidebarOpen(false)} sidebarOpen={sidebarOpen} folderName={folderName} onBookmarkClick={() => { setSidebarOpen(false); openBookmarksModal(); }} onSearchClick={() => { setSidebarOpen(false); setSearchModalOpen(true); }} />
+            <Sidemenu
+              files={files}
+              loading={filesLoading}
+              onClose={() => setSidebarOpen(false)}
+              sidebarOpen={sidebarOpen}
+              folderName={folderName}
+              onBookmarkClick={() => {
+                setSidebarOpen(false);
+                openBookmarksModal();
+              }}
+              onSearchClick={() => {
+                setSidebarOpen(false);
+                setSearchModalOpen(true);
+              }}
+            />
           </DialogPanel>
         </div>
       </Dialog>
 
-      <aside ref={sidebarRef} className="hidden md:flex flex-shrink-0 bg-gray-900 border-r border-gray-800 flex-col relative" style={{ width: sidebarWidth }}>
+      <aside
+        ref={sidebarRef}
+        className="hidden md:flex flex-shrink-0 bg-gray-900 border-r border-gray-800 flex-col relative"
+        style={{ width: sidebarWidth }}
+      >
         <div
           onMouseDown={onHandleMouseDown}
           className="absolute right-[-4px] top-0 bottom-0 w-1 cursor-col-resize hover:bg-indigo-500/50 active:bg-indigo-500/70 z-10 shrink-0"
         />
-        <Sidemenu files={files} loading={filesLoading} folderName={folderName} onBookmarkClick={openBookmarksModal} onSearchClick={() => setSearchModalOpen(true)} />
+        <Sidemenu
+          files={files}
+          loading={filesLoading}
+          folderName={folderName}
+          onBookmarkClick={openBookmarksModal}
+          onSearchClick={() => setSearchModalOpen(true)}
+        />
       </aside>
 
       <div className="flex flex-col flex-1 min-w-0">
@@ -90,12 +129,32 @@ export default function Layout() {
         </main>
       </div>
 
-      <Modal open={bookmarksModalOpen} onClose={() => setBookmarksModalOpen(false)} title="Bookmarks" className="h-[70vh] flex flex-col overflow-hidden" childrenClass="flex-1 min-h-0 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600">
-        <FileList items={modalBookmarks} loading={modalBookmarksLoading} emptyMessage="No bookmarks found." onItemClick={() => setBookmarksModalOpen(false)} />
+      <Modal
+        open={bookmarksModalOpen}
+        onClose={() => setBookmarksModalOpen(false)}
+        title="Bookmarks"
+        className="h-[70vh] flex flex-col overflow-hidden"
+        childrenClass="flex-1 min-h-0 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600"
+      >
+        <FileList
+          items={modalBookmarks}
+          loading={modalBookmarksLoading}
+          emptyMessage="No bookmarks found."
+          onItemClick={() => setBookmarksModalOpen(false)}
+        />
       </Modal>
 
-      <Modal open={searchModalOpen} onClose={() => setSearchModalOpen(false)} title="Search" className="h-[70vh] flex flex-col overflow-hidden" childrenClass="flex-1 min-h-0">
-        <SearchBar onClose={() => setSearchModalOpen(false)} selectedFile={selectedFile} />
+      <Modal
+        open={searchModalOpen}
+        onClose={() => setSearchModalOpen(false)}
+        title="Search"
+        className="h-[70vh] flex flex-col overflow-hidden"
+        childrenClass="flex-1 min-h-0"
+      >
+        <SearchBar
+          onClose={() => setSearchModalOpen(false)}
+          selectedFile={selectedFile}
+        />
       </Modal>
     </div>
   );

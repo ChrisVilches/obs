@@ -1,30 +1,57 @@
-const path = require('path');
-const { execFile } = require('child_process');
-const { promisify } = require('util');
+const path = require("path");
+const { execFile } = require("child_process");
+const { promisify } = require("util");
 
 const execFileAsync = promisify(execFile);
 
 async function searchFiles(rootDir, query) {
   let files = [];
   try {
-    const { stdout } = await execFileAsync('find', [
-      rootDir,
-      '-type', 'f',
-      '-iname', `*${query}*`,
-      '!', '-name', '.*',
-      '!', '-path', '*/.*',
-    ], { encoding: 'utf-8', maxBuffer: 10 * 1024 * 1024 });
-    files = stdout.trim().split('\n').filter(Boolean).map(f => path.relative(rootDir, f));
+    const { stdout } = await execFileAsync(
+      "find",
+      [
+        rootDir,
+        "-type",
+        "f",
+        "-iname",
+        `*${query}*`,
+        "!",
+        "-name",
+        ".*",
+        "!",
+        "-path",
+        "*/.*",
+      ],
+      { encoding: "utf-8", maxBuffer: 10 * 1024 * 1024 },
+    );
+    files = stdout
+      .trim()
+      .split("\n")
+      .filter(Boolean)
+      .map((f) => path.relative(rootDir, f));
   } catch (e) {
-    console.error(e)
+    console.error(e);
   }
 
   let contentMatches = [];
   try {
-    const { stdout } = await execFileAsync('rg', ['-lFi', query, rootDir], { encoding: 'utf-8', maxBuffer: 10 * 1024 * 1024 });
-    contentMatches = stdout.trim().split('\n').filter(Boolean).slice(0, 50).map(f => path.relative(rootDir, f));
+    const { stdout } = await execFileAsync("rg", ["-lFi", query, rootDir], {
+      encoding: "utf-8",
+      maxBuffer: 10 * 1024 * 1024,
+    });
+    contentMatches = stdout
+      .trim()
+      .split("\n")
+      .filter(Boolean)
+      .slice(0, 50)
+      .map((f) => path.relative(rootDir, f));
   } catch (err) {
-    contentMatches = (err.stdout || '').trim().split('\n').filter(Boolean).slice(0, 50).map(f => path.relative(rootDir, f));
+    contentMatches = (err.stdout || "")
+      .trim()
+      .split("\n")
+      .filter(Boolean)
+      .slice(0, 50)
+      .map((f) => path.relative(rootDir, f));
   }
 
   return { files, contentMatches };
