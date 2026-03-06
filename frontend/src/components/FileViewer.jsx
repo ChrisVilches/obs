@@ -55,10 +55,10 @@ export default function FileViewer({ file }) {
   useEffect(() => {
     setEditMode(false);
     setErrorMessage(null);
-  }, [file]);
+  }, []);
 
-  const handleEdit = useCallback(() => setEditMode(true), [setEditMode]);
-  const handleCancel = useCallback(() => setEditMode(false), [setEditMode]);
+  const handleEdit = useCallback(() => setEditMode(true), []);
+  const handleCancel = useCallback(() => setEditMode(false), []);
 
   useEffect(() => {
     if (!fileContentRef.current || !editMode) return;
@@ -68,7 +68,7 @@ export default function FileViewer({ file }) {
     fileContentRef.current.focus();
     fileContentRef.current.setSelectionRange(0, 0);
     fileContentRef.current.scrollTop = 0;
-  }, [editMode]);
+  }, [editMode, info.content]);
 
   const saveFile = useCallback(
     async (force) => {

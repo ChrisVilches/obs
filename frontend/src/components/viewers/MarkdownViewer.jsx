@@ -17,6 +17,7 @@ export default function MarkdownViewer({ file, content }) {
               <img
                 {...props}
                 src={newSrc}
+                alt={props.alt || ""}
                 className="rounded-lg shadow-md my-4"
               />
             );

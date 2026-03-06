@@ -22,6 +22,7 @@ export default function FileNameDisplay({
   return (
     <div className="flex items-center gap-3 min-w-0">
       <button
+        type="button"
         onClick={() => onShowFileNameModal(true)}
         className="text-sm text-gray-300 truncate hover:text-indigo-400 transition-colors text-left min-w-0"
       >

@@ -1,6 +1,6 @@
-const path = require("path");
-const { execFile } = require("child_process");
-const { promisify } = require("util");
+const path = require("node:path");
+const { execFile } = require("node:child_process");
+const { promisify } = require("node:util");
 
 const execFileAsync = promisify(execFile);
 

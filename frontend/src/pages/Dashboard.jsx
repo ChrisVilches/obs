@@ -18,7 +18,7 @@ export default function Dashboard() {
     setLayoutTopContent({
       title: <h1 className="text-sm font-semibold text-gray-300">Dashboard</h1>,
     });
-  }, []);
+  }, [setLayoutTopContent]);
 
   return (
     <div className="min-h-full flex flex-col">

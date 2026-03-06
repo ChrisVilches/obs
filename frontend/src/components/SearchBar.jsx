@@ -26,6 +26,7 @@ function Results({ results, onClose }) {
         <div className="flex border-b border-gray-700">
           {tabs.map((t) => (
             <button
+              type="button"
               key={t.key}
               onClick={() => setTab(t.key)}
               className={`flex-1 px-2 py-1.5 text-xs font-medium transition-colors ${
@@ -69,6 +70,7 @@ function SearchInputIcon({ loading, onClear }) {
 
   return (
     <button
+      type="button"
       onClick={onClear}
       aria-label="Clear search"
       className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center p-1 text-gray-400 hover:text-gray-200 transition-colors"

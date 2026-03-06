@@ -13,5 +13,5 @@ export default function useAutoFocus(ref, { enabled = true, delay = 0 } = {}) {
       const id = setTimeout(() => el.focus(), delay);
       return () => clearTimeout(id);
     }
-  }, [enabled, delay]);
+  }, [enabled, delay, ref.current]);
 }

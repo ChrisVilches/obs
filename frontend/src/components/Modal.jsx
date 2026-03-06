@@ -25,6 +25,7 @@ export default function Modal({
               {title}
             </DialogTitle>
             <button
+              type="button"
               onClick={onClose}
               className="p-1 rounded-md text-gray-500 hover:text-white hover:bg-gray-800 transition-colors"
               aria-label="Close"

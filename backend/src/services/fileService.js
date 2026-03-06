@@ -1,7 +1,7 @@
-const path = require("path");
-const fs = require("fs");
-const { execFile } = require("child_process");
-const { promisify } = require("util");
+const path = require("node:path");
+const fs = require("node:fs");
+const { execFile } = require("node:child_process");
+const { promisify } = require("node:util");
 const { emit } = require("../eventChannel");
 
 const execFileAsync = promisify(execFile);
@@ -21,7 +21,7 @@ function ensureTrailingNewline(fileContent = "") {
     return "";
   }
 
-  return fileContent.endsWith("\n") ? fileContent : fileContent + "\n";
+  return fileContent.endsWith("\n") ? fileContent : `${fileContent}\n`;
 }
 
 async function listFiles(rootDir) {

@@ -62,7 +62,7 @@ function FileIcon({ path, className }) {
 }
 
 function dirPath(path) {
-  return path.includes("/") ? "/" + path.slice(0, path.lastIndexOf("/")) : "/";
+  return path.includes("/") ? `/${path.slice(0, path.lastIndexOf("/"))}` : "/";
 }
 
 function formatRelativeTime(isoString) {
@@ -89,6 +89,7 @@ export default function FileList({
     return (
       <div className="space-y-2">
         {Array.from({ length: 5 }).map((_, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton
           <div key={i} className="h-10 bg-gray-800 rounded-md animate-pulse" />
         ))}
       </div>

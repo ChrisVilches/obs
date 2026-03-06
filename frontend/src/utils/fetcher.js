@@ -35,7 +35,7 @@ async function parseResponse(res) {
 }
 
 function createHttpError(data, res) {
-  const message = (data && data.error) || `HTTP ${res.status}`;
+  const message = data?.error || `HTTP ${res.status}`;
   const error = new Error(message);
   error.status = res.status;
 

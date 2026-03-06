@@ -4,6 +4,7 @@ export default function MediaViewer({ file, type }) {
   if (type === "audio") {
     return (
       <div className="flex-1 flex items-center justify-center p-4">
+        {/* biome-ignore lint/a11y/useMediaCaption: user-provided media files */}
         <audio src={src} controls className="w-full max-w-lg" />
       </div>
     );
@@ -11,6 +12,7 @@ export default function MediaViewer({ file, type }) {
 
   return (
     <div className="flex-1 flex items-center justify-center p-4">
+      {/* biome-ignore lint/a11y/useMediaCaption: user-provided media files */}
       <video
         src={src}
         controls

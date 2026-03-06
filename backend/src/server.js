@@ -1,4 +1,4 @@
-const path = require("path");
+const path = require("node:path");
 const express = require("express");
 const {
   listFiles,
@@ -125,7 +125,7 @@ app.get("/api/files/raw", (req, res) => {
   res.sendFile(fullPath);
 });
 
-app.get("/api", (req, res) => {
+app.get("/api", (_req, res) => {
   res.json(getStatus());
 });
 

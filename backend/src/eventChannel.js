@@ -1,5 +1,5 @@
-const fs = require("fs");
-const path = require("path");
+const fs = require("node:fs");
+const path = require("node:path");
 
 const channelConfig = process.env.EVENT_CHANNEL;
 
@@ -12,7 +12,7 @@ function noop() {}
 
 function createStdoutWriter(stream) {
   return (data) => {
-    stream.write(data + "\n");
+    stream.write(`${data}\n`);
   };
 }
 
@@ -100,7 +100,7 @@ function createFileWriter(filePath) {
   openStream();
 
   const write = (data) => {
-    const line = data + "\n";
+    const line = `${data}\n`;
 
     // If stream not ready yet, buffer events
     if (!stream) {

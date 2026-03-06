@@ -92,6 +92,7 @@ export default function Layout() {
         className="hidden md:flex flex-shrink-0 bg-gray-900 border-r border-gray-800 flex-col relative"
         style={{ width: sidebarWidth }}
       >
+        {/* biome-ignore lint/a11y/noStaticElementInteractions: drag resize handle */}
         <div
           onMouseDown={onHandleMouseDown}
           className="absolute right-[-4px] top-0 bottom-0 w-1 cursor-col-resize hover:bg-indigo-500/50 active:bg-indigo-500/70 z-10 shrink-0"
@@ -108,6 +109,7 @@ export default function Layout() {
       <div className="flex flex-col flex-1 min-w-0">
         <div className="sticky top-0 z-10 flex items-center gap-3 px-4 h-14 border-b border-gray-800 bg-gray-900 shrink-0">
           <button
+            type="button"
             onClick={() => setSidebarOpen(true)}
             className="md:hidden p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
             aria-label="Open sidebar"
