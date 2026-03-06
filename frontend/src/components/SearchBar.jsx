@@ -22,6 +22,11 @@ function Results({ debouncedQuery, isValidating, query, results, onClose }) {
       { key: 'content', label: 'Content', count: results.contentMatches.length },
     ];
 
+    const props = {
+      loading: isValidating && allItems.length === 0,
+      onItemClick: { onClose },
+    }
+
     return (
       <>
         <div className="shrink-0">
@@ -41,9 +46,9 @@ function Results({ debouncedQuery, isValidating, query, results, onClose }) {
           </div>
         </div>
         <div className="overflow-y-auto flex-1 min-h-0 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600">
-          {tab === 'all' && (<FileList items={allItems} onItemClick={onClose} emptyMessage="" />)}
-          {tab === 'files' && (<FileList items={fileItems} onItemClick={onClose} emptyMessage="No filename matches." />)}
-          {tab === 'content' && (<FileList items={contentItems} onItemClick={onClose} emptyMessage="No content matches." />)}
+          {tab === 'all' && (<FileList {...props} items={allItems} emptyMessage="No results." />)}
+          {tab === 'files' && (<FileList {...props} items={fileItems} emptyMessage="No filename matches." />)}
+          {tab === 'content' && (<FileList {...props} items={contentItems} emptyMessage="No content matches." />)}
         </div>
       </>
     )
