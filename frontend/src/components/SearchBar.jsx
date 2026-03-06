@@ -1,49 +1,25 @@
 import { useState, useEffect, useRef } from 'react';
 import { EllipsisHorizontalIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import useSWR from 'swr';
 import FileList from './FileList';
 import useDebounce from '../hooks/useDebounce';
 import useAutoFocus from '../hooks/useAutoFocus';
 
-export default function SearchBar({ onClose, onSearchActive }) {
+export default function SearchBar({ onClose }) {
   const inputRef = useRef(null);
   useAutoFocus(inputRef, { delay: 200 });
 
   const [query, setQuery] = useState('');
   const debouncedQuery = useDebounce(query, 150);
+
   const [results, setResults] = useState({ files: [], contentMatches: [] });
-  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    onSearchActive?.(debouncedQuery.length > 0);
-  }, [debouncedQuery, onSearchActive]);
+  const { data, isValidating } = useSWR(
+    debouncedQuery ? `/api/files/search?q=${encodeURIComponent(debouncedQuery)}` : null
+  );
 
-  useEffect(() => {
-    if (!debouncedQuery) {
-      setResults({ files: [], contentMatches: [] });
-      return;
-    }
-    let cancelled = false;
-    setLoading(true);
-    fetch(`/api/files/search?q=${encodeURIComponent(debouncedQuery)}`)
-      .then(res => res.json())
-      .then(data => {
-        if (!cancelled) {
-          setResults({ files: data.files || [], contentMatches: data.contentMatches || [] });
-        }
-      })
-      .catch(() => {
-        if (!cancelled) setResults({ files: [], contentMatches: [] });
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => { cancelled = true; };
-  }, [debouncedQuery]);
-
-  function handleClear() {
-    setQuery('');
-    setResults({ files: [], contentMatches: [] });
-  }
+  useEffect(() => { if (data) setResults(data) }, [data]);
+  useEffect(() => { if (!query) setResults({ files: [], contentMatches: [] }) }, [query])
 
   const [tab, setTab] = useState('all');
 
@@ -72,13 +48,13 @@ export default function SearchBar({ onClose, onSearchActive }) {
             className="w-full bg-gray-800 text-gray-200 text-sm rounded-md px-3 py-1.5 pr-8 border border-gray-700 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
           />
           {query && (
-            loading ? (
+            isValidating ? (
               <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center p-1">
                 <EllipsisHorizontalIcon className="animate-spin w-4 h-4 text-gray-400" />
               </div>
             ) : (
               <button
-                onClick={handleClear}
+                onClick={() => setQuery('')}
                 aria-label="Clear search"
                 className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center p-1 text-gray-400 hover:text-gray-200 transition-colors"
               >
@@ -90,11 +66,11 @@ export default function SearchBar({ onClose, onSearchActive }) {
       </div>
       {debouncedQuery && (
         <div className="border-t border-gray-800 flex flex-col flex-1 min-h-0">
-          {loading && !hasAnyResults ? (
+          {isValidating && !hasAnyResults ? (
             <div className="overflow-y-auto flex-1 min-h-0">
               <FileList loading emptyMessage="" />
             </div>
-          ) : !loading && !hasAnyResults ? (
+          ) : !isValidating && !hasAnyResults ? (
             <p className="px-3 py-2 text-sm text-gray-500">No files found</p>
           ) : (
             <>
