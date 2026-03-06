@@ -5,81 +5,43 @@ import FileList from './FileList';
 import useDebounce from '../hooks/useDebounce';
 import useAutoFocus from '../hooks/useAutoFocus';
 
-/*
-Specifications:
-When query is cleared, it should stop showing the results widget immediately.
-
-When there are no results after the query has completed, it should show the "No
-results" message.
-
-When it goes from no results (whether it was because the query was empty or
-because the current query had no results) to searching something, while
-searching it should show the skeleton.
-
-When it goes from having results to another query, it shouldn't show the
-skeleton while it's searching, as this would hide the current results and make
-it glitchy.
-* */
-
-function Results({ debouncedQuery, isValidating, query, results, onClose }) {
+function Results({ results, onClose }) {
   const [tab, setTab] = useState('all');
 
-  if (!query) return null
-
   const allItems = [...new Set([...results.files, ...results.contentMatches])].map(p => ({ path: p }));
+  const fileItems = results.files.map(p => ({ path: p }));
+  const contentItems = results.contentMatches.map(p => ({ path: p }));
 
-  if (allItems.length) {
-    const fileItems = results.files.map(p => ({ path: p }));
-    const contentItems = results.contentMatches.map(p => ({ path: p }));
-
-    const tabs = [
-      { key: 'all', label: 'All', count: allItems.length },
-      { key: 'files', label: 'File names', count: results.files.length },
-      { key: 'content', label: 'Content', count: results.contentMatches.length },
-    ];
-
-    const props = {
-      loading: isValidating && allItems.length === 0,
-      onItemClick: { onClose },
-    }
-
-    return (
-      <>
-        <div className="shrink-0">
-          <div className="flex border-b border-gray-700">
-            {tabs.map(t => (
-              <button
-                key={t.key}
-                onClick={() => setTab(t.key)}
-                className={`flex-1 px-2 py-1.5 text-xs font-medium transition-colors ${tab === t.key
-                  ? 'text-indigo-400 border-b-2 border-indigo-400'
-                  : 'text-gray-500 hover:text-gray-300'
-                  }`}
-              >
-                {t.label} ({t.count})
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className="overflow-y-auto flex-1 min-h-0 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600">
-          {tab === 'all' && (<FileList {...props} items={allItems} emptyMessage="No results." />)}
-          {tab === 'files' && (<FileList {...props} items={fileItems} emptyMessage="No filename matches." />)}
-          {tab === 'content' && (<FileList {...props} items={contentItems} emptyMessage="No content matches." />)}
-        </div>
-      </>
-    )
-  }
+  const tabs = [
+    { key: 'all', label: 'All', count: allItems.length },
+    { key: 'files', label: 'File names', count: results.files.length },
+    { key: 'content', label: 'Content', count: results.contentMatches.length },
+  ];
 
   return (
-    <div className="border-t border-gray-800 flex flex-col flex-1 min-h-0">
-      {isValidating ? (
-        <div className="overflow-y-auto flex-1 min-h-0">
-          <FileList loading emptyMessage="" />
+    <>
+      <div className="shrink-0">
+        <div className="flex border-b border-gray-700">
+          {tabs.map(t => (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              className={`flex-1 px-2 py-1.5 text-xs font-medium transition-colors ${tab === t.key
+                ? 'text-indigo-400 border-b-2 border-indigo-400'
+                : 'text-gray-500 hover:text-gray-300'
+                }`}
+            >
+              {t.label} ({t.count})
+            </button>
+          ))}
         </div>
-      ) : (
-        <p className="px-3 py-2 text-sm text-gray-500">No files found</p>
-      )}
-    </div>
+      </div>
+      <div className="overflow-y-auto flex-1 min-h-0 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600">
+        {tab === 'all' && <FileList items={allItems} emptyMessage="" onItemClick={onClose} />}
+        {tab === 'files' && <FileList items={fileItems} emptyMessage="" onItemClick={onClose} />}
+        {tab === 'content' && <FileList items={contentItems} emptyMessage="" onItemClick={onClose} />}
+      </div>
+    </>
   )
 }
 
@@ -117,7 +79,7 @@ export default function SearchBar({ onClose }) {
   );
 
   useEffect(() => { if (data) setResults(data) }, [data]);
-  useEffect(() => { if (!query) setResults({ files: [], contentMatches: [] }) }, [query])
+  useEffect(() => { if (!debouncedQuery) setResults({ files: [], contentMatches: [] }) }, [debouncedQuery])
 
   return (
     <div className="flex flex-col h-full">
@@ -135,7 +97,7 @@ export default function SearchBar({ onClose }) {
         </div>
       </div>
 
-      <Results debouncedQuery={debouncedQuery} isValidating={isValidating} query={query} results={results} onClose={onClose} />
+      <Results results={results} onClose={onClose} />
     </div>
   );
 }
