@@ -85,7 +85,6 @@ app.put('/api/files/content', async (req, res) => {
   res.json({ success: true, modified: changed });
 });
 
-// TODO: maybe some caching. We know the timestamp of the file so maybe use that somehow? lmfao
 app.get('/api/files/raw', (req, res) => {
   const { file, current, attachment } = z.object({
     file: pathSchema,
