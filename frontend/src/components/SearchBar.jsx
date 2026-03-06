@@ -90,11 +90,13 @@ export default function SearchBar({ onClose, onSearchActive }) {
       </div>
       {debouncedQuery && (
         <div className="border-t border-gray-800 flex flex-col flex-1 min-h-0">
-          {loading ? (
+          {loading && !hasAnyResults ? (
             <div className="overflow-y-auto flex-1 min-h-0">
               <FileList loading emptyMessage="" />
             </div>
-          ) : hasAnyResults ? (
+          ) : !loading && !hasAnyResults ? (
+            <p className="px-3 py-2 text-sm text-gray-500">No files found</p>
+          ) : (
             <>
               <div className="shrink-0">
                 <div className="flex border-b border-gray-700">
@@ -124,8 +126,6 @@ export default function SearchBar({ onClose, onSearchActive }) {
                 )}
               </div>
             </>
-          ) : (
-            <p className="px-3 py-2 text-sm text-gray-500">No files found</p>
           )}
         </div>
       )}
