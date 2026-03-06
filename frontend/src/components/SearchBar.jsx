@@ -5,6 +5,90 @@ import FileList from './FileList';
 import useDebounce from '../hooks/useDebounce';
 import useAutoFocus from '../hooks/useAutoFocus';
 
+function Results({ debouncedQuery, isValidating, query, results, onClose }) {
+  const [tab, setTab] = useState('all');
+
+  if (!query) return null
+
+  const hasAnyResults = results.files.length > 0 || results.contentMatches.length > 0;
+
+  const allItems = [...new Set([...results.files, ...results.contentMatches])].map(p => ({ path: p }));
+  const fileItems = results.files.map(p => ({ path: p }));
+  const contentItems = results.contentMatches.map(p => ({ path: p }));
+
+  const tabs = [
+    { key: 'all', label: 'All', count: allItems.length },
+    { key: 'files', label: 'File names', count: results.files.length },
+    { key: 'content', label: 'Content', count: results.contentMatches.length },
+  ];
+
+  if (hasAnyResults) {
+    return (
+      <>
+        <div className="shrink-0">
+          <div className="flex border-b border-gray-700">
+            {tabs.map(t => (
+              <button
+                key={t.key}
+                onClick={() => setTab(t.key)}
+                className={`flex-1 px-2 py-1.5 text-xs font-medium transition-colors ${tab === t.key
+                  ? 'text-indigo-400 border-b-2 border-indigo-400'
+                  : 'text-gray-500 hover:text-gray-300'
+                  }`}
+              >
+                {t.label} ({t.count})
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="overflow-y-auto flex-1 min-h-0 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600">
+          {tab === 'all' && (
+            <FileList items={allItems} onItemClick={onClose} emptyMessage="" />
+          )}
+          {tab === 'files' && (
+            <FileList items={fileItems} onItemClick={onClose} emptyMessage="No filename matches." />
+          )}
+          {tab === 'content' && (
+            <FileList items={contentItems} onItemClick={onClose} emptyMessage="No content matches." />
+          )}
+        </div>
+      </>
+    )
+  }
+
+  return (
+    <div className="border-t border-gray-800 flex flex-col flex-1 min-h-0">
+      {isValidating ? (
+        <div className="overflow-y-auto flex-1 min-h-0">
+          <FileList loading emptyMessage="" />
+        </div>
+      ) : (
+        <p className="px-3 py-2 text-sm text-gray-500">No files found</p>
+      )}
+    </div>
+  )
+}
+
+function SearchInputIcon({ loading, onClear }) {
+  if (loading) {
+    return (
+      <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center p-1">
+        <EllipsisHorizontalIcon className="animate-spin w-4 h-4 text-gray-400" />
+      </div>
+    )
+  }
+
+  return (
+    <button
+      onClick={onClear}
+      aria-label="Clear search"
+      className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center p-1 text-gray-400 hover:text-gray-200 transition-colors"
+    >
+      <XMarkIcon className="w-4 h-4" />
+    </button>
+  )
+}
+
 export default function SearchBar({ onClose }) {
   const inputRef = useRef(null);
   useAutoFocus(inputRef, { delay: 200 });
@@ -21,20 +105,6 @@ export default function SearchBar({ onClose }) {
   useEffect(() => { if (data) setResults(data) }, [data]);
   useEffect(() => { if (!query) setResults({ files: [], contentMatches: [] }) }, [query])
 
-  const [tab, setTab] = useState('all');
-
-  const hasAnyResults = results.files.length > 0 || results.contentMatches.length > 0;
-
-  const allItems = [...new Set([...results.files, ...results.contentMatches])].map(p => ({ path: p }));
-  const fileItems = results.files.map(p => ({ path: p }));
-  const contentItems = results.contentMatches.map(p => ({ path: p }));
-
-  const tabs = [
-    { key: 'all', label: 'All', count: allItems.length },
-    { key: 'files', label: 'File names', count: results.files.length },
-    { key: 'content', label: 'Content', count: results.contentMatches.length },
-  ];
-
   return (
     <div className="flex flex-col h-full">
       <div className="shrink-0">
@@ -47,64 +117,11 @@ export default function SearchBar({ onClose }) {
             placeholder="Search files..."
             className="w-full bg-gray-800 text-gray-200 text-sm rounded-md px-3 py-1.5 pr-8 border border-gray-700 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
           />
-          {query && (
-            isValidating ? (
-              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center p-1">
-                <EllipsisHorizontalIcon className="animate-spin w-4 h-4 text-gray-400" />
-              </div>
-            ) : (
-              <button
-                onClick={() => setQuery('')}
-                aria-label="Clear search"
-                className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center p-1 text-gray-400 hover:text-gray-200 transition-colors"
-              >
-                <XMarkIcon className="w-4 h-4" />
-              </button>
-            )
-          )}
+          {query && <SearchInputIcon loading={isValidating} onClear={() => setQuery('')} />}
         </div>
       </div>
-      {debouncedQuery && (
-        <div className="border-t border-gray-800 flex flex-col flex-1 min-h-0">
-          {isValidating && !hasAnyResults ? (
-            <div className="overflow-y-auto flex-1 min-h-0">
-              <FileList loading emptyMessage="" />
-            </div>
-          ) : !isValidating && !hasAnyResults ? (
-            <p className="px-3 py-2 text-sm text-gray-500">No files found</p>
-          ) : (
-            <>
-              <div className="shrink-0">
-                <div className="flex border-b border-gray-700">
-                  {tabs.map(t => (
-                    <button
-                      key={t.key}
-                      onClick={() => setTab(t.key)}
-                      className={`flex-1 px-2 py-1.5 text-xs font-medium transition-colors ${tab === t.key
-                        ? 'text-indigo-400 border-b-2 border-indigo-400'
-                        : 'text-gray-500 hover:text-gray-300'
-                        }`}
-                    >
-                      {t.label} ({t.count})
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="overflow-y-auto flex-1 min-h-0 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600">
-                {tab === 'all' && (
-                  <FileList items={allItems} onItemClick={onClose} emptyMessage="" />
-                )}
-                {tab === 'files' && (
-                  <FileList items={fileItems} onItemClick={onClose} emptyMessage="No filename matches." />
-                )}
-                {tab === 'content' && (
-                  <FileList items={contentItems} onItemClick={onClose} emptyMessage="No content matches." />
-                )}
-              </div>
-            </>
-          )}
-        </div>
-      )}
+
+      <Results debouncedQuery={debouncedQuery} isValidating={isValidating} query={query} results={results} onClose={onClose} />
     </div>
   );
 }
