@@ -33,8 +33,6 @@ function showModifiedToast(modified) {
   });
 }
 
-// TODO: when and why is "file" null? I want to make it strictly required
-// (and validate the parent).
 export default function FileViewer({ file }) {
   const { mutate } = useSWRConfig();
   const infoKey = `/api/files/info?file=${encodeURIComponent(file)}`;
@@ -46,9 +44,6 @@ export default function FileViewer({ file }) {
   const fileContentRef = useRef(null);
   const [showFileNameModal, setShowFileNameModal] = useState(false);
   const [showConflictModal, setShowConflictModal] = useState(false);
-
-  // TODO: remove this later
-  if (!file) throw new Error("fatal. File is null")
 
   useEffect(() => {
     setEditMode(false);
