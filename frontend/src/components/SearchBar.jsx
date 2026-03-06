@@ -5,6 +5,22 @@ import FileList from './FileList';
 import useDebounce from '../hooks/useDebounce';
 import useAutoFocus from '../hooks/useAutoFocus';
 
+/*
+Specifications:
+When query is cleared, it should stop showing the results widget immediately.
+
+When there are no results after the query has completed, it should show the "No
+results" message.
+
+When it goes from no results (whether it was because the query was empty or
+because the current query had no results) to searching something, while
+searching it should show the skeleton.
+
+When it goes from having results to another query, it shouldn't show the
+skeleton while it's searching, as this would hide the current results and make
+it glitchy.
+* */
+
 function Results({ debouncedQuery, isValidating, query, results, onClose }) {
   const [tab, setTab] = useState('all');
 
