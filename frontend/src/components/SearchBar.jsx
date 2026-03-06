@@ -10,19 +10,18 @@ function Results({ debouncedQuery, isValidating, query, results, onClose }) {
 
   if (!query) return null
 
-  const hasAnyResults = results.files.length > 0 || results.contentMatches.length > 0;
-
   const allItems = [...new Set([...results.files, ...results.contentMatches])].map(p => ({ path: p }));
-  const fileItems = results.files.map(p => ({ path: p }));
-  const contentItems = results.contentMatches.map(p => ({ path: p }));
 
-  const tabs = [
-    { key: 'all', label: 'All', count: allItems.length },
-    { key: 'files', label: 'File names', count: results.files.length },
-    { key: 'content', label: 'Content', count: results.contentMatches.length },
-  ];
+  if (allItems.length) {
+    const fileItems = results.files.map(p => ({ path: p }));
+    const contentItems = results.contentMatches.map(p => ({ path: p }));
 
-  if (hasAnyResults) {
+    const tabs = [
+      { key: 'all', label: 'All', count: allItems.length },
+      { key: 'files', label: 'File names', count: results.files.length },
+      { key: 'content', label: 'Content', count: results.contentMatches.length },
+    ];
+
     return (
       <>
         <div className="shrink-0">
@@ -42,15 +41,9 @@ function Results({ debouncedQuery, isValidating, query, results, onClose }) {
           </div>
         </div>
         <div className="overflow-y-auto flex-1 min-h-0 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600">
-          {tab === 'all' && (
-            <FileList items={allItems} onItemClick={onClose} emptyMessage="" />
-          )}
-          {tab === 'files' && (
-            <FileList items={fileItems} onItemClick={onClose} emptyMessage="No filename matches." />
-          )}
-          {tab === 'content' && (
-            <FileList items={contentItems} onItemClick={onClose} emptyMessage="No content matches." />
-          )}
+          {tab === 'all' && (<FileList items={allItems} onItemClick={onClose} emptyMessage="" />)}
+          {tab === 'files' && (<FileList items={fileItems} onItemClick={onClose} emptyMessage="No filename matches." />)}
+          {tab === 'content' && (<FileList items={contentItems} onItemClick={onClose} emptyMessage="No content matches." />)}
         </div>
       </>
     )
