@@ -1,5 +1,8 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import "katex/dist/katex.min.css";
 import { CheckIcon } from "@heroicons/react/24/outline";
 
 function isExternalURL(url) {
@@ -25,7 +28,8 @@ export default function MarkdownViewer({ file, content }) {
   return (
     <div className="p-6 prose prose-invert max-w-full">
       <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
+        remarkPlugins={[remarkGfm, remarkMath]}
+        rehypePlugins={[rehypeKatex]}
         components={{
           img({ node, ...props }) {
             const newSrc = isExternalURL(props.src)
