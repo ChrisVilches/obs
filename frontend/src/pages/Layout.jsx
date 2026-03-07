@@ -110,7 +110,7 @@ export default function Layout() {
           <button
             type="button"
             onClick={() => setSidebarOpen(true)}
-            className="md:hidden p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
+            className="md:hidden p-2 rounded-md text-gray-400 active:text-white active:bg-gray-800 transition-colors"
             aria-label="Open sidebar"
           >
             <Bars3Icon className="w-5 h-5" />
