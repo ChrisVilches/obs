@@ -1,3 +1,33 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Remove the default browser indentation specifically for task lists */
+ul.contains-task-list {
+  padding-left: 0;
+  margin-left: 0;
+}
+
+/* 1. Target the list item to remove the default bullet point dot */
+.task-list-item {
+  list-style-type: none !important; /* Force removes the native disc/bullet */
+  display: flex;
+  align-items: flex-start;
+  margin: 6px 0;
+  padding: 4px 0;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+/* 2. Style the container based on whether the checkbox inside it is checked */
+.task-list-item:has(input[type="checkbox"]:checked) {
+  background-color: #f3f4f6;   /* Light grey background for completed tasks */
+  color: #9ca3af;              /* Dims the text color */
+  text-decoration: line-through; /* Crosses out the text */
+}
+
+/* 3. Optional: Target your custom React checkbox wrapper if needed */
+.task-list-item span {
+  margin-top: 3px;
+  flex-shrink: 0; /* Prevents the checkbox from squeezing on tiny screens */
+}
