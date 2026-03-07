@@ -1,5 +1,5 @@
 import { EllipsisHorizontalIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useCallback, useState } from "react";
 import useSWR from "swr";
 import useAutoFocus from "../hooks/useAutoFocus";
 import useDebounce from "../hooks/useDebounce";
@@ -29,11 +29,10 @@ function Results({ results, onClose }) {
               type="button"
               key={t.key}
               onClick={() => setTab(t.key)}
-              className={`flex-1 px-2 py-1.5 text-xs font-medium transition-colors ${
-                tab === t.key
-                  ? "text-indigo-400 border-b-2 border-indigo-400"
-                  : "text-gray-500 hover:text-gray-300"
-              }`}
+              className={`flex-1 px-2 py-1.5 text-xs font-medium transition-colors ${tab === t.key
+                ? "text-indigo-400 border-b-2 border-indigo-400"
+                : "text-gray-500 hover:text-gray-300"
+                }`}
             >
               {t.label} ({t.count})
             </button>
@@ -81,8 +80,17 @@ function SearchInputIcon({ loading, onClear }) {
 }
 
 export default function SearchBar({ onClose }) {
-  const inputRef = useRef(null);
-  useAutoFocus(inputRef, { delay: 200 });
+  // const inputRef = useRef(null);
+  // useAutoFocus(inputRef, { delay: 200 });
+
+  const autoFocusRef = useCallback((el) => {
+    if (!el) {
+      console.log("empty element")
+      return
+    }
+
+    el.focus()
+  }, [])
 
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebounce(query, 150);
@@ -107,7 +115,7 @@ export default function SearchBar({ onClose }) {
       <div className="shrink-0">
         <div className="relative mb-2">
           <input
-            ref={inputRef}
+            ref={autoFocusRef}
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}

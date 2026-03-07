@@ -21,9 +21,8 @@ function showModifiedToast(modified) {
     const Icon = modified ? CheckCircleIcon : InformationCircleIcon;
     return (
       <div
-        className={`${
-          t.visible ? "animate-enter" : "animate-leave"
-        } max-w-sm w-full bg-gray-800 shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
+        className={`${t.visible ? "animate-enter" : "animate-leave"
+          } max-w-sm w-full bg-gray-800 shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
       >
         <div className="flex-1 w-0 p-3">
           <div className="flex items-center">
@@ -57,8 +56,8 @@ export default function FileViewer({ file }) {
     setErrorMessage(null);
   }, [file]);
 
-  const handleEdit = useCallback(() => setEditMode(true), []);
-  const handleCancel = useCallback(() => setEditMode(false), []);
+  const handleEdit = useCallback(() => setEditMode(true), [setEditMode]);
+  const handleCancel = useCallback(() => setEditMode(false), [setEditMode]);
 
   useEffect(() => {
     if (!fileContentRef.current || !editMode) return;
