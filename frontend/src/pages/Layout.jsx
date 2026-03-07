@@ -43,6 +43,10 @@ export default function Layout() {
     setBookmarksModalOpen(true);
     setModalBookmarksLoading(true);
     try {
+      // TODO: maybe imperatively setting the data.items isn't necessary. Just having the
+      // data associated to the key should be enough. Then the modal can just see that.
+      // Maybe the loading state can also be just handled inside the modal.
+      // TODO: try to find similar usages as this one that could be refactored.
       const data = await mutate("/api/bookmarks", fetcher("/api/bookmarks"));
       setModalBookmarks(data?.items || []);
     } catch {

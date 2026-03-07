@@ -185,7 +185,7 @@ export default function FileViewer({ file }) {
       ) : type === "image" ? (
         <ImageViewer file={file} />
       ) : type === "markdown" ? (
-        <MarkdownViewer file={file} content={info.content} />
+        <MarkdownViewer mtime={info.mtime} file={file} content={info.content} />
       ) : type === "audio" || type === "video" ? (
         <MediaViewer file={file} type={type} />
       ) : type === "binary" ? (

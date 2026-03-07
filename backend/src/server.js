@@ -4,6 +4,7 @@ const {
   listFiles,
   getRecentFiles,
   getFileInfo,
+  toggleFileCheckbox,
   writeFileContent,
   resolveRawPath,
   VersionConflictError,
@@ -102,6 +103,19 @@ app.put("/api/files/content", async (req, res) => {
   const changed = await writeFileContent(ROOT_DIR, file, content, mtime, force);
   res.json({ success: true, modified: changed });
 });
+
+app.put("/api/files/checkbox", async (req, res) => {
+  const { file, checked, line, mtime } = z
+    .object({
+      file: pathSchema,
+      checked: z.coerce.boolean(),
+      line: z.coerce.number().int().min(1),
+      mtime: z.iso.datetime(),
+    })
+    .parse(req.body);
+  await toggleFileCheckbox(ROOT_DIR, file, checked, line, mtime)
+  res.json(await getFileInfo(ROOT_DIR, BOOKMARKS_FILE, file));
+})
 
 app.get("/api/files/raw", (req, res) => {
   const { file, current, attachment } = z

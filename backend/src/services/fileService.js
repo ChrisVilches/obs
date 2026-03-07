@@ -121,6 +121,35 @@ async function getFileInfo(rootDir, bookmarksFile, relativePath) {
   return result;
 }
 
+async function toggleFileCheckbox(rootDir, file, checked, line, mtime) {
+  const fullPath = path.join(rootDir, file);
+  assertPathInsideRoot(rootDir, fullPath);
+
+  const stat = await fs.promises.stat(fullPath);
+  if (stat.mtime.toISOString() !== mtime) {
+    throw new VersionConflictError();
+  }
+
+  let content = await fs.promises.readFile(fullPath, "utf-8");
+
+  const lines = content.split("\n");
+  const idx = line - 1;
+
+  // TODO: It seems there could be other formats for checkbox, such as extra spaces, etc.
+  // since the line is specified, we can use our own loose specification.
+  // TODO: the - must be the first (perhaps with extra whitespace) character. Modify the regex.
+  if (checked) {
+    lines[idx] = lines[idx].replace(/- \[ \]/, "- [x]");
+  } else {
+    lines[idx] = lines[idx].replace(/- \[x\]/, "- [ ]");
+  }
+
+  content = ensureTrailingNewline(lines.join("\n"));
+
+  await fs.promises.writeFile(fullPath, content, "utf-8");
+  emit({ type: "file_updated", file, timestamp: new Date().toISOString() });
+}
+
 async function writeFileContent(rootDir, file, content, mtime, force) {
   content = ensureTrailingNewline(content);
   const fullPath = path.join(rootDir, file);
@@ -158,6 +187,7 @@ module.exports = {
   listFiles,
   getRecentFiles,
   getFileInfo,
+  toggleFileCheckbox,
   writeFileContent,
   resolveRawPath,
   VersionConflictError,
