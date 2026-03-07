@@ -10,12 +10,9 @@ import { Link, useSearchParams } from "react-router-dom";
 const GITHUB_URL = "https://github.com/ChrisVilches/obs";
 
 // On mobile the sidemenu unmounts and remounts each time it opens (via Dialog),
-// so this effect runs on every open. If the sidemenum ever switches to show/hide
+// so this effect runs on every open. If the sidemenu ever switches to show/hide
 // (keeping the same instance mounted), the open/close state would need to be
 // added as a dependency.
-//
-// Note: remounting also means tree expansion state is lost between opens (see
-// the mobile tree-reset TODO below).
 function useExpandTreeToFile(selectedFile, files, setExpandedSet) {
   useEffect(() => {
     if (!selectedFile || !files?.includes(selectedFile) || !selectedFile.includes("/")) {
@@ -112,14 +109,6 @@ function SidemenuHeader({
     </div>
   );
 }
-
-// TODO: (mobile) open, expand tree, close, open again.
-// Expected: nodes should remain expanded
-// Current: tree is resetted.
-
-// TODO: There are two effects to scroll, however I'm under the impression that they both
-// execute for both sidebars (desktop and mobile), since there's no way to distinguish.
-// I should audit this code more and improve it.
 
 function buildTree(files) {
   const root = [];
