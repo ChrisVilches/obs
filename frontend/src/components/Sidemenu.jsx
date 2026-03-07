@@ -9,11 +9,13 @@ import { Link, useSearchParams } from "react-router-dom";
 
 const GITHUB_URL = "https://github.com/ChrisVilches/obs";
 
-// NOTE: It seems on mobile the sidemenu is initialized from scratch every time
-// it's opened, which is OK (it'd be slightly better if there was just one
-// instance). This means that this hook always gets executed, and it's not
-// necessary to add the open/close state to the dependency array, but it might
-// be in case the specification changes.
+// On mobile the sidemenu unmounts and remounts each time it opens (via Dialog),
+// so this effect runs on every open. If the sidemenum ever switches to show/hide
+// (keeping the same instance mounted), the open/close state would need to be
+// added as a dependency.
+//
+// Note: remounting also means tree expansion state is lost between opens (see
+// the mobile tree-reset TODO below).
 function useExpandTreeToFile(selectedFile, files, setExpandedSet) {
   useEffect(() => {
     if (!selectedFile || !files?.includes(selectedFile) || !selectedFile.includes("/")) {
