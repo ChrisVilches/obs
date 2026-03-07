@@ -42,6 +42,7 @@ function createHttpError(data, res) {
   // Spread caller data under a dedicated key so we never shadow Error
   // built-ins (message, stack, name) or the status we just set.
   error.data = data;
+  error.code = data?.code;
 
   return error;
 }
