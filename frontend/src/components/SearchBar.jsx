@@ -1,7 +1,6 @@
 import { EllipsisHorizontalIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { useEffect, useRef, useCallback, useState } from "react";
+import { useEffect, useState } from "react";
 import useSWR from "swr";
-import useAutoFocus from "../hooks/useAutoFocus";
 import useDebounce from "../hooks/useDebounce";
 import FileList from "./FileList";
 
@@ -80,9 +79,6 @@ function SearchInputIcon({ loading, onClear }) {
 }
 
 export default function SearchBar({ onClose }) {
-  // const inputRef = useRef(null);
-  // useAutoFocus(inputRef, { delay: 200 });
-
   const autoFocusRef = (el) => {
     if (!el) return
     setTimeout(() => el.focus())
