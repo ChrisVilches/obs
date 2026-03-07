@@ -83,14 +83,10 @@ export default function SearchBar({ onClose }) {
   // const inputRef = useRef(null);
   // useAutoFocus(inputRef, { delay: 200 });
 
-  const autoFocusRef = useCallback((el) => {
-    if (!el) {
-      console.log("empty element")
-      return
-    }
-
-    el.focus()
-  }, [])
+  const autoFocusRef = (el) => {
+    if (!el) return
+    setTimeout(() => el.focus())
+  }
 
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebounce(query, 150);
