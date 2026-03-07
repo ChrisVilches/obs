@@ -340,10 +340,7 @@ export default function Sidemenu({
         onSearchClick={onSearchClick}
         onBookmarkClick={onBookmarkClick}
       />
-      <nav
-        className="flex-1 overflow-y-auto overflow-x-hidden p-2 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600"
-        style={{ scrollbarGutter: "stable" }}
-      >
+      <nav className="flex-1 overflow-y-auto overflow-x-hidden p-2 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600">
         {loading ? (
           <SidemenuSkeleton />
         ) : (
