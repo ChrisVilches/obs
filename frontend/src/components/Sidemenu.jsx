@@ -1,5 +1,10 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+
+// TODO: The API returns only files (flat paths), so folders are derived by
+// splitting file paths. Empty folders (with no files) never appear in the
+// tree. If empty folders need to be visible, the backend would need to return
+// directory entries as well.
 
 function buildTree(files) {
   const root = [];
@@ -140,6 +145,29 @@ export default function Sidemenu({ files, onClose }) {
       return next;
     });
   }
+
+  useEffect(() => {
+    if (!selectedFile) return;
+    const parts = selectedFile.split('/');
+    if (parts.length <= 1) return;
+
+    const ancestors = [];
+    for (let i = 0; i < parts.length - 1; i++) {
+      ancestors.push(parts.slice(0, i + 1).join('/'));
+    }
+
+    setExpandedSet(prev => {
+      const next = new Set(prev);
+      let changed = false;
+      for (const path of ancestors) {
+        if (!next.has(path)) {
+          next.add(path);
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [selectedFile]);
 
   return (
     <nav className="flex-1 overflow-y-auto p-2">
