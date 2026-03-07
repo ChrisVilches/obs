@@ -20,9 +20,6 @@ const { z } = require("zod");
 const { fromError, createErrorMap } = require("zod-validation-error");
 const initApp = require("./initApp");
 
-// TODO: try to add a formatter and linter, but a very simple one since I'm
-// mostly vibe coding.
-
 const { app, ROOT_DIR, BOOKMARKS_FILE, PORT } = initApp();
 
 z.config({
