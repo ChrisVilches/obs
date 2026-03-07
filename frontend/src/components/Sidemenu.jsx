@@ -4,10 +4,37 @@ import {
   MagnifyingGlassIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 
 const GITHUB_URL = "https://github.com/ChrisVilches/obs";
+
+// NOTE: It seems on mobile the sidemenu is initialized from scratch every time
+// it's opened, which is OK (it'd be slightly better if there was just one
+// instance). This means that this hook always gets executed, and it's not
+// necessary to add the open/close state to the dependency array, but it might
+// be in case the specification changes.
+function useExpandTreeToFile(selectedFile, files, setExpandedSet) {
+  useEffect(() => {
+    if (!selectedFile || !files?.includes(selectedFile) || !selectedFile.includes("/")) {
+      return;
+    }
+
+    const ancestors = selectedFile
+      .split("/")
+      .slice(0, -1)
+      .reduce((paths, _, i, parts) => {
+        paths.push(parts.slice(0, i + 1).join("/"));
+        return paths;
+      }, []);
+
+    setExpandedSet((prev) => {
+      const next = new Set(prev);
+      ancestors.forEach((path) => next.add(path));
+      return next.size === prev.size ? prev : next;
+    });
+  }, [selectedFile, files, setExpandedSet]);
+}
 
 function SidemenuFooter() {
   return (
@@ -146,6 +173,7 @@ function TreeNode({
   onClose,
   expandedSet,
   onToggle,
+  selectedNodeRef,
 }) {
   if (node.type === "file") {
     const isSelected = node.path === selectedFile;
@@ -153,13 +181,12 @@ function TreeNode({
       <li>
         <Link
           to={`/file?f=${encodeURIComponent(node.path)}`}
+          ref={isSelected ? selectedNodeRef : null}
           onClick={onClose}
-          data-selected={isSelected || undefined}
-          className={`block px-3 py-1.5 rounded-md text-sm transition-colors ${
-            isSelected
-              ? "bg-indigo-900/40 text-indigo-300 font-medium"
-              : "text-gray-400 hover:bg-gray-800 hover:text-gray-200"
-          }`}
+          className={`block px-3 py-1.5 rounded-md text-sm transition-colors ${isSelected
+            ? "bg-indigo-900/40 text-indigo-300 font-medium"
+            : "text-gray-400 hover:bg-gray-800 hover:text-gray-200"
+            }`}
           style={{ paddingLeft: `${12 + depth * 16}px` }}
         >
           <span className="truncate block">{node.name}</span>
@@ -187,6 +214,7 @@ function TreeNode({
         <ul>
           {node.children.map((child) => (
             <TreeNode
+              selectedNodeRef={selectedNodeRef}
               key={child.path || child.name}
               node={child}
               depth={depth + 1}
@@ -251,14 +279,13 @@ function SidemenuSkeleton() {
 export default function Sidemenu({
   files,
   onClose,
-  sidebarOpen,
   loading,
   folderName,
   onBookmarkClick,
   onSearchClick,
 }) {
-  const navRef = useRef(null);
   const [searchParams] = useSearchParams();
+  // NOTE: This query parameter can be present on any page, not just the file viewer.
   const selectedFile = searchParams.get("f");
 
   const tree = useMemo(() => buildTree(files), [files]);
@@ -277,55 +304,33 @@ export default function Sidemenu({
     });
   }
 
+  useExpandTreeToFile(selectedFile, files, setExpandedSet)
+
+  const [scrollDone, setScrollDone] = useState(false)
   useEffect(() => {
-    if (!selectedFile) return;
-    if (!files?.includes(selectedFile)) return;
-    const parts = selectedFile.split("/");
-    if (parts.length <= 1) return;
+    setScrollDone(false)
+  }, [selectedFile])
 
-    const ancestors = [];
-    for (let i = 0; i < parts.length - 1; i++) {
-      ancestors.push(parts.slice(0, i + 1).join("/"));
-    }
+  // TODO: audit in LLM (validate claims) and refine explanation.
+  // NOTE: For mobile, the desired behavior is to scroll starting from the top every time the user opens
+  // the sidemenu.
+  // This is achieved simply because the nodes are re-expanded, and the selected file gets rendered,
+  // executing this callback ref again. Therefore it's not necessary to add the open/close state of the
+  // sidemenu as dependency.
+  //
+  // Auto scrolling doesn't work when going from mobile to desktop (the scroll position won't point to the selected file).
+  // This is expected behavior because it's not supported.
+  //
+  // `scrollDone` is used because otherwise, the auto scroll would fire every
+  // time the user closes a tree node and re expands it (the callback ref gets
+  // executed).
+  const selectedNodeRef = useCallback((elem) => {
+    if (!elem || scrollDone) return
 
-    setExpandedSet((prev) => {
-      const next = new Set(prev);
-      let changed = false;
-      for (const path of ancestors) {
-        if (!next.has(path)) {
-          next.add(path);
-          changed = true;
-        }
-      }
-      return changed ? next : prev;
-    });
-  }, [selectedFile, files]);
-
-  // TODO: I replaced this useEffect with the navRef, but not the other one (for mobile)
-  // anyway there should just be one useEffect for both.
-  useEffect(() => {
-    if (!selectedFile || !navRef.current) return;
-
-    const id = requestAnimationFrame(() => {
-      const el = navRef.current.querySelector("[data-selected]");
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth", block: "center" });
-      }
-    });
-    return () => cancelAnimationFrame(id);
-  }, [selectedFile]);
-
-  // TODO: This doesn't work for mobile. Should scroll when the sidemenu is open.
-  useEffect(() => {
-    if (!sidebarOpen || !selectedFile) return;
-    const id = setTimeout(() => {
-      const el = document.querySelector("[data-selected]");
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth", block: "center" });
-      }
-    }, 350);
-    return () => clearTimeout(id);
-  }, [sidebarOpen, selectedFile]);
+    console.info("scrolling", loading)
+    elem.scrollIntoView({ behavior: "smooth", block: "center" });
+    setScrollDone(true)
+  }, [scrollDone])
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
@@ -336,7 +341,6 @@ export default function Sidemenu({
         onBookmarkClick={onBookmarkClick}
       />
       <nav
-        ref={navRef}
         className="flex-1 overflow-y-auto overflow-x-hidden p-2 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600"
         style={{ scrollbarGutter: "stable" }}
       >
@@ -347,6 +351,7 @@ export default function Sidemenu({
             {tree.map((node) => (
               <TreeNode
                 key={node.path || node.name}
+                selectedNodeRef={selectedNodeRef}
                 node={node}
                 depth={0}
                 selectedFile={selectedFile}

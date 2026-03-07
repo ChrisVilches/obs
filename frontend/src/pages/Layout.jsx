@@ -72,7 +72,6 @@ export default function Layout() {
               files={files}
               loading={filesLoading}
               onClose={() => setSidebarOpen(false)}
-              sidebarOpen={sidebarOpen}
               folderName={folderName}
               onBookmarkClick={() => {
                 setSidebarOpen(false);
