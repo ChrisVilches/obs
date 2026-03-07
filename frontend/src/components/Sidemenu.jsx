@@ -311,19 +311,17 @@ export default function Sidemenu({
     setScrollDone(false)
   }, [selectedFile])
 
-  // TODO: audit in LLM (validate claims) and refine explanation.
-  // NOTE: For mobile, the desired behavior is to scroll starting from the top every time the user opens
-  // the sidemenu.
-  // This is achieved simply because the nodes are re-expanded, and the selected file gets rendered,
-  // executing this callback ref again. Therefore it's not necessary to add the open/close state of the
-  // sidemenu as dependency.
+  // On mobile, the sidemenu unmounts and remounts from scratch each time it opens.
+  // This causes tree nodes to re-expand, re-rendering the selected file and
+  // triggering the callback ref below. If the sidemenu were simply hidden and shown
+  // (e.g. display: none), the open/close state would need to be an effect dependency.
   //
-  // Auto scrolling doesn't work when going from mobile to desktop (the scroll position won't point to the selected file).
-  // This is expected behavior because it's not supported.
+  // Resizing from mobile to desktop does not re-scroll — the desktop sidemenu is
+  // always mounted and doesn't remount on resize.
   //
-  // `scrollDone` is used because otherwise, the auto scroll would fire every
-  // time the user closes a tree node and re expands it (the callback ref gets
-  // executed).
+  // `scrollDone` prevents the auto-scroll from firing again when the user collapses
+  // and re-expands an ancestor of the selected file (which unmounts and remounts
+  // the selected file's element, triggering the callback ref).
   const selectedNodeRef = useCallback((elem) => {
     if (!elem || scrollDone) return
 
