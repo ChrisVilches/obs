@@ -15,7 +15,11 @@ const GITHUB_URL = "https://github.com/ChrisVilches/obs";
 // added as a dependency.
 function useExpandTreeToFile(selectedFile, files, setExpandedSet) {
   useEffect(() => {
-    if (!selectedFile || !files?.includes(selectedFile) || !selectedFile.includes("/")) {
+    if (
+      !selectedFile ||
+      !files?.includes(selectedFile) ||
+      !selectedFile.includes("/")
+    ) {
       return;
     }
 
@@ -174,10 +178,11 @@ function TreeNode({
           to={`/file?f=${encodeURIComponent(node.path)}`}
           ref={isSelected ? selectedNodeRef : null}
           onClick={onClose}
-          className={`block px-3 py-1.5 rounded-md text-sm transition-colors ${isSelected
-            ? "bg-indigo-900/40 text-indigo-300 font-medium"
-            : "text-gray-400 hover:bg-gray-800 hover:text-gray-200"
-            }`}
+          className={`block px-3 py-1.5 rounded-md text-sm transition-colors ${
+            isSelected
+              ? "bg-indigo-900/40 text-indigo-300 font-medium"
+              : "text-gray-400 hover:bg-gray-800 hover:text-gray-200"
+          }`}
           style={{ paddingLeft: `${12 + depth * 16}px` }}
         >
           <span className="truncate block">{node.name}</span>
@@ -295,12 +300,12 @@ export default function Sidemenu({
     });
   }
 
-  useExpandTreeToFile(selectedFile, files, setExpandedSet)
+  useExpandTreeToFile(selectedFile, files, setExpandedSet);
 
-  const [scrollDone, setScrollDone] = useState(false)
+  const [scrollDone, setScrollDone] = useState(false);
   useEffect(() => {
-    setScrollDone(false)
-  }, [selectedFile])
+    setScrollDone(false);
+  }, [selectedFile]);
 
   // On mobile, the sidemenu unmounts and remounts from scratch each time it opens.
   // This causes tree nodes to re-expand, re-rendering the selected file and
@@ -313,16 +318,19 @@ export default function Sidemenu({
   // `scrollDone` prevents the auto-scroll from firing again when the user collapses
   // and re-expands an ancestor of the selected file (which unmounts and remounts
   // the selected file's element, triggering the callback ref).
-  const selectedNodeRef = useCallback((elem) => {
-    if (!elem || scrollDone) return
-    // Ignore it when it's hidden.
-    const rect = elem.getBoundingClientRect();
-    if (rect.width === 0 || rect.height === 0) return
+  const selectedNodeRef = useCallback(
+    (elem) => {
+      if (!elem || scrollDone) return;
+      // Ignore it when it's hidden.
+      const rect = elem.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) return;
 
-    console.info("scrolling")
-    elem.scrollIntoView({ behavior: "smooth", block: "center" });
-    setScrollDone(true)
-  }, [scrollDone])
+      console.info("scrolling");
+      elem.scrollIntoView({ behavior: "smooth", block: "center" });
+      setScrollDone(true);
+    },
+    [scrollDone],
+  );
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
