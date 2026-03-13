@@ -13,27 +13,8 @@ function isExternalURL(url) {
   return url.startsWith("http://") || url.startsWith("https://");
 }
 
-function TaskCheckbox({ checked, file, id }) {
-  const handleClick = () => {
-    console.log(file, checked, id)
-  }
-
-  return (
-    <span className="inline-flex items-center select-none" >
-      <button
-        onClick={handleClick}
-        className={`inline-flex items-center justify-center size-4 rounded border-2 mr-2 transition-colors ${checked
-          ? "bg-emerald-600 border-emerald-700"
-          : "border-gray-500"
-          }`}
-      >
-        {checked && <CheckIcon className="size-3 text-white" strokeWidth={3} />}
-      </button>
-    </span>
-  );
-}
-
-
+// TODO: refactor all the toasts in this project into success, info, danger.
+// Then put them in its own utility file.
 function showErrorToast(msg) {
   toast.custom((t) => (
     <div
@@ -57,6 +38,7 @@ export default function MarkdownViewer({ file, content, mtime }) {
   const [loading, setLoading] = useState(false)
   const infoKey = `/api/files/info?file=${encodeURIComponent(file)}`;
 
+  // TODO: Move these custom elements outside, into their own standalone functions (to make the code cleaner).
   return (
     <div className="p-6 prose prose-invert max-w-full">
       <ReactMarkdown
@@ -76,11 +58,9 @@ export default function MarkdownViewer({ file, content, mtime }) {
               />
             );
           },
-          li({ node, type, children }) {
-            const copy = [...children]
-
+          li({ node, children }) {
             if (node.children.length && node.children[0]?.properties?.type === "checkbox") {
-              copy.shift()
+              const copy = children.slice(1)
               const line = node.position.start.line
               const checked = node.children[0].properties.checked
 
@@ -104,35 +84,26 @@ export default function MarkdownViewer({ file, content, mtime }) {
                 }
               }
 
+              // TODO: so-so... when clicking on the checkbox, the hover color blinks a bit (fix this glitch).
               return (
-                <li className="list-none !ml-0">
+                <li className="list-none !ml-0 flex items-start gap-2 hover:bg-white/5 rounded px-1 py-0.5 transition-colors">
                   <button
                     disabled={loading}
                     onClick={handleClick}
-                    className={`inline-flex items-center justify-center size-4 rounded border-2 mr-2 transition-colors ${checked
+                    className={`inline-flex items-center justify-center size-4 rounded border-2 mt-[5px] shrink-0 transition-colors ${checked
                       ? "bg-emerald-600 border-emerald-700"
                       : "border-gray-500"
                       }`}
                   >
                     {checked && <CheckIcon className="size-3 text-white" strokeWidth={3} />}
                   </button>
-                  {copy}
+                  <span className="flex-1">{copy}</span>
                 </li>
               )
             }
 
-            return <li>{copy}</li>
+            return <li>{children}</li>
           },
-          // input({ type, checked, node, ...props }) {
-          //   if (type === "checkbox") {
-          //     const position = node?.properties?.dataPosition
-          //       ? JSON.parse(node.properties.dataPosition)
-          //       : null;
-          //     // console.log(position); // { start: { line, column, offset }, end: ... }
-          //     return <TaskCheckbox file={file} checked={checked || false} />;
-          //   }
-          //   return <input type={type} {...props} />;
-          // },
         }}
       >
         {content || ""}
