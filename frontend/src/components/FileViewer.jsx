@@ -1,12 +1,8 @@
-import {
-  CheckCircleIcon,
-  InformationCircleIcon,
-} from "@heroicons/react/24/outline";
 import { useCallback, useEffect, useRef, useState } from "react";
-import toast from "react-hot-toast";
 import useSWR, { useSWRConfig } from "swr";
 import useFileToolbar from "../hooks/useFileToolbar";
 import { fetcher } from "../utils/fetcher";
+import { showSuccessToast, showInfoToast } from "../utils/toast";
 import Button from "./Button";
 import ErrorDisplay from "./ErrorDisplay";
 import Modal from "./Modal";
@@ -15,30 +11,6 @@ import ImageViewer from "./viewers/ImageViewer";
 import MarkdownViewer from "./viewers/MarkdownViewer";
 import MediaViewer from "./viewers/MediaViewer";
 import TextViewer from "./viewers/TextViewer";
-
-function showModifiedToast(modified) {
-  toast.custom((t) => {
-    const Icon = modified ? CheckCircleIcon : InformationCircleIcon;
-    return (
-      <div
-        className={`${
-          t.visible ? "animate-enter" : "animate-leave"
-        } max-w-sm w-full bg-gray-800 shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
-      >
-        <div className="flex-1 w-0 p-3">
-          <div className="flex items-center">
-            <Icon
-              className={`h-5 w-5 ${modified ? "text-green-400" : "text-gray-400"}`}
-            />
-            <p className="ml-2 text-sm font-medium text-gray-200">
-              {modified ? "Updated" : "No changes"}
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  });
-}
 
 export default function FileViewer({ file }) {
   const { mutate } = useSWRConfig();
@@ -88,7 +60,9 @@ export default function FileViewer({ file }) {
 
         await mutate(infoKey);
 
-        showModifiedToast(saveData.modified);
+        saveData.modified
+          ? showSuccessToast("Updated")
+          : showInfoToast("No changes");
         setEditMode(false);
       } catch (err) {
         if (err.code === "VERSION_CONFLICT") {
