@@ -72,3 +72,24 @@ server {
 ```
 
 The backend also serves the frontend when you run it directly (via `npm run start`), so both deployment styles are supported — Nginx for production serving, Node for development or simpler setups.
+
+### Authentication
+
+This application does **not** include any authentication or authorization system. If you need to restrict access, you must implement it at the web server layer (e.g. Nginx basic auth) or place the app behind a private network (e.g. a VPN or tailnet). For example, with Nginx you can use HTTP Basic Auth:
+
+```nginx
+server {
+    listen 80;
+    server_name example.com;
+
+    auth_basic "Restricted";
+    auth_basic_user_file /etc/nginx/.htpasswd;
+
+    root /path/to/frontend/dist;
+    try_files $uri /index.html;
+
+    location /api {
+        proxy_pass http://127.0.0.1:5000;
+    }
+}
+```
