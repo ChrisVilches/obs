@@ -95,13 +95,28 @@ export default function MarkdownViewer({ file, content, mtime }) {
           ul({ children }) {
             const tasks = children.map(c => c.props).filter(x => x && x.className === 'task-list-item')
             const completed = tasks.map(t => t.node.children[0].properties.checked).filter(Boolean).length
+            const total = tasks.length
+            const pct = total ? Math.round((completed / total) * 100) : 0
+
             return (
               <>
-                {tasks.length && <span>{completed} / {tasks.length}</span>}
-                <ul className="pl-0">{children}</ul >
+                {total > 0 && (
+                  <div className="flex items-center gap-3 mb-3 group">
+                    <div className="relative flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                      <div
+                        className={`absolute inset-y-0 left-0 rounded-full transition-all duration-700 ease-out ${completed === total ? 'bg-emerald-500' : 'bg-indigo-500'
+                          }`}
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                    <span className="text-xs font-medium text-gray-500 tabular-nums">
+                      {completed}/{total}
+                    </span>
+                  </div>
+                )}
+                <ul className="pl-0">{children}</ul>
               </>
             )
-
           },
           li(props) {
             return (
