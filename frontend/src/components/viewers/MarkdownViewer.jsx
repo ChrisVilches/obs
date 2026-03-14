@@ -33,7 +33,7 @@ function CheckboxListItem({ node, children, file, mtime, loading, setLoading }) 
   const infoKey = `/api/files/info?file=${encodeURIComponent(file)}`;
 
   if (!node.children.length || node.children[0]?.properties?.type !== "checkbox") {
-    return <li>{children}</li>;
+    return <li className="list-inside">{children}</li>;
   }
 
   const copy = children.slice(1);
@@ -64,7 +64,7 @@ function CheckboxListItem({ node, children, file, mtime, loading, setLoading }) 
   };
 
   return (
-    <li className="list-none !ml-0 flex items-start gap-2 hover:bg-white/5 rounded px-1 py-0.5">
+    <li className="list-none flex items-start gap-2 hover:bg-white/5 rounded pl-0 py-0.5">
       <button
         disabled={loading}
         onClick={handleClick}
@@ -91,6 +91,17 @@ export default function MarkdownViewer({ file, content, mtime }) {
         components={{
           img(props) {
             return <MarkdownImage {...props} file={file} />;
+          },
+          ul({ children }) {
+            const tasks = children.map(c => c.props).filter(x => x && x.className === 'task-list-item')
+            const completed = tasks.map(t => t.node.children[0].properties.checked).filter(Boolean).length
+            return (
+              <>
+                {tasks.length && <span>{completed} / {tasks.length}</span>}
+                <ul className="pl-0">{children}</ul >
+              </>
+            )
+
           },
           li(props) {
             return (
