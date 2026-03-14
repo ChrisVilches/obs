@@ -1,5 +1,5 @@
 import ReactMarkdown from "react-markdown";
-import { useRef } from "react";
+import { useState } from "react";
 import { fetcher } from "../../utils/fetcher";
 import { showErrorToast } from "../../utils/toast";
 import { useSWRConfig } from "swr";
@@ -28,8 +28,9 @@ function MarkdownImage({ node, src, alt, file, ...props }) {
   );
 }
 
-function CheckboxListItem({ node, children, file, mtime, mutate, infoKey }) {
-  const processingRef = useRef(false);
+function CheckboxListItem({ node, children, file, mtime, loading, setLoading }) {
+  const { mutate } = useSWRConfig();
+  const infoKey = `/api/files/info?file=${encodeURIComponent(file)}`;
 
   if (!node.children.length || node.children[0]?.properties?.type !== "checkbox") {
     return <li>{children}</li>;
@@ -40,9 +41,8 @@ function CheckboxListItem({ node, children, file, mtime, mutate, infoKey }) {
   const checked = node.children[0].properties.checked;
 
   const handleClick = async () => {
-    if (processingRef.current) return;
+    setLoading(true)
     try {
-      processingRef.current = true;
       await mutate(
         infoKey,
         fetcher("/api/files/checkbox", {
@@ -59,16 +59,16 @@ function CheckboxListItem({ node, children, file, mtime, mutate, infoKey }) {
     } catch (e) {
       showErrorToast("There was a version conflict");
     } finally {
-      processingRef.current = false;
+      setLoading(false)
     }
   };
 
-  // TODO: so-so... when clicking on the checkbox, the hover color blinks a bit (fix this glitch).
   return (
-    <li className="list-none !ml-0 flex items-start gap-2 hover:bg-white/5 rounded px-1 py-0.5 transition-colors">
+    <li className="list-none !ml-0 flex items-start gap-2 hover:bg-white/5 rounded px-1 py-0.5">
       <button
+        disabled={loading}
         onClick={handleClick}
-        className={`inline-flex items-center justify-center size-4 rounded border-2 mt-[5px] shrink-0 transition-colors ${checked
+        className={`disabled:cursor-pointer inline-flex items-center justify-center size-4 rounded border-2 mt-[5px] shrink-0 transition-colors ${checked
           ? "bg-emerald-600 border-emerald-700"
           : "border-gray-500"
           }`}
@@ -81,8 +81,7 @@ function CheckboxListItem({ node, children, file, mtime, mutate, infoKey }) {
 }
 
 export default function MarkdownViewer({ file, content, mtime }) {
-  const { mutate } = useSWRConfig();
-  const infoKey = `/api/files/info?file=${encodeURIComponent(file)}`;
+  const [loading, setLoading] = useState(false)
 
   return (
     <div className="p-6 prose prose-invert max-w-full">
@@ -99,8 +98,8 @@ export default function MarkdownViewer({ file, content, mtime }) {
                 {...props}
                 file={file}
                 mtime={mtime}
-                mutate={mutate}
-                infoKey={infoKey}
+                loading={loading}
+                setLoading={setLoading}
               />
             );
           },
