@@ -104,7 +104,7 @@ export default function MarkdownViewer({ file, content, mtime }) {
               />
             );
           },
-          code({ children, inline, node, ...props }) {
+          code({ children, node }) {
             const { start, end } = node.position
             if (start.line === end.line) {
               return (
