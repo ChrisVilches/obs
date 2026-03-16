@@ -26,7 +26,7 @@ export default function MarkdownViewer({ file }) {
   if (error) return <ErrorDisplay message={error} file={file} />;
 
   return (
-    <div className="p-6 max-w-4xl mx-auto prose prose-invert">
+    <div className="p-6 prose prose-invert max-w-full">
       <ReactMarkdown
         components={{
           img({ node, ...props }) {
