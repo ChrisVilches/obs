@@ -1,21 +1,22 @@
 import { EllipsisHorizontalIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useSWR from "swr";
 import useDebounce from "../hooks/useDebounce";
+import useListKeyboardNav from "../hooks/useListKeyboardNav";
 import FileList from "./FileList";
 
-function Results({ results, tab, setTab, selectedIndex, onClose }) {
-  const allItems = [
-    ...new Set([...results.files, ...results.contentMatches]),
-  ].map((p) => ({ path: p }));
-  const fileItems = results.files.map((p) => ({ path: p }));
-  const contentItems = results.contentMatches.map((p) => ({ path: p }));
+function Results({ allPaths, filePaths, contentPaths, tab, setTab, selectedIndex, onClose }) {
+  const { allItems, fileItems, contentItems } = useMemo(() => ({
+    allItems: allPaths.map((p) => ({ path: p })),
+    fileItems: filePaths.map((p) => ({ path: p })),
+    contentItems: contentPaths.map((p) => ({ path: p })),
+  }), [allPaths, filePaths, contentPaths]);
 
   const tabs = [
     { key: "all", label: "All", count: allItems.length },
-    { key: "files", label: "File names", count: results.files.length },
-    { key: "content", label: "Content", count: results.contentMatches.length },
+    { key: "files", label: "File names", count: fileItems.length },
+    { key: "content", label: "Content", count: contentItems.length },
   ];
 
   return (
@@ -27,11 +28,10 @@ function Results({ results, tab, setTab, selectedIndex, onClose }) {
               type="button"
               key={t.key}
               onClick={() => setTab(t.key)}
-              className={`flex-1 px-2 py-1.5 text-xs font-medium transition-colors ${
-                tab === t.key
-                  ? "text-indigo-400 border-b-2 border-indigo-400"
-                  : "text-gray-500 hover:text-gray-300"
-              }`}
+              className={`flex-1 px-2 py-1.5 text-xs font-medium transition-colors ${tab === t.key
+                ? "text-indigo-400 border-b-2 border-indigo-400"
+                : "text-gray-500 hover:text-gray-300"
+                }`}
             >
               {t.label} ({t.count})
             </button>
@@ -89,9 +89,14 @@ export default function SearchBar({ onClose }) {
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebounce(query, 150);
   const [tab, setTab] = useState("all");
-  const [selectedIndex, setSelectedIndex] = useState(-1);
 
   const [results, setResults] = useState({ files: [], contentMatches: [] });
+  const filePaths = results.files;
+  const contentPaths = results.contentMatches;
+  const allPaths = useMemo(
+    () => [...new Set([...filePaths, ...contentPaths])],
+    [filePaths, contentPaths],
+  );
 
   const { data, isValidating } = useSWR(
     debouncedQuery
@@ -106,56 +111,25 @@ export default function SearchBar({ onClose }) {
     if (!debouncedQuery) setResults({ files: [], contentMatches: [] });
   }, [debouncedQuery]);
 
-  useEffect(() => {
-    const items = getVisibleItems();
-    setSelectedIndex((prev) => {
-      if (items.length === 0) return -1;
-      if (prev < 0) return 0;
-      if (prev >= items.length) return items.length - 1;
-      return prev;
-    });
-  }, [results]);
-
-  useEffect(() => {
-    const items = getVisibleItems();
-    setSelectedIndex(items.length > 0 ? 0 : -1);
-  }, [tab]);
-
   const getVisibleItems = useCallback(() => {
-    if (tab === "all") {
-      return [
-        ...new Set([...results.files, ...results.contentMatches]),
-      ];
-    }
-    if (tab === "content") return results.contentMatches;
-    return results.files;
-  }, [results, tab]);
+    if (tab === "all") return allPaths;
+    if (tab === "content") return contentPaths;
+    return filePaths;
+  }, [allPaths, filePaths, contentPaths, tab]);
 
-  const handleKeyDown = (e) => {
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      const items = getVisibleItems();
-      if (items.length === 0) return;
-      setSelectedIndex((prev) => Math.min(prev + 1, items.length - 1));
-      return;
-    }
+  const visibleItems = getVisibleItems();
 
-    if (e.key === "ArrowUp") {
-      e.preventDefault();
-      setSelectedIndex((prev) => Math.max(prev - 1, 0));
-      return;
-    }
+  const { selectedIndex, handleKeyDown, setSelectedIndex } = useListKeyboardNav({
+    items: visibleItems,
+    onSelect: (item) => {
+      navigate(`/file?f=${encodeURIComponent(item)}`);
+      onClose();
+    },
+  });
 
-    if (e.key === "Enter" && selectedIndex >= 0) {
-      e.preventDefault();
-      const items = getVisibleItems();
-      const item = items[selectedIndex];
-      if (item) {
-        navigate(`/file?f=${encodeURIComponent(item)}`);
-        onClose();
-      }
-    }
-  };
+  useEffect(() => {
+    setSelectedIndex(visibleItems.length > 0 ? 0 : -1);
+  }, [tab]);
 
   return (
     <div className="flex flex-col h-full">
@@ -179,7 +153,7 @@ export default function SearchBar({ onClose }) {
         </div>
       </div>
 
-      <Results results={results} tab={tab} setTab={setTab} selectedIndex={selectedIndex} onClose={onClose} />
+      <Results allPaths={allPaths} filePaths={filePaths} contentPaths={contentPaths} tab={tab} setTab={setTab} selectedIndex={selectedIndex} onClose={onClose} />
     </div>
   );
 }
