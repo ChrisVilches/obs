@@ -1,12 +1,11 @@
 import { EllipsisHorizontalIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import useSWR from "swr";
 import useDebounce from "../hooks/useDebounce";
 import FileList from "./FileList";
 
-function Results({ results, onClose }) {
-  const [tab, setTab] = useState("all");
-
+function Results({ results, tab, setTab, selectedIndex, onClose }) {
   const allItems = [
     ...new Set([...results.files, ...results.contentMatches]),
   ].map((p) => ({ path: p }));
@@ -41,16 +40,17 @@ function Results({ results, onClose }) {
       </div>
       <div className="overflow-y-auto flex-1 min-h-0 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600">
         {tab === "all" && (
-          <FileList items={allItems} emptyMessage="" onItemClick={onClose} />
+          <FileList items={allItems} emptyMessage="" onItemClick={onClose} selectedIndex={selectedIndex} />
         )}
         {tab === "files" && (
-          <FileList items={fileItems} emptyMessage="" onItemClick={onClose} />
+          <FileList items={fileItems} emptyMessage="" onItemClick={onClose} selectedIndex={selectedIndex} />
         )}
         {tab === "content" && (
           <FileList
             items={contentItems}
             emptyMessage=""
             onItemClick={onClose}
+            selectedIndex={selectedIndex}
           />
         )}
       </div>
@@ -80,6 +80,7 @@ function SearchInputIcon({ loading, onClear }) {
 }
 
 export default function SearchBar({ onClose }) {
+  const navigate = useNavigate();
   const autoFocusRef = (el) => {
     if (!el) return;
     setTimeout(() => el.focus());
@@ -87,6 +88,8 @@ export default function SearchBar({ onClose }) {
 
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebounce(query, 150);
+  const [tab, setTab] = useState("all");
+  const [selectedIndex, setSelectedIndex] = useState(-1);
 
   const [results, setResults] = useState({ files: [], contentMatches: [] });
 
@@ -103,6 +106,57 @@ export default function SearchBar({ onClose }) {
     if (!debouncedQuery) setResults({ files: [], contentMatches: [] });
   }, [debouncedQuery]);
 
+  useEffect(() => {
+    const items = getVisibleItems();
+    setSelectedIndex((prev) => {
+      if (items.length === 0) return -1;
+      if (prev < 0) return 0;
+      if (prev >= items.length) return items.length - 1;
+      return prev;
+    });
+  }, [results]);
+
+  useEffect(() => {
+    const items = getVisibleItems();
+    setSelectedIndex(items.length > 0 ? 0 : -1);
+  }, [tab]);
+
+  const getVisibleItems = useCallback(() => {
+    if (tab === "all") {
+      return [
+        ...new Set([...results.files, ...results.contentMatches]),
+      ];
+    }
+    if (tab === "content") return results.contentMatches;
+    return results.files;
+  }, [results, tab]);
+
+  const handleKeyDown = (e) => {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      const items = getVisibleItems();
+      if (items.length === 0) return;
+      setSelectedIndex((prev) => Math.min(prev + 1, items.length - 1));
+      return;
+    }
+
+    if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setSelectedIndex((prev) => Math.max(prev - 1, 0));
+      return;
+    }
+
+    if (e.key === "Enter" && selectedIndex >= 0) {
+      e.preventDefault();
+      const items = getVisibleItems();
+      const item = items[selectedIndex];
+      if (item) {
+        navigate(`/file?f=${encodeURIComponent(item)}`);
+        onClose();
+      }
+    }
+  };
+
   return (
     <div className="flex flex-col h-full">
       <div className="shrink-0">
@@ -112,6 +166,7 @@ export default function SearchBar({ onClose }) {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={handleKeyDown}
             placeholder="Search files..."
             className="w-full bg-gray-800 text-gray-200 text-sm rounded-md px-3 py-1.5 pr-8 border border-gray-700 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
           />
@@ -124,7 +179,7 @@ export default function SearchBar({ onClose }) {
         </div>
       </div>
 
-      <Results results={results} onClose={onClose} />
+      <Results results={results} tab={tab} setTab={setTab} selectedIndex={selectedIndex} onClose={onClose} />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import {
   PhotoIcon,
   VideoCameraIcon,
 } from "@heroicons/react/24/outline";
+import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 
 const extToIcon = {
@@ -84,7 +85,18 @@ export default function FileList({
   loading = false,
   emptyMessage = "No files found.",
   onItemClick,
+  selectedIndex = -1,
 }) {
+  const listRef = useRef(null);
+
+  useEffect(() => {
+    if (selectedIndex < 0 || !listRef.current) return;
+    const el = listRef.current.children[selectedIndex];
+    if (el) {
+      el.scrollIntoView({ block: "nearest" });
+    }
+  }, [selectedIndex]);
+
   if (loading) {
     return (
       <div className="space-y-2">
@@ -101,13 +113,17 @@ export default function FileList({
   }
 
   return (
-    <ul className="space-y-0.5">
+    <ul ref={listRef} className="space-y-0.5">
       {items.map((item, index) => (
         <li key={item.path || index}>
           <Link
             to={`/file?f=${encodeURIComponent(item.path)}`}
             onClick={onItemClick ? () => onItemClick(item) : undefined}
-            className="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-gray-400 hover:bg-gray-800 hover:text-gray-200 transition-colors"
+            className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
+              index === selectedIndex
+                ? "bg-gray-800 text-gray-200"
+                : "text-gray-400 hover:bg-gray-800 hover:text-gray-200"
+            }`}
           >
             <FileIcon path={item.path} className="w-4 h-4 shrink-0" />
             <div className="flex-1 min-w-0">
