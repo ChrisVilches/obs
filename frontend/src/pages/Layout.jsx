@@ -7,6 +7,7 @@ import FileList from "../components/FileList";
 import Modal from "../components/Modal";
 import SearchBar from "../components/SearchBar";
 import Sidemenu from "../components/Sidemenu";
+import useKeyShortcut from "../hooks/useKeyShortcut";
 import useResizable from "../hooks/useResizable";
 import { fetcher } from "../utils/fetcher";
 
@@ -38,6 +39,8 @@ export default function Layout() {
     title: "",
     extra: null,
   });
+
+  useKeyShortcut("/", () => setSearchModalOpen(true), { enabled: !searchModalOpen });
 
   async function openBookmarksModal() {
     setBookmarksModalOpen(true);
