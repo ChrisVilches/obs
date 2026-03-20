@@ -18,20 +18,17 @@ function MarkdownImage({ node, src, alt, file, ...props }) {
     ? src
     : `api/files/raw?file=${src}&current=${file}`;
 
+  // TODO: This semantic HTML is wrong. The image becomes a child of a <p>,
+  // and I can't use figure and figcaption. Using span is wrong.
   return (
-    <figure className="flex flex-col items-center my-4">
+    <span className="flex flex-col items-center my-4">
       <img
         {...props}
         src={newSrc}
         alt={alt || ""}
         className="rounded-lg shadow-md"
       />
-      {alt && (
-        <figcaption className="mt-2 text-sm text-gray-400 italic text-center">
-          {alt}
-        </figcaption>
-      )}
-    </figure>
+    </span>
   );
 }
 
