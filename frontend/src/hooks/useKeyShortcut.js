@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-const INPUT_TAGS = ["INPUT", "TEXTAREA", "SELECT"];
+const INPUT_TAGS = ["input", "textarea", "select"];
 
 export default function useKeyShortcut(key, callback, { enabled = true, ignoreInputs = true } = {}) {
   useEffect(() => {
@@ -12,7 +12,7 @@ export default function useKeyShortcut(key, callback, { enabled = true, ignoreIn
 
       if (ignoreInputs && document.activeElement) {
         if (
-          INPUT_TAGS.includes(document.activeElement.tagName) ||
+          INPUT_TAGS.includes(document.activeElement.tagName.toLowerCase()) ||
           document.activeElement.isContentEditable
         ) {
           return;
