@@ -40,7 +40,7 @@ export default function Layout() {
     extra: null,
   });
 
-  useKeyShortcut("/", () => setSearchModalOpen(true), { enabled: !searchModalOpen });
+  useKeyShortcut("/", () => setSearchModalOpen(true));
 
   async function openBookmarksModal() {
     setBookmarksModalOpen(true);
