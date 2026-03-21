@@ -15,7 +15,7 @@ function Results({ results, tab, setTab, selectedIndex, onClose }) {
 
   return (
     <>
-      <div className="shrink-0">
+      <div className="shrink-0 mb-4">
         <div className="flex border-b border-gray-700">
           {tabs.map((t) => (
             <button
