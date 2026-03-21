@@ -13,6 +13,56 @@ import MarkdownViewer from "./viewers/MarkdownViewer";
 import MediaViewer from "./viewers/MediaViewer";
 import TextViewer from "./viewers/TextViewer";
 
+function useNavigationBlocker(editMode, fileContentRef, originalContentRef) {
+  const blocker = useBlocker(
+    useCallback(() => {
+      if (!editMode || !fileContentRef.current) return false;
+      return (
+        fileContentRef.current.value !== originalContentRef.current
+      );
+    }, [editMode, fileContentRef, originalContentRef]),
+  );
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (
+        editMode &&
+        fileContentRef.current &&
+        fileContentRef.current.value !== originalContentRef.current
+      ) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [editMode, fileContentRef, originalContentRef]);
+
+  return blocker;
+}
+
+function NavigationBlockerModal({ blocker }) {
+  return (
+    <Modal
+      open={true}
+      onClose={() => blocker.reset()}
+      title="Unsaved Changes"
+    >
+      <p>
+        You have unsaved changes. Are you sure you want to leave this page?
+      </p>
+      <div className="mt-4 flex justify-end gap-2">
+        <Button variant="secondary" onClick={() => blocker.reset()}>
+          Stay
+        </Button>
+        <Button variant="danger" onClick={() => blocker.proceed()}>
+          Leave
+        </Button>
+      </div>
+    </Modal>
+  );
+}
+
 export default function FileViewer({ file }) {
   const { mutate } = useSWRConfig();
   const infoKey = `/api/files/info?file=${encodeURIComponent(file)}`;
@@ -83,23 +133,11 @@ export default function FileViewer({ file }) {
   const handleTrySave = useCallback(() => saveFile(false), [saveFile]);
   const handleSaveForce = useCallback(() => saveFile(true), [saveFile]);
 
-  const hasUnsavedChanges = useCallback(() => {
-    if (!editMode || !fileContentRef.current) return false;
-    return fileContentRef.current.value !== originalContentRef.current;
-  }, [editMode]);
-
-  const blocker = useBlocker(hasUnsavedChanges);
-
-  useEffect(() => {
-    const handler = (e) => {
-      if (hasUnsavedChanges()) {
-        e.preventDefault();
-        e.returnValue = "";
-      }
-    };
-    window.addEventListener("beforeunload", handler);
-    return () => window.removeEventListener("beforeunload", handler);
-  }, [hasUnsavedChanges]);
+  const blocker = useNavigationBlocker(
+    editMode,
+    fileContentRef,
+    originalContentRef,
+  );
 
   const handleToggleBookmark = useCallback(async () => {
     setBookmarking(true);
@@ -188,25 +226,7 @@ export default function FileViewer({ file }) {
       ) : (
         <TextViewer content={info.content} />
       )}
-      {blocker.state === "blocked" && (
-        <Modal
-          open={true}
-          onClose={() => blocker.reset()}
-          title="Unsaved Changes"
-        >
-          <p>
-            You have unsaved changes. Are you sure you want to leave this page?
-          </p>
-          <div className="mt-4 flex justify-end gap-2">
-            <Button variant="secondary" onClick={() => blocker.reset()}>
-              Stay
-            </Button>
-            <Button variant="danger" onClick={() => blocker.proceed()}>
-              Leave
-            </Button>
-          </div>
-        </Modal>
-      )}
+      {blocker.state === "blocked" && <NavigationBlockerModal blocker={blocker} />}
       {info && (
         <Modal
           open={showConflictModal}
