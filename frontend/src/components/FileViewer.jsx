@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useBlocker } from "react-router-dom";
 import useSWR, { useSWRConfig } from "swr";
 import useFileToolbar from "../hooks/useFileToolbar";
+import { useEditBlocker, UnsavedChangesModal } from "../hooks/useEditBlocker";
 import { fetcher } from "../utils/fetcher";
 import { showSuccessToast, showInfoToast } from "../utils/toast";
 import Button from "./Button";
@@ -12,49 +12,6 @@ import ImageViewer from "./viewers/ImageViewer";
 import MarkdownViewer from "./viewers/MarkdownViewer";
 import MediaViewer from "./viewers/MediaViewer";
 import TextViewer from "./viewers/TextViewer";
-
-function useNavigationBlocker(enabled, fileContentRef, originalContentRef) {
-  const isDirty = useCallback(() => {
-    if (!enabled || !fileContentRef.current) return false;
-    return fileContentRef.current.value !== originalContentRef.current;
-  }, [enabled, fileContentRef, originalContentRef]);
-
-  const blocker = useBlocker(isDirty);
-
-  useEffect(() => {
-    const handler = (e) => {
-      if (!isDirty()) return;
-      e.preventDefault();
-      e.returnValue = "";
-    };
-    window.addEventListener("beforeunload", handler);
-    return () => window.removeEventListener("beforeunload", handler);
-  }, [isDirty]);
-
-  return blocker;
-}
-
-function NavigationBlockerModal({ blocker }) {
-  return (
-    <Modal
-      open={true}
-      onClose={() => blocker.reset()}
-      title="Unsaved Changes"
-    >
-      <p>
-        You have unsaved changes. Are you sure you want to leave this page?
-      </p>
-      <div className="mt-4 flex justify-end gap-2">
-        <Button variant="secondary" onClick={() => blocker.reset()}>
-          Stay
-        </Button>
-        <Button variant="danger" onClick={() => blocker.proceed()}>
-          Leave
-        </Button>
-      </div>
-    </Modal>
-  );
-}
 
 export default function FileViewer({ file }) {
   const { mutate } = useSWRConfig();
@@ -126,11 +83,15 @@ export default function FileViewer({ file }) {
   const handleTrySave = useCallback(() => saveFile(false), [saveFile]);
   const handleSaveForce = useCallback(() => saveFile(true), [saveFile]);
 
-  const blocker = useNavigationBlocker(
-    editMode,
-    fileContentRef,
-    originalContentRef,
-  );
+  const isDirty = useCallback(() => {
+    if (!editMode || !fileContentRef.current) return false;
+    return fileContentRef.current.value !== originalContentRef.current;
+  }, [editMode, fileContentRef, originalContentRef]);
+
+  const blocker = useEditBlocker({
+    enabled: editMode,
+    hasUnsavedChanges: isDirty,
+  });
 
   const handleToggleBookmark = useCallback(async () => {
     setBookmarking(true);
@@ -219,7 +180,7 @@ export default function FileViewer({ file }) {
       ) : (
         <TextViewer content={info.content} />
       )}
-      {blocker.state === "blocked" && <NavigationBlockerModal blocker={blocker} />}
+      {blocker.state === "blocked" && <UnsavedChangesModal blocker={blocker} />}
       {info && (
         <Modal
           open={showConflictModal}

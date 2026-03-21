@@ -320,6 +320,7 @@ export default function Sidemenu({
   // the selected file's element, triggering the callback ref).
   const selectedNodeRef = useCallback(
     (elem) => {
+      // TODO: maybe can be done with a ref (scrollDone)
       if (!elem || scrollDone) return;
       // Ignore it when it's hidden.
       const rect = elem.getBoundingClientRect();
