@@ -13,30 +13,23 @@ import MarkdownViewer from "./viewers/MarkdownViewer";
 import MediaViewer from "./viewers/MediaViewer";
 import TextViewer from "./viewers/TextViewer";
 
-function useNavigationBlocker(editMode, fileContentRef, originalContentRef) {
-  const blocker = useBlocker(
-    useCallback(() => {
-      if (!editMode || !fileContentRef.current) return false;
-      return (
-        fileContentRef.current.value !== originalContentRef.current
-      );
-    }, [editMode, fileContentRef, originalContentRef]),
-  );
+function useNavigationBlocker(enabled, fileContentRef, originalContentRef) {
+  const isDirty = useCallback(() => {
+    if (!enabled || !fileContentRef.current) return false;
+    return fileContentRef.current.value !== originalContentRef.current;
+  }, [enabled, fileContentRef, originalContentRef]);
+
+  const blocker = useBlocker(isDirty);
 
   useEffect(() => {
     const handler = (e) => {
-      if (
-        editMode &&
-        fileContentRef.current &&
-        fileContentRef.current.value !== originalContentRef.current
-      ) {
-        e.preventDefault();
-        e.returnValue = "";
-      }
+      if (!isDirty()) return;
+      e.preventDefault();
+      e.returnValue = "";
     };
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);
-  }, [editMode, fileContentRef, originalContentRef]);
+  }, [isDirty]);
 
   return blocker;
 }
