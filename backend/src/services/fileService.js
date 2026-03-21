@@ -78,9 +78,8 @@ function assertPathInsideRoot(rootDir, fullPath) {
 }
 
 async function classifyFile(fullPath) {
-  if (!_fileTypeFromFile) {
-    _fileTypeFromFile = (await import("file-type")).fileTypeFromFile;
-  }
+  _fileTypeFromFile ??= (await import("file-type")).fileTypeFromFile;
+
   const result = await _fileTypeFromFile(fullPath);
   if (result) {
     const mime = result.mime;
