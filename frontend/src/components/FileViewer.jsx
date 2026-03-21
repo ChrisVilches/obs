@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useBlocker } from "react-router-dom";
 import useSWR, { useSWRConfig } from "swr";
 import useFileToolbar from "../hooks/useFileToolbar";
 import { fetcher } from "../utils/fetcher";
@@ -21,6 +22,7 @@ export default function FileViewer({ file }) {
   const [bookmarking, setBookmarking] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
   const fileContentRef = useRef(null);
+  const originalContentRef = useRef("");
   const [showFileNameModal, setShowFileNameModal] = useState(false);
   const [showConflictModal, setShowConflictModal] = useState(false);
 
@@ -34,6 +36,7 @@ export default function FileViewer({ file }) {
 
   useEffect(() => {
     if (!fileContentRef.current || !editMode) return;
+    originalContentRef.current = info.content;
     fileContentRef.current.value = info.content;
 
     // Automatically focus on the first character.
@@ -79,6 +82,24 @@ export default function FileViewer({ file }) {
 
   const handleTrySave = useCallback(() => saveFile(false), [saveFile]);
   const handleSaveForce = useCallback(() => saveFile(true), [saveFile]);
+
+  const hasUnsavedChanges = useCallback(() => {
+    if (!editMode || !fileContentRef.current) return false;
+    return fileContentRef.current.value !== originalContentRef.current;
+  }, [editMode]);
+
+  const blocker = useBlocker(hasUnsavedChanges);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (hasUnsavedChanges()) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [hasUnsavedChanges]);
 
   const handleToggleBookmark = useCallback(async () => {
     setBookmarking(true);
@@ -166,6 +187,25 @@ export default function FileViewer({ file }) {
         <BinaryFileViewer file={file} />
       ) : (
         <TextViewer content={info.content} />
+      )}
+      {blocker.state === "blocked" && (
+        <Modal
+          open={true}
+          onClose={() => blocker.reset()}
+          title="Unsaved Changes"
+        >
+          <p>
+            You have unsaved changes. Are you sure you want to leave this page?
+          </p>
+          <div className="mt-4 flex justify-end gap-2">
+            <Button variant="secondary" onClick={() => blocker.reset()}>
+              Stay
+            </Button>
+            <Button variant="danger" onClick={() => blocker.proceed()}>
+              Leave
+            </Button>
+          </div>
+        </Modal>
       )}
       {info && (
         <Modal
