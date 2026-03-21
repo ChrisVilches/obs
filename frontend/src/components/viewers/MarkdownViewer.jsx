@@ -7,7 +7,7 @@ import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import "katex/dist/katex.min.css";
-import { CheckIcon } from "@heroicons/react/24/outline";
+import { CheckIcon, EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 
 function isExternalURL(url) {
   return url.startsWith("http://") || url.startsWith("https://");
@@ -94,29 +94,56 @@ function tableComponent({ children }) {
   )
 }
 
+function isTaskListItem(item) {
+  return item.props?.className === 'task-list-item'
+}
+
+function isTaskCompleted(item) {
+  return item.props.node.children[0].properties.checked
+}
+
 function ulComponent({ children }) {
-  const tasks = children.map(c => c.props).filter(x => x && x.className === 'task-list-item')
-  const completed = tasks.map(t => t.node.children[0].properties.checked).filter(Boolean).length
+  const tasks = children.filter(isTaskListItem)
+  const completed = tasks.map(isTaskCompleted).filter(Boolean).length
   const total = tasks.length
   const pct = total ? Math.round((completed / total) * 100) : 0
+  const [hideDone, setHideDone] = useState(false)
+
+  const copy = hideDone ? (children.filter(c => isTaskListItem(c) && !isTaskCompleted(c))) : children;
 
   return (
     <>
       {total > 0 && (
-        <div className="flex items-center gap-3 mb-3 group">
-          <div className="relative flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
-            <div
-              className={`absolute inset-y-0 left-0 rounded-full transition-all duration-700 ease-out ${completed === total ? 'bg-emerald-500' : 'bg-indigo-500'
-                }`}
-              style={{ width: `${pct}%` }}
-            />
+        <div className="mb-3 group">
+          <div className="flex items-center gap-3">
+            <div className="relative flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
+              <div
+                className={`absolute inset-y-0 left-0 rounded-full transition-all duration-700 ease-out ${completed === total ? 'bg-emerald-500' : 'bg-indigo-500'
+                  }`}
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+            <span className="text-xs font-medium text-gray-500 tabular-nums">
+              {completed}/{total}
+            </span>
           </div>
-          <span className="text-xs font-medium text-gray-500 tabular-nums">
-            {completed}/{total}
-          </span>
+
+          <div className="flex justify-center mt-2">
+            <button
+              onClick={() => setHideDone(h => !h)}
+              className="flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-gray-300 transition-colors"
+            >
+              {hideDone ? (
+                <EyeIcon className="size-3.5" />
+              ) : (
+                <EyeSlashIcon className="size-3.5" />
+              )}
+              <span>{hideDone ? "Show completed" : "Hide completed"}</span>
+            </button>
+          </div>
         </div>
       )}
-      <ul className="pl-0">{children}</ul>
+      <ul className="pl-0">{copy}</ul>
     </>
   )
 }
