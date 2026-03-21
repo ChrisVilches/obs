@@ -6,17 +6,11 @@ import useDebounce from "../hooks/useDebounce";
 import useListKeyboardNav from "../hooks/useListKeyboardNav";
 import FileList from "./FileList";
 
-function Results({ allPaths, filePaths, contentPaths, tab, setTab, selectedIndex, onClose }) {
-  const { allItems, fileItems, contentItems } = useMemo(() => ({
-    allItems: allPaths.map((p) => ({ path: p })),
-    fileItems: filePaths.map((p) => ({ path: p })),
-    contentItems: contentPaths.map((p) => ({ path: p })),
-  }), [allPaths, filePaths, contentPaths]);
-
+function Results({ results, tab, setTab, selectedIndex, onClose }) {
   const tabs = [
-    { key: "all", label: "All", count: allItems.length },
-    { key: "files", label: "File names", count: fileItems.length },
-    { key: "content", label: "Content", count: contentItems.length },
+    { key: "all", label: "All", count: results.all.length },
+    { key: "files", label: "File names", count: results.files.length },
+    { key: "content", label: "Content", count: results.content.length },
   ];
 
   return (
@@ -40,14 +34,14 @@ function Results({ allPaths, filePaths, contentPaths, tab, setTab, selectedIndex
       </div>
       <div className="overflow-y-auto flex-1 min-h-0 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600">
         {tab === "all" && (
-          <FileList items={allItems} emptyMessage="" onItemClick={onClose} selectedIndex={selectedIndex} />
+          <FileList items={results.all} emptyMessage="" onItemClick={onClose} selectedIndex={selectedIndex} />
         )}
         {tab === "files" && (
-          <FileList items={fileItems} emptyMessage="" onItemClick={onClose} selectedIndex={selectedIndex} />
+          <FileList items={results.files} emptyMessage="" onItemClick={onClose} selectedIndex={selectedIndex} />
         )}
         {tab === "content" && (
           <FileList
-            items={contentItems}
+            items={results.content}
             emptyMessage=""
             onItemClick={onClose}
             selectedIndex={selectedIndex}
@@ -79,6 +73,8 @@ function SearchInputIcon({ loading, onClear }) {
   );
 }
 
+const EMPTY_RESULTS = { all: [], files: [], content: [] };
+
 export default function SearchBar({ onClose }) {
   const navigate = useNavigate();
   const autoFocusRef = (el) => {
@@ -90,13 +86,7 @@ export default function SearchBar({ onClose }) {
   const debouncedQuery = useDebounce(query, 150);
   const [tab, setTab] = useState("all");
 
-  const [results, setResults] = useState({ files: [], contentMatches: [] });
-  const filePaths = results.files;
-  const contentPaths = results.contentMatches;
-  const allPaths = useMemo(
-    () => [...new Set([...filePaths, ...contentPaths])],
-    [filePaths, contentPaths],
-  );
+  const [results, setResults] = useState(EMPTY_RESULTS);
 
   const { data, isValidating } = useSWR(
     debouncedQuery
@@ -105,30 +95,27 @@ export default function SearchBar({ onClose }) {
   );
 
   useEffect(() => {
-    if (data) setResults(data);
+    const intoPath = path => ({ path })
+    if (data) setResults({
+      all: [...new Set([...data.files, ...data.contentMatches])].map(intoPath),
+      files: data.files.map(intoPath),
+      content: data.contentMatches.map(intoPath),
+    });
   }, [data]);
   useEffect(() => {
-    if (!debouncedQuery) setResults({ files: [], contentMatches: [] });
+    if (!debouncedQuery) setResults(EMPTY_RESULTS);
   }, [debouncedQuery]);
 
-  const getVisibleItems = useCallback(() => {
-    if (tab === "all") return allPaths;
-    if (tab === "content") return contentPaths;
-    return filePaths;
-  }, [allPaths, filePaths, contentPaths, tab]);
-
-  const visibleItems = getVisibleItems();
-
   const { selectedIndex, handleKeyDown, setSelectedIndex } = useListKeyboardNav({
-    items: visibleItems,
+    items: results[tab],
     onSelect: (item) => {
-      navigate(`/file?f=${encodeURIComponent(item)}`);
+      navigate(`/file?f=${encodeURIComponent(item.path)}`);
       onClose();
     },
   });
 
   useEffect(() => {
-    setSelectedIndex(visibleItems.length > 0 ? 0 : -1);
+    setSelectedIndex(results[tab].length > 0 ? 0 : -1);
   }, [tab]);
 
   return (
@@ -153,7 +140,7 @@ export default function SearchBar({ onClose }) {
         </div>
       </div>
 
-      <Results allPaths={allPaths} filePaths={filePaths} contentPaths={contentPaths} tab={tab} setTab={setTab} selectedIndex={selectedIndex} onClose={onClose} />
+      <Results results={results} tab={tab} setTab={setTab} selectedIndex={selectedIndex} onClose={onClose} />
     </div>
   );
 }
