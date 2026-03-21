@@ -7,8 +7,8 @@ import SearchBar from './SearchBar';
 // tree. If empty folders need to be visible, the backend would need to return
 // directory entries as well.
 
-// TODO: scroll into view feature doesn't work for mobile, presumably because
-// it needs it to be visible, but in mobile the sidemenu is closed by default.
+// TODO: Don't use [data-selected]. Instead do it the React way, by using refs
+// or whatever is suitable.
 
 function buildTree(files) {
   const root = [];
@@ -117,7 +117,7 @@ function TreeNode({ node, depth, selectedFile, onClose, expandedSet, onToggle })
   );
 }
 
-export default function Sidemenu({ files, onClose }) {
+export default function Sidemenu({ files, onClose, sidebarOpen }) {
   const [searchParams] = useSearchParams();
   const selectedFile = searchParams.get('file');
   const [isSearching, setIsSearching] = useState(false);
@@ -186,6 +186,18 @@ export default function Sidemenu({ files, onClose }) {
     });
     return () => cancelAnimationFrame(id);
   }, [selectedFile, files]);
+
+  // TODO: This doesn't work for mobile. Should scroll when the sidemenu is open.
+  useEffect(() => {
+    if (!sidebarOpen || !selectedFile) return;
+    const id = setTimeout(() => {
+      const el = document.querySelector('[data-selected]');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 350);
+    return () => clearTimeout(id);
+  }, [sidebarOpen, selectedFile]);
 
   return (
     <nav className="flex-1 overflow-y-auto p-2">
