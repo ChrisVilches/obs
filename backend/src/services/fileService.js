@@ -94,7 +94,7 @@ async function classifyFile(fullPath) {
   return "text";
 }
 
-const TEXT_TYPES = new Set(["text", "markdown"]);
+const isTextType = (type) => type === "text" || type === "markdown";
 
 async function getFileInfo(rootDir, bookmarksFile, relativePath) {
   const fullPath = path.join(rootDir, relativePath);
@@ -114,7 +114,7 @@ async function getFileInfo(rootDir, bookmarksFile, relativePath) {
 
   const result = { type, isBookmarked, mtime: stat.mtime.toISOString() };
 
-  if (TEXT_TYPES.has(type)) {
+  if (isTextType(type)) {
     result.content = await fs.promises.readFile(fullPath, "utf-8");
   }
 
