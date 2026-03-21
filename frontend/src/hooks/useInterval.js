@@ -1,15 +1,13 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useEffectEvent } from "react";
 
+// TODO: re-test this (make sure numbers change, etc)
 export default function useInterval(callback, delay) {
-  const savedCallback = useRef(callback);
-
-  useEffect(() => {
-    savedCallback.current = callback;
-  }, [callback]);
+  // TODO: study this hook (what problem it solves, etc)
+  const onTick = useEffectEvent(callback);
 
   useEffect(() => {
     if (delay == null) return;
-    const id = setInterval(() => savedCallback.current(), delay);
+    const id = setInterval(() => onTick(), delay);
     return () => clearInterval(id);
   }, [delay]);
 }
