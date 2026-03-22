@@ -10,6 +10,10 @@ import SearchBar from './SearchBar';
 // TODO: Don't use [data-selected]. Instead do it the React way, by using refs
 // or whatever is suitable.
 
+// TODO: There are two effects to scroll, however I'm under the impression that they both
+// execute for both sidebars (desktop and mobile), since there's no way to distinguish.
+// I should audit this code more and improve it.
+
 function buildTree(files) {
   const root = [];
 
