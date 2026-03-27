@@ -1,5 +1,25 @@
 import Modal from "./Modal";
 
+function formatBytesBinary(bytes, decimals = 2) {
+  if (bytes < 0) return "Invalid size";
+  if (bytes === 0) return "0 B";
+
+  const k = 1024;
+  const dm = decimals < 0 ? 0 : decimals;
+  const sizes = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'];
+
+  // Math.log(bytes) / Math.log(k) finds the correct exponent power
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+  // Ensure we don't overflow past our defined array units
+  const unitIndex = Math.min(i, sizes.length - 1);
+
+  // Calculate the scaled value and format to fixed decimals
+  const formattedValue = parseFloat((bytes / Math.pow(k, unitIndex)).toFixed(dm));
+
+  return `${formattedValue} ${sizes[unitIndex]}`;
+}
+
 function formatLocalDateTime(isoString) {
   const d = new Date(isoString);
 
@@ -47,12 +67,26 @@ export default function FileNameDisplay({
             </span>
           </div>
           {info && (
-            <div>
-              <span className="text-xs text-gray-500 block">Last modified</span>
-              <span className="text-sm text-gray-200">
-                {formatLocalDateTime(info.mtime)}
-              </span>
-            </div>
+            <>
+              <div>
+                <span className="text-xs text-gray-500 block">Last modified</span>
+                <span className="text-sm text-gray-200">
+                  {formatLocalDateTime(info.mtime)}
+                </span>
+              </div>
+              <div>
+                <span className="text-xs text-gray-500 block">Size</span>
+                <span className="text-sm text-gray-200">
+                  {formatBytesBinary(info.size)} ({info.size} bytes)
+                </span>
+              </div>
+              <div>
+                <span className="text-xs text-gray-500 block">File Type</span>
+                <span className="text-sm text-gray-200">
+                  {info.type}
+                </span>
+              </div>
+            </>
           )}
         </div>
       </Modal>

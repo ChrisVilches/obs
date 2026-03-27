@@ -111,7 +111,7 @@ async function getFileInfo(rootDir, bookmarksFile, relativePath) {
     (item) => item.path === relativePath,
   );
 
-  const result = { type, isBookmarked, mtime: stat.mtime.toISOString() };
+  const result = { type, isBookmarked, mtime: stat.mtime.toISOString(), size: stat.size };
 
   if (isTextType(type)) {
     result.content = await fs.promises.readFile(fullPath, "utf-8");
