@@ -120,6 +120,8 @@ async function getFileInfo(rootDir, bookmarksFile, relativePath) {
   return result;
 }
 
+// TODO: this is a good candidate to write unit tests
+// for the regex, and for how it changes the checkbox, etc.
 async function toggleFileCheckbox(rootDir, file, checked, line, mtime) {
   const fullPath = path.join(rootDir, file);
   assertPathInsideRoot(rootDir, fullPath);
@@ -134,23 +136,17 @@ async function toggleFileCheckbox(rootDir, file, checked, line, mtime) {
   const lines = content.split("\n");
   const idx = line - 1;
 
-  // TODO: checkboxes can also start with number, but this is easy to implement.
-  // TODO: this check needs to be more robust
-  if (!lines[idx].startsWith("- [")) {
-    // TODO: this message will be thrown with status code 500, and
-    // the message will be visible. However, I don't want Internal Server Errors
-    // to be visible!!!!
-    // This needs to be Bad Request.
-    throw new Error("There is no checkbox at this position")
+  const checkboxRegex = /^\s*(-\s|(\d+\.\s))\[[ x]\]/;
+  if (!checkboxRegex.test(lines[idx])) {
+    throw new InvalidFileModification("There is no checkbox at this position")
   }
 
-  // TODO: It seems there could be other formats for checkbox, such as extra spaces, etc.
-  // since the line is specified, we can use our own loose specification.
-  // TODO: the - must be the first (perhaps with extra whitespace) character. Modify the regex.
+  const bracketPos = lines[idx].indexOf('[');
+  const afterCheckbox = lines[idx].substring(bracketPos + 3);
   if (checked) {
-    lines[idx] = lines[idx].replace(/- \[ \]/, "- [x]");
+    lines[idx] = lines[idx].substring(0, bracketPos) + '[x]' + afterCheckbox;
   } else {
-    lines[idx] = lines[idx].replace(/- \[x\]/, "- [ ]");
+    lines[idx] = lines[idx].substring(0, bracketPos) + '[ ]' + afterCheckbox;
   }
 
   content = ensureTrailingNewline(lines.join("\n"));
@@ -205,4 +201,5 @@ module.exports = {
   resolveRawPath,
   VersionConflictError,
   FileAccessDeniedError,
+  InvalidFileModification
 };

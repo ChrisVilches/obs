@@ -9,6 +9,7 @@ const {
   resolveRawPath,
   VersionConflictError,
   FileAccessDeniedError,
+  InvalidFileModification,
 } = require("./services/fileService");
 const {
   getBookmarks,
@@ -158,6 +159,11 @@ app.use((err, _req, res, _next) => {
   if (err instanceof FileAccessDeniedError) {
     return res.status(403).json({ error: "Access denied" });
   }
+  if (err instanceof InvalidFileModification) {
+    return res.status(400).json({ error: err.message });
+  }
+
+  // TODO: Don't show internal server errors in production!!!
   console.error("Unhandled error:", err);
   res.status(500).json({ error: err.message });
 });
