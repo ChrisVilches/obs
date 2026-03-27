@@ -146,7 +146,11 @@ async function toggleFileCheckbox(rootDir, file, checked, line, mtime) {
   content = ensureTrailingNewline(lines.join("\n"));
 
   await fs.promises.writeFile(fullPath, content, "utf-8");
-  emit({ type: "file_updated", file, timestamp: new Date().toISOString() });
+  emit({
+    type: checked ? "file_checkbox_checked" : "file_checkbox_unchecked",
+    file,
+    timestamp: new Date().toISOString(),
+  });
 }
 
 async function writeFileContent(rootDir, file, content, mtime, force) {
