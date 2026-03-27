@@ -1,11 +1,11 @@
 import Modal from "./Modal";
 
 function formatBytesBinary(bytes, decimals = 2) {
+  if (decimals < 0) throw new Error("decimals must be >= 0");
   if (bytes < 0) return "Invalid size";
   if (bytes === 0) return "0 B";
 
   const k = 1024;
-  const dm = decimals < 0 ? 0 : decimals;
   const sizes = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'];
 
   // Math.log(bytes) / Math.log(k) finds the correct exponent power
@@ -15,7 +15,7 @@ function formatBytesBinary(bytes, decimals = 2) {
   const unitIndex = Math.min(i, sizes.length - 1);
 
   // Calculate the scaled value and format to fixed decimals
-  const formattedValue = parseFloat((bytes / Math.pow(k, unitIndex)).toFixed(dm));
+  const formattedValue = parseFloat((bytes / Math.pow(k, unitIndex)).toFixed(decimals));
 
   return `${formattedValue} ${sizes[unitIndex]}`;
 }
