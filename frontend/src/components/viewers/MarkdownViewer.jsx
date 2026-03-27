@@ -32,17 +32,51 @@ function MarkdownImage({ node, src, alt, file, ...props }) {
   );
 }
 
+function listNodeInfo(node) {
+  const firstP = node.children.findIndex(e => e.tagName === 'p')
+  const isLoose = firstP !== -1
+
+  // TODO: assumes the first element in the paragraph is a checkbox, but could it be another one?
+  // maybe filter out spaces or newlines, etc.
+  // I think it wouldn't make sense to have whitespace and after that - [ ] anyway. The whitespace
+  // is probably in the previous node?
+  const firstNode = isLoose ? node.children[firstP].children[0] : node.children[0]
+  const startsWithCheckbox = firstNode.properties?.type === 'checkbox'
+  const checked = startsWithCheckbox && firstNode.properties.checked;
+
+  return {
+    isLoose,
+    task: startsWithCheckbox,
+    checked,
+    firstP
+  }
+}
+
 function CheckboxListItem({ node, children, file, mtime, loading, setLoading }) {
   const { mutate } = useSWRConfig();
   const infoKey = `/api/files/info?file=${encodeURIComponent(file)}`;
 
-  if (!node.children.length || node.children[0]?.properties?.type !== "checkbox") {
+  const { isLoose, firstP, task, checked } = listNodeInfo(node)
+
+  if (!task) {
     return <li className="list-inside">{children}</li>;
   }
 
-  const copy = children.slice(1);
+  // TODO: very annoying code. Simplify somehow.
+  function removeLooseCheckbox(originalChildren) {
+    const cpy = [...originalChildren]
+    cpy[firstP] = { ...originalChildren[firstP] }
+    cpy[firstP].props = { ...originalChildren[firstP].props }
+    cpy[firstP].props.children = originalChildren[firstP].props.children.slice(1)
+    return cpy
+  }
+
+  function removeTightCheckbox(originalChildren) {
+    return originalChildren.slice(1)
+  }
+
+  const copy = isLoose ? removeLooseCheckbox(children) : removeTightCheckbox(children);
   const line = node.position.start.line;
-  const checked = node.children[0].properties.checked;
 
   const handleClick = async () => {
     setLoading(true)
@@ -61,7 +95,11 @@ function CheckboxListItem({ node, children, file, mtime, loading, setLoading }) 
         { revalidate: false },
       );
     } catch (e) {
-      showErrorToast("There was a version conflict");
+      if (e.code === 'VERSION_CONFLICT') {
+        showErrorToast("There was a version conflict");
+      } else {
+        showErrorToast(e.message);
+      }
     } finally {
       setLoading(false)
     }
@@ -94,59 +132,47 @@ function tableComponent({ children }) {
   )
 }
 
-function isTaskListItem(item) {
-  return item.props?.className === 'task-list-item'
-}
+// TODO: removing the left padding will render nested lists badly
+function listComponent(ul) {
+  return function({ node, children }) {
+    const infos = node.children.filter(x => x.type === 'element').map(listNodeInfo)
+    const tasks = infos.filter(i => i.task)
+    const completed = infos.filter(i => i.checked).length
+    const total = tasks.length
+    const pct = total ? Math.round((completed / total) * 100) : 0
 
-function isTaskCompleted(item) {
-  return item.props.node.children[0].properties.checked
-}
-
-function ulComponent({ children }) {
-  const tasks = children.filter(isTaskListItem)
-  const completed = tasks.map(isTaskCompleted).filter(Boolean).length
-  const total = tasks.length
-  const pct = total ? Math.round((completed / total) * 100) : 0
-  const [hideDone, setHideDone] = useState(false)
-
-  const copy = hideDone ? (children.filter(c => isTaskListItem(c) && !isTaskCompleted(c))) : children;
-
-  return (
-    <>
-      {total > 0 && (
-        <div className="mb-3 group">
-          <div className="flex items-center gap-3">
-            <div className="relative flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
-              <div
-                className={`absolute inset-y-0 left-0 rounded-full transition-all duration-700 ease-out ${completed === total ? 'bg-emerald-500' : 'bg-indigo-500'
-                  }`}
-                style={{ width: `${pct}%` }}
-              />
+    return (
+      <>
+        {total > 0 && (
+          <div className="mb-3 group">
+            <div className="flex items-center gap-3">
+              <div className="relative flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                <div
+                  className={`absolute inset-y-0 left-0 rounded-full transition-all duration-700 ease-out ${completed === total ? 'bg-emerald-500' : 'bg-indigo-500'
+                    }`}
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
+              <span className="text-xs font-medium text-gray-500 tabular-nums">
+                {completed}/{total}
+              </span>
             </div>
-            <span className="text-xs font-medium text-gray-500 tabular-nums">
-              {completed}/{total}
-            </span>
           </div>
-
-          <div className="flex justify-center mt-2">
-            <button
-              onClick={() => setHideDone(h => !h)}
-              className="flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-gray-300 transition-colors"
-            >
-              {hideDone ? (
-                <EyeIcon className="size-3.5" />
-              ) : (
-                <EyeSlashIcon className="size-3.5" />
-              )}
-              <span>{hideDone ? "Show completed" : "Hide completed"}</span>
-            </button>
-          </div>
-        </div>
-      )}
-      <ul className="pl-0">{copy}</ul>
-    </>
-  )
+        )}
+        {ul ? (
+          <ul className="">{children}</ul>
+        ) : (
+          <ol className="">{children}</ol>
+        )}
+      </>
+    )
+  }
 }
+
+// If you don't put them here, a glitch will prevent
+// the progress bar from changing smoothly.
+const ul = listComponent(true)
+const ol = listComponent(false)
 
 export default function MarkdownViewer({ file, content, mtime }) {
   const [loading, setLoading] = useState(false)
@@ -160,7 +186,9 @@ export default function MarkdownViewer({ file, content, mtime }) {
           img(props) {
             return <MarkdownImage {...props} file={file} />;
           },
-          ul: ulComponent,
+          ul,
+          // TODO: test with ol (needs to fix server)
+          ol,
           table: tableComponent,
           li(props) {
             return (

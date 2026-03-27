@@ -134,6 +134,16 @@ async function toggleFileCheckbox(rootDir, file, checked, line, mtime) {
   const lines = content.split("\n");
   const idx = line - 1;
 
+  // TODO: checkboxes can also start with number, but this is easy to implement.
+  // TODO: this check needs to be more robust
+  if (!lines[idx].startsWith("- [")) {
+    // TODO: this message will be thrown with status code 500, and
+    // the message will be visible. However, I don't want Internal Server Errors
+    // to be visible!!!!
+    // This needs to be Bad Request.
+    throw new Error("There is no checkbox at this position")
+  }
+
   // TODO: It seems there could be other formats for checkbox, such as extra spaces, etc.
   // since the line is specified, we can use our own loose specification.
   // TODO: the - must be the first (perhaps with extra whitespace) character. Modify the regex.
