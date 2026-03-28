@@ -15,9 +15,7 @@ function showToast(msg, { Icon, iconColor, bgColor, ringColor, textColor }) {
       <div className="flex-1 w-0 p-3">
         <div className="flex items-center">
           <Icon className={`h-5 w-5 ${iconColor}`} />
-          <p className={`ml-2 text-sm font-medium ${textColor}`}>
-            {msg}
-          </p>
+          <p className={`ml-2 text-sm font-medium ${textColor}`}>{msg}</p>
         </div>
       </div>
     </div>

@@ -114,9 +114,9 @@ app.put("/api/files/checkbox", async (req, res) => {
       mtime: z.iso.datetime(),
     })
     .parse(req.body);
-  await toggleFileCheckbox(ROOT_DIR, file, checked, line, mtime)
+  await toggleFileCheckbox(ROOT_DIR, file, checked, line, mtime);
   res.json(await getFileInfo(ROOT_DIR, BOOKMARKS_FILE, file));
-})
+});
 
 app.get("/api/files/raw", (req, res) => {
   const { file, current, attachment } = z

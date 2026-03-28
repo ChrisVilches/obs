@@ -6,7 +6,7 @@ function formatBytesBinary(bytes, decimals = 2) {
   if (bytes === 0) return "0 B";
 
   const k = 1024;
-  const sizes = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'];
+  const sizes = ["B", "KiB", "MiB", "GiB", "TiB", "PiB"];
 
   // Math.log(bytes) / Math.log(k) finds the correct exponent power
   const i = Math.floor(Math.log(bytes) / Math.log(k));
@@ -15,7 +15,9 @@ function formatBytesBinary(bytes, decimals = 2) {
   const unitIndex = Math.min(i, sizes.length - 1);
 
   // Calculate the scaled value and format to fixed decimals
-  const formattedValue = parseFloat((bytes / Math.pow(k, unitIndex)).toFixed(decimals));
+  const formattedValue = parseFloat(
+    (bytes / Math.pow(k, unitIndex)).toFixed(decimals),
+  );
 
   return `${formattedValue} ${sizes[unitIndex]}`;
 }
@@ -69,7 +71,9 @@ export default function FileNameDisplay({
           {info && (
             <>
               <div>
-                <span className="text-xs text-gray-500 block">Last modified</span>
+                <span className="text-xs text-gray-500 block">
+                  Last modified
+                </span>
                 <span className="text-sm text-gray-200">
                   {formatLocalDateTime(info.mtime)}
                 </span>
@@ -82,9 +86,7 @@ export default function FileNameDisplay({
               </div>
               <div>
                 <span className="text-xs text-gray-500 block">File Type</span>
-                <span className="text-sm text-gray-200">
-                  {info.type}
-                </span>
+                <span className="text-sm text-gray-200">{info.type}</span>
               </div>
             </>
           )}

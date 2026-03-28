@@ -22,10 +22,11 @@ function Results({ results, tab, setTab, selectedIndex, onClose }) {
               type="button"
               key={t.key}
               onClick={() => setTab(t.key)}
-              className={`flex-1 px-2 py-1.5 text-xs font-medium transition-colors ${tab === t.key
-                ? "text-indigo-400 border-b-2 border-indigo-400"
-                : "text-gray-500 hover:text-gray-300"
-                }`}
+              className={`flex-1 px-2 py-1.5 text-xs font-medium transition-colors ${
+                tab === t.key
+                  ? "text-indigo-400 border-b-2 border-indigo-400"
+                  : "text-gray-500 hover:text-gray-300"
+              }`}
             >
               {t.label} ({t.count})
             </button>
@@ -34,10 +35,20 @@ function Results({ results, tab, setTab, selectedIndex, onClose }) {
       </div>
       <div className="overflow-y-auto flex-1 min-h-0 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600">
         {tab === "all" && (
-          <FileList items={results.all} emptyMessage="" onItemClick={onClose} selectedIndex={selectedIndex} />
+          <FileList
+            items={results.all}
+            emptyMessage=""
+            onItemClick={onClose}
+            selectedIndex={selectedIndex}
+          />
         )}
         {tab === "files" && (
-          <FileList items={results.files} emptyMessage="" onItemClick={onClose} selectedIndex={selectedIndex} />
+          <FileList
+            items={results.files}
+            emptyMessage=""
+            onItemClick={onClose}
+            selectedIndex={selectedIndex}
+          />
         )}
         {tab === "content" && (
           <FileList
@@ -95,24 +106,29 @@ export default function SearchBar({ onClose }) {
   );
 
   useEffect(() => {
-    const intoPath = path => ({ path })
-    if (data) setResults({
-      all: [...new Set([...data.files, ...data.contentMatches])].map(intoPath),
-      files: data.files.map(intoPath),
-      content: data.contentMatches.map(intoPath),
-    });
+    const intoPath = (path) => ({ path });
+    if (data)
+      setResults({
+        all: [...new Set([...data.files, ...data.contentMatches])].map(
+          intoPath,
+        ),
+        files: data.files.map(intoPath),
+        content: data.contentMatches.map(intoPath),
+      });
   }, [data]);
   useEffect(() => {
     if (!debouncedQuery) setResults(EMPTY_RESULTS);
   }, [debouncedQuery]);
 
-  const { selectedIndex, handleKeyDown, setSelectedIndex } = useListKeyboardNav({
-    items: results[tab],
-    onSelect: (item) => {
-      navigate(`/file?f=${encodeURIComponent(item.path)}`);
-      onClose();
+  const { selectedIndex, handleKeyDown, setSelectedIndex } = useListKeyboardNav(
+    {
+      items: results[tab],
+      onSelect: (item) => {
+        navigate(`/file?f=${encodeURIComponent(item.path)}`);
+        onClose();
+      },
     },
-  });
+  );
 
   useEffect(() => {
     setSelectedIndex(results[tab].length > 0 ? 0 : -1);
@@ -140,7 +156,13 @@ export default function SearchBar({ onClose }) {
         </div>
       </div>
 
-      <Results results={results} tab={tab} setTab={setTab} selectedIndex={selectedIndex} onClose={onClose} />
+      <Results
+        results={results}
+        tab={tab}
+        setTab={setTab}
+        selectedIndex={selectedIndex}
+        onClose={onClose}
+      />
     </div>
   );
 }

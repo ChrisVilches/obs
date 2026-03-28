@@ -9,9 +9,9 @@ const { getBookmarks } = require("./bookmarkService");
 
 let _fileTypeFromFile;
 
-class VersionConflictError extends Error { }
-class FileAccessDeniedError extends Error { }
-class InvalidFileModification extends Error { }
+class VersionConflictError extends Error {}
+class FileAccessDeniedError extends Error {}
+class InvalidFileModification extends Error {}
 
 function shouldIgnoreFile(entryName) {
   return entryName.startsWith(".");
@@ -112,7 +112,12 @@ async function getFileInfo(rootDir, bookmarksFile, relativePath) {
     (item) => item.path === relativePath,
   );
 
-  const result = { type, isBookmarked, mtime: stat.mtime.toISOString(), size: stat.size };
+  const result = {
+    type,
+    isBookmarked,
+    mtime: stat.mtime.toISOString(),
+    size: stat.size,
+  };
 
   if (isTextType(type)) {
     result.content = await fs.promises.readFile(fullPath, "utf-8");
@@ -139,15 +144,15 @@ async function toggleFileCheckbox(rootDir, file, checked, line, mtime) {
 
   const checkboxRegex = /^\s*(-\s|(\d+\.\s))\[[ x]\]/;
   if (!checkboxRegex.test(lines[idx])) {
-    throw new InvalidFileModification("There is no checkbox at this position")
+    throw new InvalidFileModification("There is no checkbox at this position");
   }
 
-  const bracketPos = lines[idx].indexOf('[');
+  const bracketPos = lines[idx].indexOf("[");
   const afterCheckbox = lines[idx].substring(bracketPos + 3);
   if (checked) {
-    lines[idx] = lines[idx].substring(0, bracketPos) + '[x]' + afterCheckbox;
+    lines[idx] = lines[idx].substring(0, bracketPos) + "[x]" + afterCheckbox;
   } else {
-    lines[idx] = lines[idx].substring(0, bracketPos) + '[ ]' + afterCheckbox;
+    lines[idx] = lines[idx].substring(0, bracketPos) + "[ ]" + afterCheckbox;
   }
 
   content = ensureTrailingNewline(lines.join("\n"));
@@ -202,5 +207,5 @@ module.exports = {
   resolveRawPath,
   VersionConflictError,
   FileAccessDeniedError,
-  InvalidFileModification
+  InvalidFileModification,
 };

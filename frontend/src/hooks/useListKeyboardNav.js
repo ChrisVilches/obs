@@ -1,6 +1,10 @@
 import { useEffect, useEffectEvent, useState } from "react";
 
-export default function useListKeyboardNav({ items, onSelect, enabled = true }) {
+export default function useListKeyboardNav({
+  items,
+  onSelect,
+  enabled = true,
+}) {
   const [selectedIndex, setSelectedIndex] = useState(-1);
 
   useEffect(() => {

@@ -33,30 +33,39 @@ function MarkdownImage({ node, src, alt, file, ...props }) {
 }
 
 function listNodeInfo(node) {
-  const firstP = node.children.findIndex(e => e.tagName === 'p')
-  const isLoose = firstP !== -1
+  const firstP = node.children.findIndex((e) => e.tagName === "p");
+  const isLoose = firstP !== -1;
 
   // TODO: assumes the first element in the paragraph is a checkbox, but could it be another one?
   // maybe filter out spaces or newlines, etc.
   // I think it wouldn't make sense to have whitespace and after that - [ ] anyway. The whitespace
   // is probably in the previous node?
-  const firstNode = isLoose ? node.children[firstP].children[0] : node.children[0]
-  const startsWithCheckbox = firstNode.properties?.type === 'checkbox'
+  const firstNode = isLoose
+    ? node.children[firstP].children[0]
+    : node.children[0];
+  const startsWithCheckbox = firstNode.properties?.type === "checkbox";
   const checked = startsWithCheckbox && firstNode.properties.checked;
 
   return {
     isLoose,
     task: startsWithCheckbox,
     checked,
-    firstP
-  }
+    firstP,
+  };
 }
 
-function CheckboxListItem({ node, children, file, mtime, loading, setLoading }) {
+function CheckboxListItem({
+  node,
+  children,
+  file,
+  mtime,
+  loading,
+  setLoading,
+}) {
   const { mutate } = useSWRConfig();
   const infoKey = `/api/files/info?file=${encodeURIComponent(file)}`;
 
-  const { isLoose, firstP, task, checked } = listNodeInfo(node)
+  const { isLoose, firstP, task, checked } = listNodeInfo(node);
 
   if (!task) {
     return <li className="list-inside">{children}</li>;
@@ -64,22 +73,25 @@ function CheckboxListItem({ node, children, file, mtime, loading, setLoading }) 
 
   // TODO: very annoying code. Simplify somehow.
   function removeLooseCheckbox(originalChildren) {
-    const cpy = [...originalChildren]
-    cpy[firstP] = { ...originalChildren[firstP] }
-    cpy[firstP].props = { ...originalChildren[firstP].props }
-    cpy[firstP].props.children = originalChildren[firstP].props.children.slice(1)
-    return cpy
+    const cpy = [...originalChildren];
+    cpy[firstP] = { ...originalChildren[firstP] };
+    cpy[firstP].props = { ...originalChildren[firstP].props };
+    cpy[firstP].props.children =
+      originalChildren[firstP].props.children.slice(1);
+    return cpy;
   }
 
   function removeTightCheckbox(originalChildren) {
-    return originalChildren.slice(1)
+    return originalChildren.slice(1);
   }
 
-  const copy = isLoose ? removeLooseCheckbox(children) : removeTightCheckbox(children);
+  const copy = isLoose
+    ? removeLooseCheckbox(children)
+    : removeTightCheckbox(children);
   const line = node.position.start.line;
 
   const handleClick = async () => {
-    setLoading(true)
+    setLoading(true);
     try {
       await mutate(
         infoKey,
@@ -95,13 +107,13 @@ function CheckboxListItem({ node, children, file, mtime, loading, setLoading }) 
         { revalidate: false },
       );
     } catch (e) {
-      if (e.code === 'VERSION_CONFLICT') {
+      if (e.code === "VERSION_CONFLICT") {
         showErrorToast("There was a version conflict");
       } else {
         showErrorToast(e.message);
       }
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   };
 
@@ -110,10 +122,9 @@ function CheckboxListItem({ node, children, file, mtime, loading, setLoading }) 
       <button
         disabled={loading}
         onClick={handleClick}
-        className={`disabled:opacity-50 inline-flex items-center justify-center size-4 rounded border-2 mt-[5px] shrink-0 transition-colors ${checked
-          ? "bg-emerald-600 border-emerald-700"
-          : "border-gray-500"
-          }`}
+        className={`disabled:opacity-50 inline-flex items-center justify-center size-4 rounded border-2 mt-[5px] shrink-0 transition-colors ${
+          checked ? "bg-emerald-600 border-emerald-700" : "border-gray-500"
+        }`}
       >
         {checked && <CheckIcon className="size-3 text-white" strokeWidth={3} />}
       </button>
@@ -125,21 +136,21 @@ function CheckboxListItem({ node, children, file, mtime, loading, setLoading }) 
 function tableComponent({ children }) {
   return (
     <div className="overflow-x-auto">
-      <table className="min-w-full">
-        {children}
-      </table>
+      <table className="min-w-full">{children}</table>
     </div>
-  )
+  );
 }
 
 // TODO: removing the left padding will render nested lists badly
 function listComponent(ul) {
-  return function({ node, children }) {
-    const infos = node.children.filter(x => x.type === 'element').map(listNodeInfo)
-    const tasks = infos.filter(i => i.task)
-    const completed = infos.filter(i => i.checked).length
-    const total = tasks.length
-    const pct = total ? Math.round((completed / total) * 100) : 0
+  return function ({ node, children }) {
+    const infos = node.children
+      .filter((x) => x.type === "element")
+      .map(listNodeInfo);
+    const tasks = infos.filter((i) => i.task);
+    const completed = infos.filter((i) => i.checked).length;
+    const total = tasks.length;
+    const pct = total ? Math.round((completed / total) * 100) : 0;
 
     return (
       <>
@@ -148,8 +159,9 @@ function listComponent(ul) {
             <div className="flex items-center gap-3">
               <div className="relative flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
                 <div
-                  className={`absolute inset-y-0 left-0 rounded-full transition-all duration-700 ease-out ${completed === total ? 'bg-emerald-500' : 'bg-indigo-500'
-                    }`}
+                  className={`absolute inset-y-0 left-0 rounded-full transition-all duration-700 ease-out ${
+                    completed === total ? "bg-emerald-500" : "bg-indigo-500"
+                  }`}
                   style={{ width: `${pct}%` }}
                 />
               </div>
@@ -165,17 +177,17 @@ function listComponent(ul) {
           <ol className="">{children}</ol>
         )}
       </>
-    )
-  }
+    );
+  };
 }
 
 // If you don't put them here, a glitch will prevent
 // the progress bar from changing smoothly.
-const ul = listComponent(true)
-const ol = listComponent(false)
+const ul = listComponent(true);
+const ol = listComponent(false);
 
 export default function MarkdownViewer({ file, content, mtime }) {
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
 
   return (
     <div className="p-6 prose prose-invert max-w-full">
@@ -202,16 +214,16 @@ export default function MarkdownViewer({ file, content, mtime }) {
             );
           },
           code({ children, node }) {
-            const { start, end } = node.position
+            const { start, end } = node.position;
             if (start.line === end.line) {
               return (
                 <code className="bg-[#2d2d2d] before:content-none after:content-none text-[#ffb454] font-mono text-[0.9em] px-1.5 py-0.5 rounded">
                   {children}
                 </code>
-              )
+              );
             }
-            return <code>{children}</code>
-          }
+            return <code>{children}</code>;
+          },
         }}
       >
         {content || ""}

@@ -302,9 +302,9 @@ export default function Sidemenu({
 
   useExpandTreeToFile(selectedFile, files, setExpandedSet);
 
-  const scrollDone = useRef(false)
+  const scrollDone = useRef(false);
   useEffect(() => {
-    scrollDone.current = false
+    scrollDone.current = false;
   }, [selectedFile]);
 
   // On mobile, the sidemenu unmounts and remounts from scratch each time it opens.
@@ -318,18 +318,15 @@ export default function Sidemenu({
   // `scrollDone` prevents the auto-scroll from firing again when the user collapses
   // and re-expands an ancestor of the selected file (which unmounts and remounts
   // the selected file's element, triggering the callback ref).
-  const selectedNodeRef = useCallback(
-    (elem) => {
-      if (!elem || scrollDone.current) return;
-      // Ignore it when it's hidden.
-      const rect = elem.getBoundingClientRect();
-      if (rect.width === 0 || rect.height === 0) return;
+  const selectedNodeRef = useCallback((elem) => {
+    if (!elem || scrollDone.current) return;
+    // Ignore it when it's hidden.
+    const rect = elem.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) return;
 
-      elem.scrollIntoView({ behavior: "smooth", block: "center" });
-      scrollDone.current = true
-    },
-    [],
-  );
+    elem.scrollIntoView({ behavior: "smooth", block: "center" });
+    scrollDone.current = true;
+  }, []);
 
   return (
     <div className="flex flex-col flex-1 min-h-0">

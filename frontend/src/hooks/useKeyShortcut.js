@@ -2,7 +2,11 @@ import { useEffect } from "react";
 
 const INPUT_TAGS = ["input", "textarea", "select"];
 
-export default function useKeyShortcut(key, callback, { enabled = true, ignoreInputs = true } = {}) {
+export default function useKeyShortcut(
+  key,
+  callback,
+  { enabled = true, ignoreInputs = true } = {},
+) {
   useEffect(() => {
     if (!enabled) return;
 
