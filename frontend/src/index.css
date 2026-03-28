@@ -2,8 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* TODO: format this CSS */
-/* TODO: with this I don't need to specify the srollbar each time there's a scrollable element. */
 * {
   @apply scrollbar-thin;
   @apply scrollbar-thumb-gray-700 ;

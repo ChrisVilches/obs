@@ -33,7 +33,7 @@ function Results({ results, tab, setTab, selectedIndex, onClose }) {
           ))}
         </div>
       </div>
-      <div className="overflow-y-auto flex-1 min-h-0 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600">
+      <div className="overflow-y-auto flex-1 min-h-0">
         {tab === "all" && (
           <FileList
             items={results.all}

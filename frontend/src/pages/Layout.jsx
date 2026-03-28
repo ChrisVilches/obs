@@ -132,7 +132,7 @@ export default function Layout() {
           )}
         </div>
 
-        <main className="flex-1 overflow-y-auto bg-gray-950 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600">
+        <main className="flex-1 overflow-y-auto bg-gray-950">
           <Outlet context={{ setLayoutTopContent }} />
         </main>
       </div>
@@ -142,7 +142,7 @@ export default function Layout() {
         onClose={() => setBookmarksModalOpen(false)}
         title="Bookmarks"
         className="h-[70vh] flex flex-col overflow-hidden"
-        childrenClass="flex-1 min-h-0 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600"
+        childrenClass="flex-1 min-h-0 overflow-y-auto"
       >
         <FileList
           items={modalBookmarks}
