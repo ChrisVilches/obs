@@ -4,7 +4,7 @@ import {
   MagnifyingGlassIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 
 const GITHUB_URL = "https://github.com/ChrisVilches/obs";
@@ -302,9 +302,9 @@ export default function Sidemenu({
 
   useExpandTreeToFile(selectedFile, files, setExpandedSet);
 
-  const [scrollDone, setScrollDone] = useState(false);
+  const scrollDone = useRef(false)
   useEffect(() => {
-    setScrollDone(false);
+    scrollDone.current = false
   }, [selectedFile]);
 
   // On mobile, the sidemenu unmounts and remounts from scratch each time it opens.
@@ -320,17 +320,15 @@ export default function Sidemenu({
   // the selected file's element, triggering the callback ref).
   const selectedNodeRef = useCallback(
     (elem) => {
-      // TODO: maybe can be done with a ref (scrollDone)
-      if (!elem || scrollDone) return;
+      if (!elem || scrollDone.current) return;
       // Ignore it when it's hidden.
       const rect = elem.getBoundingClientRect();
       if (rect.width === 0 || rect.height === 0) return;
 
-      console.info("scrolling");
       elem.scrollIntoView({ behavior: "smooth", block: "center" });
-      setScrollDone(true);
+      scrollDone.current = true
     },
-    [scrollDone],
+    [],
   );
 
   return (
