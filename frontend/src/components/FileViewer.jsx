@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
+import { UnsavedChangesModal, useEditBlocker } from "../hooks/useEditBlocker";
 import useFileToolbar from "../hooks/useFileToolbar";
-import { useEditBlocker, UnsavedChangesModal } from "../hooks/useEditBlocker";
 import { fetcher } from "../utils/fetcher";
-import { showSuccessToast, showInfoToast } from "../utils/toast";
+import { showInfoToast, showSuccessToast } from "../utils/toast";
 import Button from "./Button";
 import ErrorDisplay from "./ErrorDisplay";
 import Modal from "./Modal";

@@ -1,11 +1,11 @@
-import ReactMarkdown from "react-markdown";
 import { useState } from "react";
-import { fetcher } from "../../utils/fetcher";
-import { showErrorToast } from "../../utils/toast";
-import { useSWRConfig } from "swr";
+import ReactMarkdown from "react-markdown";
+import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
-import rehypeKatex from "rehype-katex";
+import { useSWRConfig } from "swr";
+import { fetcher } from "../../utils/fetcher";
+import { showErrorToast } from "../../utils/toast";
 import "katex/dist/katex.min.css";
 import { CheckIcon, EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 
@@ -143,7 +143,7 @@ function tableComponent({ children }) {
 
 // TODO: removing the left padding will render nested lists badly
 function listComponent(ul) {
-  return function ({ node, children }) {
+  return ({ node, children }) => {
     const infos = node.children
       .filter((x) => x.type === "element")
       .map(listNodeInfo);

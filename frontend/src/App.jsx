@@ -1,5 +1,5 @@
-import { Route, Routes } from "react-router";
 import { Toaster } from "react-hot-toast";
+import { Route, Routes } from "react-router";
 import { SWRConfig } from "swr";
 import Dashboard from "./pages/Dashboard";
 import FilePage from "./pages/FilePage";

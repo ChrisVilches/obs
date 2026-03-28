@@ -1,9 +1,9 @@
-import toast from "react-hot-toast";
 import {
   CheckCircleIcon,
   InformationCircleIcon,
   XCircleIcon,
 } from "@heroicons/react/24/outline";
+import toast from "react-hot-toast";
 
 function showToast(msg, { Icon, iconColor, bgColor, ringColor, textColor }) {
   return toast.custom((t) => (

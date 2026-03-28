@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useBlocker } from "react-router-dom";
-import Modal from "../components/Modal";
 import Button from "../components/Button";
+import Modal from "../components/Modal";
 
 export function useEditBlocker({ enabled, hasUnsavedChanges }) {
   const blocker = useBlocker(hasUnsavedChanges);

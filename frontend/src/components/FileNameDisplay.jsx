@@ -15,9 +15,7 @@ function formatBytesBinary(bytes, decimals = 2) {
   const unitIndex = Math.min(i, sizes.length - 1);
 
   // Calculate the scaled value and format to fixed decimals
-  const formattedValue = parseFloat(
-    (bytes / Math.pow(k, unitIndex)).toFixed(decimals),
-  );
+  const formattedValue = parseFloat((bytes / k ** unitIndex).toFixed(decimals));
 
   return `${formattedValue} ${sizes[unitIndex]}`;
 }
