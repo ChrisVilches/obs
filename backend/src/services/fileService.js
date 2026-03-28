@@ -9,8 +9,9 @@ const { getBookmarks } = require("./bookmarkService");
 
 let _fileTypeFromFile;
 
-class VersionConflictError extends Error {}
-class FileAccessDeniedError extends Error {}
+class VersionConflictError extends Error { }
+class FileAccessDeniedError extends Error { }
+class InvalidFileModification extends Error { }
 
 function shouldIgnoreFile(entryName) {
   return entryName.startsWith(".");
