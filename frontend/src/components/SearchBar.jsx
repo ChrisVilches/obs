@@ -77,10 +77,10 @@ const EMPTY_RESULTS = { all: [], files: [], content: [] };
 
 export default function SearchBar({ onClose }) {
   const navigate = useNavigate();
-  const autoFocusRef = (el) => {
+  const autoFocusRef = useCallback((el) => {
     if (!el) return;
     setTimeout(() => el.focus());
-  };
+  }, []);
 
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebounce(query, 150);
