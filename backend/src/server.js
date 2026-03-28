@@ -163,9 +163,13 @@ app.use((err, _req, res, _next) => {
     return res.status(400).json({ error: err.message });
   }
 
-  // TODO: Don't show internal server errors in production!!!
   console.error("Unhandled error:", err);
-  res.status(500).json({ error: err.message });
+  res.status(500).json({
+    error:
+      process.env.NODE_ENV === "production"
+        ? "Internal server error"
+        : err.message,
+  });
 });
 
 app.use((_req, res) => {
