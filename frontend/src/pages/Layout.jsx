@@ -2,17 +2,14 @@ import { Dialog, DialogPanel } from "@headlessui/react";
 import { Bars3Icon } from "@heroicons/react/24/outline";
 import { useState } from "react";
 import { Outlet, useSearchParams } from "react-router-dom";
-import useSWR, { useSWRConfig } from "swr";
-import FileList from "../components/FileList";
+import useSWR from "swr";
 import Modal from "../components/Modal";
 import SearchBar from "../components/SearchBar";
 import Sidemenu from "../components/Sidemenu";
 import useKeyShortcut from "../hooks/useKeyShortcut";
 import useResizable from "../hooks/useResizable";
-import { fetcher } from "../utils/fetcher";
 
 export default function Layout() {
-  const { mutate } = useSWRConfig();
   const {
     data: filesData,
     isLoading: filesLoading,
@@ -20,9 +17,6 @@ export default function Layout() {
   } = useSWR("/api/files");
   const files = filesData?.files || [];
   const folderName = filesData?.folderName || "";
-  const [bookmarksModalOpen, setBookmarksModalOpen] = useState(false);
-  const [modalBookmarks, setModalBookmarks] = useState([]);
-  const [modalBookmarksLoading, setModalBookmarksLoading] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const {
@@ -41,23 +35,6 @@ export default function Layout() {
   });
 
   useKeyShortcut("/", () => setSearchModalOpen(true));
-
-  async function openBookmarksModal() {
-    setBookmarksModalOpen(true);
-    setModalBookmarksLoading(true);
-    try {
-      // TODO: maybe imperatively setting the data.items isn't necessary. Just having the
-      // data associated to the key should be enough. Then the modal can just see that.
-      // Maybe the loading state can also be just handled inside the modal.
-      // TODO: try to find similar usages as this one that could be refactored.
-      const data = await mutate("/api/bookmarks", fetcher("/api/bookmarks"));
-      setModalBookmarks(data?.items || []);
-    } catch {
-      // silently handled
-    } finally {
-      setModalBookmarksLoading(false);
-    }
-  }
 
   const [searchParams] = useSearchParams();
   const selectedFile = searchParams.get("f");
@@ -80,10 +57,6 @@ export default function Layout() {
               loading={filesLoading}
               onClose={() => setSidebarOpen(false)}
               folderName={folderName}
-              onBookmarkClick={() => {
-                setSidebarOpen(false);
-                openBookmarksModal();
-              }}
               onSearchClick={() => {
                 setSidebarOpen(false);
                 setSearchModalOpen(true);
@@ -107,7 +80,6 @@ export default function Layout() {
           files={files}
           loading={filesLoading}
           folderName={folderName}
-          onBookmarkClick={openBookmarksModal}
           onSearchClick={() => setSearchModalOpen(true)}
         />
       </aside>
@@ -136,21 +108,6 @@ export default function Layout() {
           <Outlet context={{ setLayoutTopContent }} />
         </main>
       </div>
-
-      <Modal
-        open={bookmarksModalOpen}
-        onClose={() => setBookmarksModalOpen(false)}
-        title="Bookmarks"
-        className="h-[70vh] flex flex-col overflow-hidden"
-        childrenClass="flex-1 min-h-0 overflow-y-auto"
-      >
-        <FileList
-          items={modalBookmarks}
-          loading={modalBookmarksLoading}
-          emptyMessage="No bookmarks found."
-          onItemClick={() => setBookmarksModalOpen(false)}
-        />
-      </Modal>
 
       <Modal
         open={searchModalOpen}
