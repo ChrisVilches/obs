@@ -36,7 +36,9 @@ function listNodeInfo(node) {
   const firstP = node.children.findIndex((e) => e.tagName === "p");
   const isLoose = firstP !== -1;
 
-  const children = isLoose ? node.children[firstP].children : node.children;
+  const children = isLoose
+    ? node.children[firstP].children
+    : node.children;
 
   const firstMeaningfulNode = children.find((child) => {
     // Skip whitespace text nodes
@@ -50,7 +52,8 @@ function listNodeInfo(node) {
   const startsWithCheckbox =
     firstMeaningfulNode?.properties?.type === "checkbox";
 
-  const checked = startsWithCheckbox && firstMeaningfulNode.properties.checked;
+  const checked =
+    startsWithCheckbox && firstMeaningfulNode.properties.checked;
 
   return {
     isLoose,

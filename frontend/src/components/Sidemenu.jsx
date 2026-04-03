@@ -6,38 +6,8 @@ import {
 } from "@heroicons/react/24/outline";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import useSWR from "swr";
-import FileList from "../components/FileList";
-import Modal from "../components/Modal";
 
 const GITHUB_URL = "https://github.com/ChrisVilches/obs";
-
-function BookmarksModal({ open, onClose }) {
-  const { data, isLoading, mutate } = useSWR("/api/bookmarks", {
-    revalidateOnMount: false,
-  });
-
-  useEffect(() => {
-    if (open) mutate();
-  }, [open]);
-
-  return (
-    <Modal
-      open={open}
-      onClose={onClose}
-      title="Bookmarks"
-      className="h-[70vh] flex flex-col overflow-hidden"
-      childrenClass="flex-1 min-h-0 overflow-y-auto"
-    >
-      <FileList
-        items={data?.items ?? []}
-        loading={isLoading}
-        emptyMessage="No bookmarks found."
-        onItemClick={onClose}
-      />
-    </Modal>
-  );
-}
 
 // On mobile the sidemenu unmounts and remounts each time it opens (via Dialog),
 // so this effect runs on every open. If the sidemenu ever switches to show/hide
@@ -93,16 +63,14 @@ function SidemenuFooter() {
   );
 }
 
-function SidemenuHeader({ folderName, onClose, onSearchClick }) {
-  const [showBookmarks, setShowBookmarks] = useState(false);
-
+function SidemenuHeader({
+  folderName,
+  onClose,
+  onSearchClick,
+  onBookmarkClick,
+}) {
   return (
     <div className="flex items-center justify-between px-4 h-14 border-b border-gray-800 shrink-0">
-      <BookmarksModal
-        open={showBookmarks}
-        onClose={() => setShowBookmarks(false)}
-      />
-
       <div className="flex items-center gap-2">
         {onClose && (
           <button
@@ -125,7 +93,7 @@ function SidemenuHeader({ folderName, onClose, onSearchClick }) {
       <div className="flex items-center gap-1">
         <button
           type="button"
-          onClick={() => setShowBookmarks(true)}
+          onClick={onBookmarkClick}
           className="p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
           aria-label="Bookmarks"
           title="Bookmarks"
@@ -309,6 +277,7 @@ export default function Sidemenu({
   onClose,
   loading,
   folderName,
+  onBookmarkClick,
   onSearchClick,
 }) {
   const [searchParams] = useSearchParams();
@@ -365,6 +334,7 @@ export default function Sidemenu({
         folderName={folderName}
         onClose={onClose}
         onSearchClick={onSearchClick}
+        onBookmarkClick={onBookmarkClick}
       />
       <nav className="flex-1 overflow-y-auto overflow-x-hidden p-2">
         {loading ? (
