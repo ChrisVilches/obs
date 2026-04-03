@@ -36,15 +36,24 @@ function listNodeInfo(node) {
   const firstP = node.children.findIndex((e) => e.tagName === "p");
   const isLoose = firstP !== -1;
 
-  // TODO: assumes the first element in the paragraph is a checkbox, but could it be another one?
-  // maybe filter out spaces or newlines, etc.
-  // I think it wouldn't make sense to have whitespace and after that - [ ] anyway. The whitespace
-  // is probably in the previous node?
-  const firstNode = isLoose
-    ? node.children[firstP].children[0]
-    : node.children[0];
-  const startsWithCheckbox = firstNode.properties?.type === "checkbox";
-  const checked = startsWithCheckbox && firstNode.properties.checked;
+  const children = isLoose
+    ? node.children[firstP].children
+    : node.children;
+
+  const firstMeaningfulNode = children.find((child) => {
+    // Skip whitespace text nodes
+    if (child.type === "text") {
+      return child.value.trim() !== "";
+    }
+
+    return true;
+  });
+
+  const startsWithCheckbox =
+    firstMeaningfulNode?.properties?.type === "checkbox";
+
+  const checked =
+    startsWithCheckbox && firstMeaningfulNode.properties.checked;
 
   return {
     isLoose,
