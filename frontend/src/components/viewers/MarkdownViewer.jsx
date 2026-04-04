@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { createContext, useContext, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
@@ -8,6 +8,8 @@ import { fetcher } from "../../utils/fetcher";
 import { showErrorToast } from "../../utils/toast";
 import "katex/dist/katex.min.css";
 import { CheckIcon, EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
+
+const TaskListContext = createContext({ isTaskList: false, hideDone: false });
 
 function isExternalURL(url) {
   return url.startsWith("http://") || url.startsWith("https://");
@@ -71,10 +73,20 @@ function CheckboxListItem({
   const { mutate } = useSWRConfig();
   const infoKey = `/api/files/info?file=${encodeURIComponent(file)}`;
 
+  const { isTaskList, hideDone } = useContext(TaskListContext);
+
+  if (!isTaskList) {
+    return <li className="list-inside">{children}</li>;
+  }
+
   const { isLoose, firstP, task, checked } = listNodeInfo(node);
 
   if (!task) {
     return <li className="list-inside">{children}</li>;
+  }
+
+  if (hideDone && checked) {
+    return null;
   }
 
   function removeLooseCheckbox(originalChildren) {
@@ -146,20 +158,37 @@ function tableComponent({ children }) {
   );
 }
 
-// TODO: removing the left padding will render nested lists badly
 function listComponent(ul) {
   return ({ node, children }) => {
-    const infos = node.children
-      .filter((x) => x.type === "element")
-      .map(listNodeInfo);
+    const liNodes = node.children.filter(
+      (x) => x.type === "element" && x.tagName === "li"
+    );
+
+    const hasNesting = liNodes.some((li) =>
+      li.children.some(
+        (child) =>
+          child.type === "element" &&
+          (child.tagName === "ul" || child.tagName === "ol")
+      )
+    );
+
+    const infos = liNodes.map(listNodeInfo);
+    const areAllTasks = infos.every((i) => i.task);
+    const isAnyLoose = infos.some((i) => i.isLoose);
+    const isTaskList =
+      !hasNesting && !isAnyLoose && areAllTasks && infos.length > 0;
+
     const tasks = infos.filter((i) => i.task);
     const completed = infos.filter((i) => i.checked).length;
     const total = tasks.length;
     const pct = total ? Math.round((completed / total) * 100) : 0;
+    const [hideDone, setHideDone] = useState(false);
+
+    const Tag = ul ? "ul" : "ol";
 
     return (
-      <>
-        {total > 0 && (
+      <TaskListContext.Provider value={{ isTaskList, hideDone }}>
+        {isTaskList && total > 0 && (
           <div className="mb-3 group">
             <div className="flex items-center gap-3">
               <div className="relative flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
@@ -174,14 +203,23 @@ function listComponent(ul) {
                 {completed}/{total}
               </span>
             </div>
+            <div className="flex justify-center mt-2">
+              <button
+                onClick={() => setHideDone((h) => !h)}
+                className="flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-gray-300 transition-colors"
+              >
+                {hideDone ? (
+                  <EyeIcon className="size-3.5" />
+                ) : (
+                  <EyeSlashIcon className="size-3.5" />
+                )}
+                <span>{hideDone ? "Show completed" : "Hide completed"}</span>
+              </button>
+            </div>
           </div>
         )}
-        {ul ? (
-          <ul className="">{children}</ul>
-        ) : (
-          <ol className="">{children}</ol>
-        )}
-      </>
+        <Tag className={isTaskList ? "pl-0" : ""}>{children}</Tag>
+      </TaskListContext.Provider>
     );
   };
 }
