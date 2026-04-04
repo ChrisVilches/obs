@@ -203,6 +203,7 @@ export default function MarkdownViewer({ file, content, mtime }) {
           img(props) {
             return <MarkdownImage {...props} file={file} />;
           },
+          // TODO: Loose lists are rendered very poorly.
           ul,
           ol,
           table: tableComponent,
