@@ -77,7 +77,6 @@ function CheckboxListItem({
     return <li className="list-inside">{children}</li>;
   }
 
-  // TODO: very annoying code. Simplify somehow.
   function removeLooseCheckbox(originalChildren) {
     const cpy = [...originalChildren];
     cpy[firstP] = { ...originalChildren[firstP] };
