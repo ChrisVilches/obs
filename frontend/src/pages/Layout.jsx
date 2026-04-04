@@ -17,7 +17,6 @@ function useBookmarksModal() {
   const open = async () => {
     setIsOpen(true);
     try {
-      // TODO: try to find similar usages as this one that could be refactored.
       await mutate();
     } catch (err) {
       console.error(err);
