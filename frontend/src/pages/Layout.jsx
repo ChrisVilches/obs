@@ -70,7 +70,6 @@ export default function Layout() {
     files,
     loading: filesLoading,
     folderName,
-    onClose: () => setSidebarOpen(false),
     onBookmarkClick: () => {
       setSidebarOpen(false);
       bookmarksModal.open();
@@ -91,7 +90,7 @@ export default function Layout() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
         <div className="fixed inset-0 flex">
           <DialogPanel className="w-72 h-full bg-gray-900 border-r border-gray-800 flex flex-col">
-            <Sidemenu {...sideMenuProps} />
+            <Sidemenu {...sideMenuProps} onClose={() => setSidebarOpen(false)} />
           </DialogPanel>
         </div>
       </Dialog>

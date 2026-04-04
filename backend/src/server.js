@@ -102,7 +102,7 @@ app.put("/api/files/content", async (req, res) => {
     })
     .parse(req.body);
   const changed = await writeFileContent(ROOT_DIR, file, content, mtime, force);
-  res.json({ success: true, modified: changed });
+  res.json({ modified: changed });
 });
 
 app.put("/api/files/checkbox", async (req, res) => {
