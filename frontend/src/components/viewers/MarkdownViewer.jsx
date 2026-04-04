@@ -204,7 +204,6 @@ export default function MarkdownViewer({ file, content, mtime }) {
             return <MarkdownImage {...props} file={file} />;
           },
           ul,
-          // TODO: test with ol (needs to fix server)
           ol,
           table: tableComponent,
           li(props) {
