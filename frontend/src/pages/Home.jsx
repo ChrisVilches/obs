@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/react';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
-import { getFileType } from '../utils/fileType';
 import ImageViewer from '../components/ImageViewer';
 import MarkdownViewer from '../components/MarkdownViewer';
 import MediaViewer from '../components/MediaViewer';
@@ -11,27 +10,24 @@ import Modal from '../components/Modal';
 import ErrorDisplay from '../components/ErrorDisplay';
 
 function Viewer({ file, onBookmarkChange }) {
-  const [content, setContent] = useState('');
+  const [info, setInfo] = useState(null);
   const [error, setError] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [editMode, setEditMode] = useState(false);
   const [editContent, setEditContent] = useState('');
   const [saveMessage, setSaveMessage] = useState(null);
   const [showFileNameModal, setShowFileNameModal] = useState(false);
-  const [isBookmarked, setIsBookmarked] = useState(false);
 
   useEffect(() => {
     if (!file) return;
-    setContent('');
+    setInfo(null);
     setError(null);
     setEditMode(false);
-    setIsBookmarked(false);
-    fetch(`/api/files/content?file=${encodeURIComponent(file)}`)
+    fetch(`/api/files/info?file=${encodeURIComponent(file)}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.error) throw new Error(data.error);
-        setContent(data.content);
-        setIsBookmarked(data.isBookmarked);
+        setInfo(data);
       })
       .catch((err) => setError(err.message));
   }, [file, refreshKey]);
@@ -40,8 +36,10 @@ function Viewer({ file, onBookmarkChange }) {
     setSaveMessage(null);
   }, [file]);
 
+  if (!file) return null;
+
   function handleEdit() {
-    setEditContent(content);
+    setEditContent(info.content);
     setEditMode(true);
     setSaveMessage(null);
   }
@@ -67,12 +65,12 @@ function Viewer({ file, onBookmarkChange }) {
   }
 
   function handleToggleBookmark() {
-    if (isBookmarked) {
+    if (info.isBookmarked) {
       fetch(`/api/bookmarks?path=${encodeURIComponent(file)}`, { method: 'DELETE' })
         .then((res) => res.json())
         .then((data) => {
           if (data.error) throw new Error(data.error);
-          setIsBookmarked(false);
+          setInfo({ ...info, isBookmarked: false });
           if (onBookmarkChange) onBookmarkChange();
         })
         .catch((err) => setError(err.message));
@@ -85,18 +83,16 @@ function Viewer({ file, onBookmarkChange }) {
         .then((res) => res.json())
         .then((data) => {
           if (data.error) throw new Error(data.error);
-          setIsBookmarked(true);
+          setInfo({ ...info, isBookmarked: true });
           if (onBookmarkChange) onBookmarkChange();
         })
         .catch((err) => setError(err.message));
     }
   }
 
-  if (!file) {
-    return null;
-  }
+  if (error) return <ErrorDisplay message={error} file={file} />;
 
-  const type = getFileType(file);
+  const type = info?.type;
 
   return (
     <div className="min-h-full flex flex-col">
@@ -124,19 +120,19 @@ function Viewer({ file, onBookmarkChange }) {
             <span className="hidden md:inline">Edit</span>
           </button>
         )}
-        {!editMode && !error && (
+        {!editMode && (
           <button
             onClick={handleToggleBookmark}
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium border rounded-md transition-colors mr-2 ${
-              isBookmarked
+              info?.isBookmarked
                 ? 'text-yellow-300 bg-yellow-900/30 border-yellow-700 hover:bg-yellow-900/50 hover:text-yellow-200'
                 : 'text-gray-400 bg-gray-800 border-gray-700 hover:bg-gray-700 hover:text-white'
             }`}
           >
-            <svg className="w-4 h-4" fill={isBookmarked ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4" fill={info?.isBookmarked ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
             </svg>
-            <span className="hidden md:inline">{isBookmarked ? 'Bookmarked' : 'Bookmark'}</span>
+            <span className="hidden md:inline">{info?.isBookmarked ? 'Bookmarked' : 'Bookmark'}</span>
           </button>
         )}
         {!editMode && (
@@ -184,13 +180,11 @@ function Viewer({ file, onBookmarkChange }) {
       ) : type === 'image' ? (
         <ImageViewer key={refreshKey} file={file} />
       ) : type === 'markdown' ? (
-        <MarkdownViewer key={refreshKey} file={file} />
+        <MarkdownViewer key={refreshKey} file={file} content={info.content} />
       ) : type === 'audio' || type === 'video' ? (
         <MediaViewer key={refreshKey} file={file} type={type} />
-      ) : error ? (
-        <ErrorDisplay message={error} file={file} />
       ) : (
-        <pre className="p-6 text-sm text-gray-300 overflow-auto whitespace-pre-wrap font-mono">{content || 'Loading...'}</pre>
+        <pre className="p-6 text-sm text-gray-300 overflow-auto whitespace-pre-wrap font-mono">{info?.content || ''}</pre>
       )}
     </div>
   );

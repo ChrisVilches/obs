@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const mime = require('mime-types');
 const { emit } = require('./eventChannel');
 
 // TODO: lots of Sync functions here. Maybe I should use async variants.
@@ -122,6 +123,62 @@ app.get('/api/files', (req, res) => {
     const folderName = path.basename(ROOT_DIR);
     res.json({ files, folderName });
   } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+const TEXT_CODE_TYPES = new Set([
+  'application/javascript', 'application/json', 'application/typescript',
+  'application/xml', 'application/xhtml+xml', 'application/sql', 'application/yaml',
+  'application/ecmascript', 'application/node', 'application/x-csh',
+  'application/x-sh', 'application/x-perl', 'application/x-python',
+  'application/x-ruby', 'application/x-httpd-php',
+]);
+
+function classifyFile(fullPath) {
+  const mimeType = mime.lookup(fullPath) || 'text/plain';
+
+  if (mimeType === 'text/markdown') return 'markdown';
+  if (mimeType.startsWith('image/')) return 'image';
+  if (mimeType.startsWith('audio/')) return 'audio';
+  if (mimeType.startsWith('video/')) return 'video';
+  if (mimeType.startsWith('text/')) return 'text';
+  if (TEXT_CODE_TYPES.has(mimeType)) return 'text';
+
+  return 'text';
+}
+
+const TEXT_TYPES = new Set(['text', 'markdown']);
+
+app.get('/api/files/info', (req, res) => {
+  try {
+    const relativePath = req.query.file;
+    if (!relativePath) {
+      return res.status(400).json({ error: 'Missing "file" query parameter' });
+    }
+    const fullPath = path.join(ROOT_DIR, relativePath);
+    if (!fullPath.startsWith(ROOT_DIR)) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+    if (!fs.existsSync(fullPath)) {
+      return res.status(404).json({ error: 'File not found' });
+    }
+
+    const type = classifyFile(fullPath);
+    const bookmarkData = readBookmarks();
+    const isBookmarked = bookmarkData.items.some(item => item.path === relativePath);
+
+    const result = { type, isBookmarked };
+
+    if (TEXT_TYPES.has(type)) {
+      result.content = fs.readFileSync(fullPath, 'utf-8');
+    }
+
+    res.json(result);
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      return res.status(404).json({ error: 'File not found' });
+    }
     res.status(500).json({ error: err.message });
   }
 });
