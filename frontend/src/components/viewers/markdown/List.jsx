@@ -215,11 +215,4 @@ function ListComponent({ node, children }) {
   );
 }
 
-// ul/ol must be declared at module level, not inline in the components map.
-// React treats each function reference as a distinct component type; inline
-// definitions would re-create on every render, discarding useState state.
-// Both share the same ListComponent — it reads node.tagName to pick the tag.
-const ul = ListComponent;
-const ol = ListComponent;
-
-export { ul, ol, CheckboxListItem };
+export { ListComponent, CheckboxListItem };

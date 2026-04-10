@@ -7,7 +7,7 @@ import "katex/dist/katex.min.css";
 import MarkdownImage from "./markdown/MarkdownImage";
 import Table from "./markdown/Table";
 import { Code } from "./markdown/Code";
-import { ul, ol, CheckboxListItem } from "./markdown/List";
+import { ListComponent, CheckboxListItem } from "./markdown/List";
 
 export default function MarkdownViewer({ file, content, mtime }) {
   const [loading, setLoading] = useState(false);
@@ -21,8 +21,8 @@ export default function MarkdownViewer({ file, content, mtime }) {
           img(props) {
             return <MarkdownImage {...props} file={file} />;
           },
-          ul,
-          ol,
+          ul: ListComponent,
+          ol: ListComponent,
           table: Table,
           li(props) {
             return (
