@@ -39,6 +39,7 @@ import { fetcher } from "../../../utils/fetcher";
 import { showErrorToast } from "../../../utils/toast";
 import { CheckIcon, EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 
+// TODO: We can merge both contexts, since all it does is just add one field to the object.
 const TaskListContext = createContext({ isTaskList: false, hideDone: false });
 const ListDepthContext = createContext(0);
 
@@ -61,80 +62,23 @@ function getCheckboxInfo(liNode) {
   return { task, checked };
 }
 
-function CheckboxListItem({
-  node,
-  children,
-  file,
-  mtime,
-  loading,
-  setLoading,
-}) {
-  const { mutate } = useSWRConfig();
-  const infoKey = `/api/files/info?file=${encodeURIComponent(file)}`;
-
+function LiComponent({ node, children }) {
   const { isTaskList, hideDone } = useContext(TaskListContext);
-
-  // Not a task list: render as plain <li>.  Even if this item happens to
-  // have a checkbox in the markdown, the parent list didn't qualify
-  // (nesting / loose / mixed) so we skip checkbox rendering entirely.
-  if (!isTaskList) {
-    return <li className="list-inside">{children}</li>;
-  }
-
   const { checked } = getCheckboxInfo(node);
 
-  // Hide-done: the parent ListComponent owns the hideDone state and puts it
-  // in context.  We return null so the item disappears from the DOM without
-  // affecting the progress bar (which still counts all tasks).
   if (hideDone && checked) {
     return null;
   }
 
-  // Strip the original <input type=checkbox> from children.  In a tight
-  // list the checkbox is always the first child, so slice(1) is enough.
-  const copy = children.slice(1);
-  const line = node.position.start.line;
+  if (isTaskList) {
+    // TODO: You can pass data like this. Maybe you don't need context (in some cases), refactor.
+    node.children[0].line = node.position.start.line;
 
-  const handleClick = async () => {
-    setLoading(true);
-    try {
-      await mutate(
-        infoKey,
-        fetcher("/api/files/checkbox", {
-          method: "PUT",
-          body: {
-            checked: !checked,
-            line,
-            mtime,
-            file,
-          },
-        }),
-        { revalidate: false },
-      );
-    } catch (e) {
-      if (e.code === "VERSION_CONFLICT") {
-        showErrorToast("There was a version conflict");
-      } else {
-        showErrorToast(e.message);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <li className="list-none flex items-start gap-2 hover:bg-white/5 rounded pl-0 py-0.5">
-      <button
-        disabled={loading}
-        onClick={handleClick}
-        className={`disabled:opacity-50 inline-flex items-center justify-center size-4 rounded border-2 mt-[5px] shrink-0 transition-colors ${checked ? "bg-emerald-600 border-emerald-700" : "border-gray-500"
-          }`}
-      >
-        {checked && <CheckIcon className="size-3 text-white" strokeWidth={3} />}
-      </button>
-      <span className="flex-1">{copy}</span>
-    </li>
-  );
+    return <li className="list-none flex items-start gap-2 hover:bg-white/5 rounded pl-0 py-0.5">{children}</li>;
+  } else {
+    // TODO: Not sure about this class "list-inside". It seems it gets uglier.
+    return <li className="list-inside">{children}</li>;
+  }
 }
 
 function ListComponent({ node, children }) {
@@ -181,38 +125,99 @@ function ListComponent({ node, children }) {
     <ListDepthContext.Provider value={listDepth + 1}>
       <TaskListContext.Provider value={{ isTaskList, hideDone }}>
         {isTaskList && total > 0 && (
-        <div className="mb-3 group">
-          <div className="flex items-center gap-3">
-            <div className="relative flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
-              <div
-                className={`absolute inset-y-0 left-0 rounded-full transition-all duration-700 ease-out ${completed === total ? "bg-emerald-500" : "bg-indigo-500"
-                  }`}
-                style={{ width: `${pct}%` }}
-              />
+          <div className="mb-3 group">
+            <div className="flex items-center gap-3">
+              <div className="relative flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                <div
+                  className={`absolute inset-y-0 left-0 rounded-full transition-all duration-700 ease-out ${completed === total ? "bg-emerald-500" : "bg-indigo-500"
+                    }`}
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
+              <span className="text-xs font-medium text-gray-500 tabular-nums">
+                {completed}/{total}
+              </span>
             </div>
-            <span className="text-xs font-medium text-gray-500 tabular-nums">
-              {completed}/{total}
-            </span>
+            <div className="flex justify-center mt-2">
+              <button
+                onClick={() => setHideDone((h) => !h)}
+                className="flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-gray-300 transition-colors"
+              >
+                {hideDone ? (
+                  <EyeIcon className="size-3.5" />
+                ) : (
+                  <EyeSlashIcon className="size-3.5" />
+                )}
+                <span>{hideDone ? "Show completed" : "Hide completed"}</span>
+              </button>
+            </div>
           </div>
-          <div className="flex justify-center mt-2">
-            <button
-              onClick={() => setHideDone((h) => !h)}
-              className="flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-gray-300 transition-colors"
-            >
-              {hideDone ? (
-                <EyeIcon className="size-3.5" />
-              ) : (
-                <EyeSlashIcon className="size-3.5" />
-              )}
-              <span>{hideDone ? "Show completed" : "Hide completed"}</span>
-            </button>
-          </div>
-        </div>
-      )}
-      <Tag className={isTaskList ? "pl-0" : ""}>{children}</Tag>
+        )}
+        <Tag className={isTaskList ? "pl-0" : ""}>{children}</Tag>
       </TaskListContext.Provider>
     </ListDepthContext.Provider>
   );
 }
 
-export { ListComponent, CheckboxListItem };
+function Input(props) {
+  const {
+    node,
+    file,
+    mtime,
+    loading,
+    setLoading,
+    type,
+    checked
+  } = props
+  const { isTaskList } = useContext(TaskListContext);
+  const interactiveCheckbox = isTaskList && type === 'checkbox'
+  const nonInteractiveCheckbox = !interactiveCheckbox && type === 'checkbox'
+  const { mutate } = useSWRConfig();
+  const infoKey = `/api/files/info?file=${encodeURIComponent(file)}`;
+
+  const handleClick = async () => {
+    setLoading(true);
+    try {
+      await mutate(
+        infoKey,
+        fetcher("/api/files/checkbox", {
+          method: "PUT",
+          body: {
+            checked: !checked,
+            line: node.line,
+            mtime,
+            file,
+          },
+        }),
+        { revalidate: false },
+      );
+    } catch (e) {
+      if (e.code === "VERSION_CONFLICT") {
+        showErrorToast("There was a version conflict");
+      } else {
+        showErrorToast(e.message);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (interactiveCheckbox) {
+    return (
+      <button
+        disabled={loading}
+        onClick={handleClick}
+        className={`disabled:opacity-50 inline-flex items-center justify-center size-4 rounded border-2 mt-[5px] shrink-0 transition-colors ${checked ? "bg-emerald-600 border-emerald-700" : "border-gray-500"
+          }`}
+      >
+        {checked && <CheckIcon className="size-3 text-white" strokeWidth={3} />}
+      </button>
+    )
+  } else if (nonInteractiveCheckbox) {
+    return "[ ] "
+  } else {
+    return <input />
+  }
+}
+
+export { ListComponent, LiComponent, Input };
