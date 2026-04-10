@@ -1,12 +1,12 @@
 // TASK LIST RENDERING
-//   Two-pass approach: the ul/ol component (listComponent) inspects the HAST
+//   Two-pass approach: the ul/ol component (ListComponent) inspects the HAST
 //   node to decide whether the list qualifies as a "task list", then passes
 //   the decision down to each li via React context (TaskListContext).
 //
 //   A list only becomes a task list when ALL of these hold:
-//     1. Flat — no nested ul/ol inside any li (detecting nesting is simple:
-//        walk each li's children looking for element nodes with tagName ul/ol).
-//     2. Tight — no <p> wrapper around item content (loose lists).  Loose
+//     1. Flat — no nested ul/ol inside any li (hasNestedChildren), AND not
+//        nested inside another list (isNestedList via ListDepthContext).
+//     2. Tight — no <p> wrapper around item content (hasLoose).  Loose
 //        lists would complicate checkbox removal and hide-done filtering.
 //     3. Every li starts with a checkbox (<input type=checkbox>).  No mixing
 //        of checked and plain items — mixed lists render as plain lists.
@@ -15,8 +15,8 @@
 //     - Progress bar + show/hide completed toggle appear above the list.
 //     - Each li renders a custom checkbox button that toggles via API.
 //     - pl-0 removes the left padding (no nesting needed, use full width).
-//     - hideDone state lives in listComponent; each li checks it and returns
-//       null when its item is checked and hiding is active.
+//     - hideDone state lives in ListComponent; each li checks it via context
+//       and returns null when its item is checked and hiding is active.
 //     - Progress bar always counts all tasks, not just visible ones.
 //
 //   When the list is NOT a task list (nested, loose, mixed, or no checkboxes):
@@ -32,11 +32,6 @@
 //   to render — the parent-child relationship exists in the HAST tree but
 //   not in the React component tree.  Wrapping children in a Provider is the
 //   simplest way to communicate the decision.
-//
-//   Potential issues:
-//     - The HAST tree shape depends on remark-gfm's output; a version bump
-//       could change node structure and break checkbox detection or nesting
-//       detection.
 
 import { createContext, useContext, useState } from "react";
 import { useSWRConfig } from "swr";
@@ -45,11 +40,12 @@ import { showErrorToast } from "../../../utils/toast";
 import { CheckIcon, EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 
 const TaskListContext = createContext({ isTaskList: false, hideDone: false });
+const ListDepthContext = createContext(0);
 
 // Checks whether an li node starts with a checkbox.
 // Skips whitespace text nodes.  Since only tight flat lists can become task
 // lists, we don't need to handle loose (<p> wrapper) here — loose lists are
-// rejected upstream by hasLoose in listComponent.
+// rejected upstream by hasLoose in ListComponent.
 // Returns { task, checked }.
 function getCheckboxInfo(liNode) {
   const first = liNode.children.find((child) => {
@@ -85,19 +81,9 @@ function CheckboxListItem({
     return <li className="list-inside">{children}</li>;
   }
 
-  const { task, checked } = getCheckboxInfo(node);
+  const { checked } = getCheckboxInfo(node);
 
-  // Defensive: even though the parent determined this is a task list
-  // (areAllTasks), bail out if this particular li has no checkbox.
-  if (!task) {
-    console.error(
-      "Expected checkbox in task-list item but none found — the parent list passed areAllTasks, so every li should start with an <input type=checkbox>. Falling back to plain <li>:",
-      node
-    );
-    return <li className="list-inside">{children}</li>;
-  }
-
-  // Hide-done: the parent listComponent owns the hideDone state and puts it
+  // Hide-done: the parent ListComponent owns the hideDone state and puts it
   // in context.  We return null so the item disappears from the DOM without
   // affecting the progress bar (which still counts all tasks).
   if (hideDone && checked) {
@@ -151,89 +137,89 @@ function CheckboxListItem({
   );
 }
 
-function listComponent(isUl) {
-  return ({ node, children }) => {
-    const liNodes = node.children.filter(
-      (x) => x.type === "element" && x.tagName === "li"
-    );
+function ListComponent({ node, children }) {
+  const listDepth = useContext(ListDepthContext);
+  const isNestedList = listDepth > 0;
 
-    // Nesting detection: walk each li's children looking for nested ul/ol.
-    // A nested sublist means this list can't be a flat task list — progress
-    // bars and show/hide would be ambiguous (which sublist do they apply to?).
-    const hasNesting = liNodes.some((li) =>
-      li.children.some(
-        (child) =>
-          child.type === "element" &&
-          (child.tagName === "ul" || child.tagName === "ol")
-      )
-    );
+  const liNodes = node.children.filter(
+    (x) => x.type === "element" && x.tagName === "li"
+  );
 
-    // Loose detection: if any li wraps its content in a <p>, the list is
-    // loose and can't be a task list.  Only tight lists get checkbox widgets.
-    const hasLoose = liNodes.some((li) =>
-      li.children.some(
-        (child) => child.type === "element" && child.tagName === "p"
-      )
-    );
+  // Nesting detection: walk each li's children looking for nested ul/ol.
+  // A nested sublist means this list can't be a flat task list — progress
+  // bars and show/hide would be ambiguous (which sublist do they apply to?).
+  const hasNestedChildren = liNodes.some((li) =>
+    li.children.some(
+      (child) =>
+        child.type === "element" &&
+        (child.tagName === "ul" || child.tagName === "ol")
+    )
+  );
 
-    const infos = liNodes.map(getCheckboxInfo);
-    const areAllTasks = infos.every((i) => i.task);
-    const isTaskList =
-      !hasNesting && !hasLoose && areAllTasks && infos.length > 0;
+  // Loose detection: if any li wraps its content in a <p>, the list is
+  // loose and can't be a task list.  Only tight lists get checkbox widgets.
+  const hasLoose = liNodes.some((li) =>
+    li.children.some(
+      (child) => child.type === "element" && child.tagName === "p"
+    )
+  );
 
-    const tasks = infos.filter((i) => i.task);
-    const completed = infos.filter((i) => i.checked).length;
-    const total = tasks.length;
-    const pct = total ? Math.round((completed / total) * 100) : 0;
-    const [hideDone, setHideDone] = useState(false);
+  const infos = liNodes.map(getCheckboxInfo);
+  const areAllTasks = infos.every((i) => i.task);
+  const isTaskList =
+    !hasNestedChildren && !isNestedList && !hasLoose && areAllTasks && infos.length > 0;
 
-    const Tag = isUl ? "ul" : "ol";
+  const tasks = infos.filter((i) => i.task);
+  const completed = infos.filter((i) => i.checked).length;
+  const total = tasks.length;
+  const pct = total ? Math.round((completed / total) * 100) : 0;
+  const [hideDone, setHideDone] = useState(false);
 
-    return (
+  const Tag = node.tagName; // "ul" or "ol"
+
+  return (
+    <ListDepthContext.Provider value={listDepth + 1}>
       <TaskListContext.Provider value={{ isTaskList, hideDone }}>
         {isTaskList && total > 0 && (
-          <div className="mb-3 group">
-            <div className="flex items-center gap-3">
-              <div className="relative flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                <div
-                  className={`absolute inset-y-0 left-0 rounded-full transition-all duration-700 ease-out ${completed === total ? "bg-emerald-500" : "bg-indigo-500"
-                    }`}
-                  style={{ width: `${pct}%` }}
-                />
-              </div>
-              <span className="text-xs font-medium text-gray-500 tabular-nums">
-                {completed}/{total}
-              </span>
+        <div className="mb-3 group">
+          <div className="flex items-center gap-3">
+            <div className="relative flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
+              <div
+                className={`absolute inset-y-0 left-0 rounded-full transition-all duration-700 ease-out ${completed === total ? "bg-emerald-500" : "bg-indigo-500"
+                  }`}
+                style={{ width: `${pct}%` }}
+              />
             </div>
-            <div className="flex justify-center mt-2">
-              <button
-                onClick={() => setHideDone((h) => !h)}
-                className="flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-gray-300 transition-colors"
-              >
-                {hideDone ? (
-                  <EyeIcon className="size-3.5" />
-                ) : (
-                  <EyeSlashIcon className="size-3.5" />
-                )}
-                <span>{hideDone ? "Show completed" : "Hide completed"}</span>
-              </button>
-            </div>
+            <span className="text-xs font-medium text-gray-500 tabular-nums">
+              {completed}/{total}
+            </span>
           </div>
-        )}
-        <Tag className={isTaskList ? "pl-0" : ""}>{children}</Tag>
+          <div className="flex justify-center mt-2">
+            <button
+              onClick={() => setHideDone((h) => !h)}
+              className="flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-gray-300 transition-colors"
+            >
+              {hideDone ? (
+                <EyeIcon className="size-3.5" />
+              ) : (
+                <EyeSlashIcon className="size-3.5" />
+              )}
+              <span>{hideDone ? "Show completed" : "Hide completed"}</span>
+            </button>
+          </div>
+        </div>
+      )}
+      <Tag className={isTaskList ? "pl-0" : ""}>{children}</Tag>
       </TaskListContext.Provider>
-    );
-  };
+    </ListDepthContext.Provider>
+  );
 }
 
 // ul/ol must be declared at module level, not inline in the components map.
-// The components map is an object literal recreated on every render of
-// MarkdownViewer.  If listComponent(true) were called there, it would
-// return a new function reference on each render — React would treat it as
-// a different component type, unmounting and remounting the entire list
-// tree.  That discards the useState for hideDone and kills the progress
-// bar's CSS transition.
-const ul = listComponent(true);
-const ol = listComponent(false);
+// React treats each function reference as a distinct component type; inline
+// definitions would re-create on every render, discarding useState state.
+// Both share the same ListComponent — it reads node.tagName to pick the tag.
+const ul = ListComponent;
+const ol = ListComponent;
 
 export { ul, ol, CheckboxListItem };
