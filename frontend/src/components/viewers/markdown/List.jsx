@@ -90,6 +90,10 @@ function CheckboxListItem({
   // Defensive: even though the parent determined this is a task list
   // (areAllTasks), bail out if this particular li has no checkbox.
   if (!task) {
+    console.error(
+      "Expected checkbox in task-list item but none found — the parent list passed areAllTasks, so every li should start with an <input type=checkbox>. Falling back to plain <li>:",
+      node
+    );
     return <li className="list-inside">{children}</li>;
   }
 
