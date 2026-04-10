@@ -127,25 +127,16 @@ app.get('/api/files', (req, res) => {
   }
 });
 
-const TEXT_CODE_TYPES = new Set([
-  'application/javascript', 'application/json', 'application/typescript',
-  'application/xml', 'application/xhtml+xml', 'application/sql', 'application/yaml',
-  'application/ecmascript', 'application/node', 'application/x-csh',
-  'application/x-sh', 'application/x-perl', 'application/x-python',
-  'application/x-ruby', 'application/x-httpd-php',
-]);
-
 function classifyFile(fullPath) {
-  const mimeType = mime.lookup(fullPath) || 'text/plain';
+  const mimeType = mime.lookup(fullPath) || 'application/octet-stream';
 
   if (mimeType === 'text/markdown') return 'markdown';
   if (mimeType.startsWith('image/')) return 'image';
   if (mimeType.startsWith('audio/')) return 'audio';
   if (mimeType.startsWith('video/')) return 'video';
   if (mimeType.startsWith('text/')) return 'text';
-  if (TEXT_CODE_TYPES.has(mimeType)) return 'text';
 
-  return 'text';
+  return 'binary';
 }
 
 const TEXT_TYPES = new Set(['text', 'markdown']);
@@ -237,6 +228,7 @@ app.get('/api/files/raw', (req, res) => {
   try {
     let relativePath = req.query.file;
     const current = req.query.current;
+    const asAttachment = req.query.attachment === 'true';
     if (!relativePath) {
       return res.status(400).json({ error: 'Missing "file" query parameter' });
     }
@@ -250,6 +242,9 @@ app.get('/api/files/raw', (req, res) => {
     }
     if (!fullPath.startsWith(ROOT_DIR)) {
       return res.status(403).json({ error: 'Access denied' });
+    }
+    if (asAttachment) {
+      res.attachment(path.basename(relativePath));
     }
     res.sendFile(fullPath);
   } catch (err) {
