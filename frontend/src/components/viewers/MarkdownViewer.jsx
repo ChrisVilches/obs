@@ -35,7 +35,7 @@
 //   simplest way to communicate the decision.
 //
 //   Potential issues:
-//     - listNodeInfo skips whitespace text nodes to find the checkbox, but
+//     - getCheckboxInfo skips whitespace text nodes to find the checkbox, but
 //       unusual whitespace patterns in the HAST output could still hide it.
 //     - The HAST tree shape depends on remark-gfm's output; a version bump
 //       could change node structure and break checkbox detection or nesting
@@ -80,38 +80,23 @@ function MarkdownImage({ node, src, alt, file, ...props }) {
   );
 }
 
-// Examines a single li HAST node and answers three questions:
-//   isLoose — does the li contain a <p> wrapper? (loose list, items are separated)
-//   task    — does the first meaningful child have type=checkbox?
-//   checked — if task, is the checkbox checked?
-// Skips whitespace text nodes when looking for the checkbox so that leading
-// whitespace in the markdown source doesn't hide it.
-function listNodeInfo(node) {
-  const firstP = node.children.findIndex((e) => e.tagName === "p");
-  const isLoose = firstP !== -1;
-
-  const children = isLoose ? node.children[firstP].children : node.children;
-
-  const firstMeaningfulNode = children.find((child) => {
-    // Skip whitespace text nodes
+// Checks whether an li node starts with a checkbox.
+// Skips whitespace text nodes.  Since only tight flat lists can become task
+// lists, we don't need to handle loose (<p> wrapper) here — loose lists are
+// rejected upstream by hasLoose in listComponent.
+// Returns { task, checked }.
+function getCheckboxInfo(liNode) {
+  const first = liNode.children.find((child) => {
     if (child.type === "text") {
       return child.value.trim() !== "";
     }
-
     return true;
   });
 
-  const startsWithCheckbox =
-    firstMeaningfulNode?.properties?.type === "checkbox";
+  const task = first?.properties?.type === "checkbox";
+  const checked = task && first.properties.checked;
 
-  const checked = startsWithCheckbox && firstMeaningfulNode.properties.checked;
-
-  return {
-    isLoose,
-    task: startsWithCheckbox,
-    checked,
-    firstP,
-  };
+  return { task, checked };
 }
 
 function CheckboxListItem({
@@ -134,7 +119,7 @@ function CheckboxListItem({
     return <li className="list-inside">{children}</li>;
   }
 
-  const { isLoose, firstP, task, checked } = listNodeInfo(node);
+  const { task, checked } = getCheckboxInfo(node);
 
   // Defensive: even though the parent determined this is a task list
   // (areAllTasks), bail out if this particular li has no checkbox.
@@ -149,28 +134,9 @@ function CheckboxListItem({
     return null;
   }
 
-  // The HAST tree already includes the <input type=checkbox> as a rendered
-  // child, but we render our own custom checkbox button.  We need to strip
-  // the original checkbox from the children so it doesn't appear twice.
-  // Loose lists: the checkbox is inside a <p> wrapper, so we clone the <p>
-  // element and slice off its first child.
-  // Tight lists: the checkbox is the first child of the li, splice it out.
-  function removeLooseCheckbox(originalChildren) {
-    const cpy = [...originalChildren];
-    cpy[firstP] = { ...originalChildren[firstP] };
-    cpy[firstP].props = { ...originalChildren[firstP].props };
-    cpy[firstP].props.children =
-      originalChildren[firstP].props.children.slice(1);
-    return cpy;
-  }
-
-  function removeTightCheckbox(originalChildren) {
-    return originalChildren.slice(1);
-  }
-
-  const copy = isLoose
-    ? removeLooseCheckbox(children)
-    : removeTightCheckbox(children);
+  // Strip the original <input type=checkbox> from children.  In a tight
+  // list the checkbox is always the first child, so slice(1) is enough.
+  const copy = children.slice(1);
   const line = node.position.start.line;
 
   const handleClick = async () => {
@@ -240,11 +206,18 @@ function listComponent(ul) {
       )
     );
 
-    const infos = liNodes.map(listNodeInfo);
+    // Loose detection: if any li wraps its content in a <p>, the list is
+    // loose and can't be a task list.  Only tight lists get checkbox widgets.
+    const hasLoose = liNodes.some((li) =>
+      li.children.some(
+        (child) => child.type === "element" && child.tagName === "p"
+      )
+    );
+
+    const infos = liNodes.map(getCheckboxInfo);
     const areAllTasks = infos.every((i) => i.task);
-    const isAnyLoose = infos.some((i) => i.isLoose);
     const isTaskList =
-      !hasNesting && !isAnyLoose && areAllTasks && infos.length > 0;
+      !hasNesting && !hasLoose && areAllTasks && infos.length > 0;
 
     const tasks = infos.filter((i) => i.task);
     const completed = infos.filter((i) => i.checked).length;
