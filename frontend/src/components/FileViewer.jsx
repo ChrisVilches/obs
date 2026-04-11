@@ -3,7 +3,11 @@ import useSWR, { useSWRConfig } from "swr";
 import { UnsavedChangesModal, useEditBlocker } from "../hooks/useEditBlocker";
 import useFileToolbar from "../hooks/useFileToolbar";
 import { fetcher } from "../utils/fetcher";
-import { showErrorToast, showInfoToast, showSuccessToast } from "../utils/toast";
+import {
+  showErrorToast,
+  showInfoToast,
+  showSuccessToast,
+} from "../utils/toast";
 import Button from "./Button";
 import ErrorDisplay from "./ErrorDisplay";
 import Modal from "./Modal";
@@ -72,7 +76,7 @@ export default function FileViewer({ file }) {
           setShowConflictModal(true);
           return;
         }
-        showErrorToast(err.message)
+        showErrorToast(err.message);
       } finally {
         setSaving(false);
       }

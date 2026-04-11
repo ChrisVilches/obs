@@ -46,11 +46,11 @@
 //   This avoids threading those props through every intermediate component
 //   in the ReactMarkdown custom-components tree.
 
+import { CheckIcon, EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import { createContext, useContext, useState } from "react";
 import { useSWRConfig } from "swr";
 import { fetcher } from "../../../utils/fetcher";
 import { showErrorToast } from "../../../utils/toast";
-import { CheckIcon, EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 
 // Single context for all list-related state (merged from former
 // TaskListContext + ListDepthContext).  LiComponent enriches it with
@@ -68,7 +68,7 @@ export const InputContext = createContext({
   file: null,
   mtime: null,
   loading: false,
-  setLoading: () => { },
+  setLoading: () => {},
 });
 
 // ---------------------------------------------------------------------------
@@ -148,7 +148,7 @@ function ListComponent({ node, children }) {
 
   // Filter to actual <li> elements (ignore whitespace/comment nodes).
   const liNodes = node.children.filter(
-    (x) => x.type === "element" && x.tagName === "li"
+    (x) => x.type === "element" && x.tagName === "li",
   );
 
   // Nesting detection: walk each li's children looking for nested ul/ol.
@@ -158,16 +158,16 @@ function ListComponent({ node, children }) {
     li.children.some(
       (child) =>
         child.type === "element" &&
-        (child.tagName === "ul" || child.tagName === "ol")
-    )
+        (child.tagName === "ul" || child.tagName === "ol"),
+    ),
   );
 
   // Loose detection: if any li wraps its content in a <p>, the list is
   // loose and can't be a task list.  Only tight lists get checkbox widgets.
   const hasLoose = liNodes.some((li) =>
     li.children.some(
-      (child) => child.type === "element" && child.tagName === "p"
-    )
+      (child) => child.type === "element" && child.tagName === "p",
+    ),
   );
 
   // Checkbox presence: all-or-nothing.  Mixed lists (some checkboxes, some
@@ -175,7 +175,11 @@ function ListComponent({ node, children }) {
   const infos = liNodes.map(getCheckboxInfo);
   const areAllTasks = infos.every((i) => i.task);
   const isTaskList =
-    !hasNestedChildren && ctx.listDepth === 0 && !hasLoose && areAllTasks && infos.length > 0;
+    !hasNestedChildren &&
+    ctx.listDepth === 0 &&
+    !hasLoose &&
+    areAllTasks &&
+    infos.length > 0;
 
   // Progress bar stats (always count all tasks, even when hideDone hides some).
   const tasks = infos.filter((i) => i.task);
@@ -196,8 +200,9 @@ function ListComponent({ node, children }) {
             {/* Progress bar: emerald when complete, indigo while in-progress */}
             <div className="relative flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
               <div
-                className={`absolute inset-y-0 left-0 rounded-full transition-all duration-700 ease-out ${completed === total ? "bg-emerald-500" : "bg-indigo-500"
-                  }`}
+                className={`absolute inset-y-0 left-0 rounded-full transition-all duration-700 ease-out ${
+                  completed === total ? "bg-emerald-500" : "bg-indigo-500"
+                }`}
                 style={{ width: `${pct}%` }}
               />
             </div>
@@ -241,7 +246,7 @@ function ListComponent({ node, children }) {
 // File-level data (file, mtime, loading, setLoading) comes from InputContext
 // provided by MarkdownViewer.  The line number comes from ListContext set by
 // LiComponent.  This avoids both prop-drilling and HAST node mutation.
-function Input({ node, type, checked }) {
+function Input({ type, checked }) {
   const { file, mtime, loading, setLoading } = useContext(InputContext);
   const { isTaskList, line } = useContext(ListContext);
   const { mutate } = useSWRConfig();
@@ -249,57 +254,55 @@ function Input({ node, type, checked }) {
   const interactiveCheckbox = isTaskList && type === "checkbox";
   const nonInteractiveCheckbox = !interactiveCheckbox && type === "checkbox";
 
-  // Cache key for the /api/files/info SWR entry (used for version-conflict
-  // detection on the next file read).
-  const infoKey = `/api/files/info?file=${encodeURIComponent(file)}`;
-
-  const handleClick = async () => {
-    setLoading(true);
-    try {
-      await mutate(
-        infoKey,
-        fetcher("/api/files/checkbox", {
-          method: "PUT",
-          body: {
-            checked: !checked,
-            line,
-            mtime,
-            file,
-          },
-        }),
-        { revalidate: false }
-      );
-    } catch (e) {
-      if (e.code === "VERSION_CONFLICT") {
-        showErrorToast("There was a version conflict");
-      } else {
-        showErrorToast(e.message);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
   if (interactiveCheckbox) {
+    const infoKey = `/api/files/info?file=${encodeURIComponent(file)}`;
+    const handleClick = async () => {
+      setLoading(true);
+      try {
+        await mutate(
+          infoKey,
+          fetcher("/api/files/checkbox", {
+            method: "PUT",
+            body: {
+              checked: !checked,
+              line,
+              mtime,
+              file,
+            },
+          }),
+          { revalidate: false },
+        );
+      } catch (e) {
+        if (e.code === "VERSION_CONFLICT") {
+          showErrorToast("There was a version conflict");
+        } else {
+          showErrorToast(e.message);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
     return (
       <button
         disabled={loading}
         onClick={handleClick}
-        className={`disabled:opacity-50 inline-flex items-center justify-center size-4 rounded border-2 mt-[5px] shrink-0 transition-colors ${checked ? "bg-emerald-600 border-emerald-700" : "border-gray-500"
-          }`}
+        className={`disabled:opacity-50 inline-flex items-center justify-center size-4 rounded border-2 mt-[5px] shrink-0 transition-colors ${
+          checked ? "bg-emerald-600 border-emerald-700" : "border-gray-500"
+        }`}
       >
-        {checked && (
-          <CheckIcon className="size-3 text-white" strokeWidth={3} />
-        )}
+        {checked && <CheckIcon className="size-3 text-white" strokeWidth={3} />}
       </button>
     );
   }
 
   if (nonInteractiveCheckbox) {
-    return "[ ] ";
+    // NOTE: We are assuming that the content was [ ] or [x], but actually we don't know
+    // the original text. We COULD get the original content from the file content.
+    return `[${checked ? "x" : " "}]`;
   }
 
   return <input />;
 }
 
-export { ListComponent, LiComponent, Input };
+export { Input, LiComponent, ListComponent };
