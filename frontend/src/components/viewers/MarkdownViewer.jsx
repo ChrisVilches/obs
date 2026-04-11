@@ -6,8 +6,7 @@ import remarkMath from "remark-math";
 import "katex/dist/katex.min.css";
 import { Code } from "./markdown/Code";
 import {
-  Input,
-  InputContext,
+  InteractiveCheckboxContext,
   LiComponent,
   ListComponent,
 } from "./markdown/List";
@@ -18,7 +17,9 @@ export default function MarkdownViewer({ file, content, mtime }) {
   const [loading, setLoading] = useState(false);
 
   return (
-    <InputContext.Provider value={{ file, mtime, loading, setLoading }}>
+    <InteractiveCheckboxContext.Provider
+      value={{ file, mtime, loading, setLoading }}
+    >
       <div className="p-6 prose prose-invert max-w-full">
         <ReactMarkdown
           remarkPlugins={[remarkGfm, remarkMath]}
@@ -29,17 +30,14 @@ export default function MarkdownViewer({ file, content, mtime }) {
             },
             ul: ListComponent,
             ol: ListComponent,
+            li: LiComponent,
             table: Table,
-            input: Input,
-            li(props) {
-              return <LiComponent {...props} file={file} />;
-            },
             code: Code,
           }}
         >
           {content || ""}
         </ReactMarkdown>
       </div>
-    </InputContext.Provider>
+    </InteractiveCheckboxContext.Provider>
   );
 }
