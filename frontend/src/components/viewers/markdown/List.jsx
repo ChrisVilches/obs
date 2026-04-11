@@ -47,7 +47,7 @@
 //   in the ReactMarkdown custom-components tree.
 
 import { CheckIcon, EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
-import { createContext, useContext, useState } from "react";
+import { Children, createContext, useContext, useState } from "react";
 import { useSWRConfig } from "swr";
 import { fetcher } from "../../../utils/fetcher";
 import { showErrorToast } from "../../../utils/toast";
@@ -96,10 +96,12 @@ function LiComponent({ node, children }) {
   }
 
   if (ctx.isTaskList) {
+    const kids = Children.toArray(children);
     return (
       <ListContext.Provider value={{ ...ctx, line: node.position.start.line }}>
         <li className="list-none flex items-start gap-2 hover:bg-white/5 rounded pl-0 py-0.5">
-          {children}
+          {kids[0]}
+          <span>{kids.slice(1)}</span>
         </li>
       </ListContext.Provider>
     );
