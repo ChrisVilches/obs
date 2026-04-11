@@ -22,10 +22,10 @@
 //   When the list is NOT a task list (nested, loose, mixed, or no checkboxes):
 //     - ul/ol renders normally with default prose padding (indenting for
 //       nested lists).
-//     - li falls back to a plain <li>.  Checkboxes are still rendered
-//       (they exist in the HAST tree and appear as native <input> elements),
-//       but they are not interactive — they won't toggle via the API.
-//       This is a known limitation.
+//     - li falls back to a plain <li>.  Checkboxes render as text
+//       ("[x]" or "[ ]") instead of native <input> elements so the list
+//       stays consistent in non-task-list contexts.
+//       They are not interactive — they won't toggle via the API.
 //
 //   Why context: react-markdown registers ul/ol and li as separate custom
 //   components.  There is no direct way for a list to tell its children how
@@ -63,9 +63,10 @@ export const InputContext = createContext({
   file: null,
   mtime: null,
   loading: false,
-  setLoading: () => { },
+  setLoading: () => {},
 });
 
+/** Returns {task, checked} from a li HAST node by inspecting its first meaningful child. */
 function getCheckboxInfo(liNode) {
   const first = liNode.children.find((child) => {
     if (child.type === "text") {
@@ -80,6 +81,12 @@ function getCheckboxInfo(liNode) {
   return { task, checked };
 }
 
+/**
+ * Custom li renderer registered with react-markdown.
+ * - Task list: renders a styled li with ListContext (line number) for the checkbox.
+ * - Non-task list: renders a plain <li>, hiding nothing.
+ * - When hideDone is active and the item is checked, returns null.
+ */
 function LiComponent({ node, children }) {
   const ctx = useContext(ListContext);
   const { checked } = getCheckboxInfo(node);
@@ -101,6 +108,12 @@ function LiComponent({ node, children }) {
   return <li>{children}</li>;
 }
 
+/**
+ * Custom ul/ol renderer registered with react-markdown.
+ * Inspects child li HAST nodes to decide if the list qualifies as a task list
+ * (flat, tight, all-checkbox, top-level). If so, renders a progress bar and
+ * show/hide toggle above the list. Passes the decision down via ListContext.
+ */
 function ListComponent({ node, children }) {
   const ctx = useContext(ListContext);
 
@@ -131,9 +144,8 @@ function ListComponent({ node, children }) {
     areAllTasks &&
     infos.length > 0;
 
-  const tasks = infos.filter((i) => i.task);
   const completed = infos.filter((i) => i.checked).length;
-  const total = tasks.length;
+  const total = infos.length;
   const pct = total ? Math.round((completed / total) * 100) : 0;
   const [hideDone, setHideDone] = useState(false);
 
@@ -143,14 +155,15 @@ function ListComponent({ node, children }) {
     <ListContext.Provider
       value={{ isTaskList, hideDone, listDepth: ctx.listDepth + 1, line: null }}
     >
-      {isTaskList && total > 0 && (
+      {isTaskList && (
         <div className="mb-3 group">
           <div className="flex items-center gap-3">
             {/* Progress bar: emerald when complete, indigo while in-progress */}
             <div className="relative flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
               <div
-                className={`absolute inset-y-0 left-0 rounded-full transition-all duration-700 ease-out ${completed === total ? "bg-emerald-500" : "bg-indigo-500"
-                  }`}
+                className={`absolute inset-y-0 left-0 rounded-full transition-all duration-700 ease-out ${
+                  completed === total ? "bg-emerald-500" : "bg-indigo-500"
+                }`}
                 style={{ width: `${pct}%` }}
               />
             </div>
@@ -161,6 +174,7 @@ function ListComponent({ node, children }) {
           {/* Show/hide toggle: eye icon flips, label changes */}
           <div className="flex justify-center mt-2">
             <button
+              type="button"
               onClick={() => setHideDone((h) => !h)}
               className="flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-gray-300 transition-colors"
             >
@@ -179,6 +193,13 @@ function ListComponent({ node, children }) {
   );
 }
 
+/**
+ * Custom input renderer registered with react-markdown (handles <input type="checkbox">).
+ * - Task-list checkbox: clickable button that toggles via PUT /api/files/checkbox and
+ *   mutates the info SWR cache with the updated file data.
+ * - Non-task-list checkbox: renders "[x]" or "[ ]" as plain text.
+ * - Other input types: falls through to a plain <input> with the original type.
+ */
 function Input({ type, checked }) {
   const { file, mtime, loading, setLoading } = useContext(InputContext);
   const { isTaskList, line } = useContext(ListContext);
@@ -218,10 +239,12 @@ function Input({ type, checked }) {
 
     return (
       <button
+        type="button"
         disabled={loading}
         onClick={handleClick}
-        className={`disabled:opacity-50 inline-flex items-center justify-center size-4 rounded border-2 mt-[5px] shrink-0 transition-colors ${checked ? "bg-emerald-600 border-emerald-700" : "border-gray-500"
-          }`}
+        className={`disabled:opacity-50 inline-flex items-center justify-center size-4 rounded border-2 mt-[5px] shrink-0 transition-colors ${
+          checked ? "bg-emerald-600 border-emerald-700" : "border-gray-500"
+        }`}
       >
         {checked && <CheckIcon className="size-3 text-white" strokeWidth={3} />}
       </button>
@@ -234,7 +257,7 @@ function Input({ type, checked }) {
     return `[${checked ? "x" : " "}]`;
   }
 
-  return <input />;
+  return <input type={type} />;
 }
 
 export { Input, LiComponent, ListComponent };
