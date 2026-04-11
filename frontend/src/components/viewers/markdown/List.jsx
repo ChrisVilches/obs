@@ -209,8 +209,8 @@ function Input({ type, checked }) {
   const nonInteractiveCheckbox = !interactiveCheckbox && type === "checkbox";
 
   if (interactiveCheckbox) {
-    const infoKey = `/api/files/info?file=${encodeURIComponent(file)}`;
     const handleClick = async () => {
+      const infoKey = `/api/files/info?file=${encodeURIComponent(file)}`;
       setLoading(true);
       try {
         await mutate(
