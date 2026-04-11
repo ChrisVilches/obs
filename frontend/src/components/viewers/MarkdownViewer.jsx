@@ -9,6 +9,7 @@ import {
   InteractiveCheckboxContext,
   LiComponent,
   ListComponent,
+  rehypeListMetadata,
 } from "./markdown/List";
 import MarkdownImage from "./markdown/MarkdownImage";
 import Table from "./markdown/Table";
@@ -23,7 +24,7 @@ export default function MarkdownViewer({ file, content, mtime }) {
       <div className="p-6 prose prose-invert max-w-full">
         <ReactMarkdown
           remarkPlugins={[remarkGfm, remarkMath]}
-          rehypePlugins={[rehypeKatex]}
+          rehypePlugins={[rehypeKatex, rehypeListMetadata]}
           components={{
             img(props) {
               return <MarkdownImage {...props} file={file} />;
