@@ -24,16 +24,18 @@ export const InteractiveCheckboxContext = createContext({
  * `ListComponent` can skip re-rendering them as standalone task lists.
  */
 export function rehypeListMetadata() {
+  const isList = (node) => node.tagName === "ul" || node.tagName === "ol"
+
   return (tree) => {
     visit(tree, "element", (node) => {
-      if (node.tagName !== "ul") return;
+      if (!isList(node)) return;
       if (node.hasParentList) return;
 
       let total = 0;
       let complete = 0;
 
       function dfs(u) {
-        if (u !== node && u.tagName === "ul") {
+        if (u !== node && isList(u)) {
           u.hasParentList = true;
         }
 
