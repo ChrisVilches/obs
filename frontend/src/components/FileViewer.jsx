@@ -184,7 +184,7 @@ export default function FileViewer({ file }) {
       ) : (
         <TextViewer content={info.content} />
       )}
-      {blocker.state === "blocked" && <UnsavedChangesModal blocker={blocker} />}
+      <UnsavedChangesModal blocker={blocker} />
       {info && (
         <Modal
           open={showConflictModal}
