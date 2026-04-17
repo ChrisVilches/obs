@@ -9,10 +9,3 @@
   @apply hover:scrollbar-thumb-gray-600;
 }
 
-.hide-checkbox input[type="checkbox"] {
-  @apply hidden;
-}
-
-.first-p-no-margin p:first-of-type {
-  @apply my-0;
-}

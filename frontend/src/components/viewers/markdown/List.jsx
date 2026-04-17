@@ -65,7 +65,7 @@ function TaskListComponent({ Tag, total, complete, children }) {
 
   return (
     <TasksContext.Provider value={{ hide, setHide }}>
-      <Tag className="pl-0">
+      <Tag className="pl-0 [&_input[type='checkbox']]:hidden">
         <div className="mb-3 group">
           <div className="flex items-center gap-3">
             {/* Progress bar: emerald when complete, indigo while in-progress */}
@@ -174,7 +174,7 @@ function TaskLiComponent({ node, children }) {
   };
 
   return (
-    <li className="list-none flex items-start gap-2 hover:bg-[#050505] rounded pl-0 py-0.5 hide-checkbox">
+    <li className="list-none flex items-start gap-2 hover:bg-[#050505] rounded pl-0 py-0.5">
       <div className="flex items-center h-6">
         <button
           type="button"
