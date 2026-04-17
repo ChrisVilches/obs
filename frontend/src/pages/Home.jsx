@@ -139,9 +139,7 @@ export default function Home() {
           }}
           className="absolute right-0 top-0 bottom-0 w-1.5 cursor-col-resize hover:bg-indigo-500/50 active:bg-indigo-500/70 z-10 shrink-0"
         />
-        <div className="px-4 h-14 flex items-center border-b border-gray-800 shrink-0">
-          <Link to="/" className="text-sm font-semibold text-gray-400 uppercase tracking-wider hover:text-indigo-400 transition-colors">{folderName}</Link>
-        </div>
+        <Link to="/" className="px-4 h-14 flex items-center border-b border-gray-800 shrink-0 text-sm font-semibold text-gray-400 uppercase tracking-wider hover:text-indigo-400 transition-colors">{folderName}</Link>
         <Sidemenu files={files} />
       </aside>
       <main className="flex-1 overflow-auto bg-gray-950 pt-12 md:pt-0">
