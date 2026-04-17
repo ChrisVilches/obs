@@ -170,7 +170,7 @@ export default function FileViewer({ file }) {
             }
           }}
           disabled={saving}
-          className="flex-1 p-6 text-sm text-gray-200 bg-gray-900 font-mono resize-none outline-none border-2 border-indigo-500/50 disabled:opacity-50"
+          className="flex-1 p-6 text-sm text-gray-200 bg-gray-900 font-mono resize-none outline-none border-2 border-indigo-500/50"
           spellCheck={false}
         />
       ) : type === "image" ? (
