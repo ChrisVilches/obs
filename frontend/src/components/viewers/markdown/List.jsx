@@ -13,6 +13,16 @@ export const InteractiveCheckboxContext = createContext({
   setLoading: () => { },
 });
 
+/**
+ * Rehype plugin that enriches the HAST tree with checklist metadata.
+ *
+ * Traverses every top-level `<ul>` element, counting all descendant
+ * `<input type="checkbox">` nodes (total + checked). The counts are
+ * stored on the `<ul>` node as `checkboxInfo: { total, complete }`.
+ *
+ * Nested `<ul>` elements are marked with `hasParentList: true` so
+ * `ListComponent` can skip re-rendering them as standalone task lists.
+ */
 export function rehypeListMetadata() {
   return (tree) => {
     visit(tree, "element", (node) => {
@@ -96,6 +106,8 @@ export function ListComponent({ node, children }) {
   const isNested = Boolean(node.hasParentList);
   const Tag = node.tagName; // "ul" or "ol"
 
+  // `checkboxInfo` is guaranteed to exist on any <ul> that passes
+  // through `rehypeListMetadata` — this component is only used in that pipeline.
   if (!isNested && node.checkboxInfo.total > 0) {
     return (
       <TaskListComponent
@@ -117,6 +129,11 @@ function TaskLiComponent({ node, children }) {
     InteractiveCheckboxContext,
   );
   // Makes the same AST shape assumptions as LiComponent (tight vs loose checkbox).
+  // TODO: the detection pattern here diverges from LiComponent — this branch
+  // blindly reaches into children[1].children[0] without verifying the
+  // intermediate node is a <p>, so a non-<p> wrapper between <li> and checkbox
+  // (e.g. a <div> injected by a remark plugin) would cause checked to read
+  // from an unrelated node rather than falling through to children[0].
   const checked =
     node.children?.[1]?.children?.[0]?.properties?.checked ||
     node.children?.[0]?.properties?.checked;
@@ -134,6 +151,8 @@ function TaskLiComponent({ node, children }) {
           method: "PUT",
           body: {
             checked: !checked,
+            // Relies on remark's standard position info — every HAST
+            // element parsed by remark should carry a `position` block.
             line: node.position.start.line,
             mtime,
             file,
@@ -187,7 +206,8 @@ export function LiComponent({ node, children }) {
     return <TaskLiComponent node={node}>{children}</TaskLiComponent>;
   }
 
-  // TODO: numbered lists are displayed with bullets lmfao
+  // TODO: ordered lists (<ol>) are rendered with bullet markers instead
+  // of numbers — the parent CSS intervention isn't working.
   return (
     <li className="flex items-start gap-3 pl-0">
       <span className="mt-1 h-4 w-4 shrink-0 flex items-center justify-center">
