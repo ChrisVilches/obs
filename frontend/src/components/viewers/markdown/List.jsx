@@ -174,7 +174,7 @@ function TaskLiComponent({ node, children }) {
   };
 
   return (
-    <li className="list-none flex items-start gap-2 hover:bg-[#050505] rounded pl-0 py-0.5">
+    <li className="list-none flex items-start gap-2 hover:bg-[#10131E] rounded pl-0 py-0.5">
       <div className="flex items-center h-6">
         <button
           type="button"
