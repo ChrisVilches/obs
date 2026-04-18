@@ -188,7 +188,7 @@ function TaskLiComponent({ node, children }) {
           )}
         </button>
       </div>
-      <span className="[&>*:first-child]:mt-0">{children}</span>
+      <span className="[&>*:first-child]:mt-0 w-full">{children}</span>
     </li>
   );
 }
@@ -213,7 +213,7 @@ export function LiComponent({ node, children }) {
       <span className="mt-1 h-4 w-4 shrink-0 flex items-center justify-center">
         <span className="h-1.5 w-1.5 rounded-full bg-current" />
       </span>
-      <span className="[&>*:first-child]:mt-0">{children}</span>
+      <span className="[&>*:first-child]:mt-0 w-full">{children}</span>
     </li>
   );
 }
