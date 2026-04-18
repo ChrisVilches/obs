@@ -90,22 +90,13 @@ export default function FileViewer({ file, onBookmarkChange }) {
   if (error) {
     return (
       <div className="min-h-full flex flex-col">
-        <div className="sticky top-0 z-10 flex items-center justify-between px-4 h-14 border-b border-gray-800 bg-gray-900 shrink-0">
-          <div className="flex items-center gap-3 min-w-0">
-            <span className="text-sm text-gray-500 truncate">{file}</span>
-          </div>
-          <div className="flex items-center">
-            <button
-              onClick={() => setRefreshKey((k) => k + 1)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-300 bg-gray-800 border border-gray-700 rounded-md hover:bg-gray-700 hover:text-white transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-              <span className="hidden md:inline">Reload</span>
-            </button>
-          </div>
-        </div>
+        <FileToolbar
+          file={file}
+          error
+          onReload={() => setRefreshKey((k) => k + 1)}
+          showFileNameModal={showFileNameModal}
+          onShowFileNameModal={setShowFileNameModal}
+        />
         <ErrorDisplay message={error} file={file} />
       </div>
     );
@@ -114,14 +105,12 @@ export default function FileViewer({ file, onBookmarkChange }) {
   if (!info) {
     return (
       <div className="min-h-full flex flex-col">
-        <div className="sticky top-0 z-10 flex items-center justify-between px-4 h-14 border-b border-gray-800 bg-gray-900 shrink-0">
-          <div className="flex items-center gap-3 min-w-0">
-            <span className="text-sm text-gray-500 truncate">{file}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-5 h-5 border-2 border-gray-600 border-t-transparent rounded-full animate-spin" />
-          </div>
-        </div>
+        <FileToolbar
+          file={file}
+          loading
+          showFileNameModal={showFileNameModal}
+          onShowFileNameModal={setShowFileNameModal}
+        />
         <div className="flex-1 flex items-center justify-center">
           <div className="flex flex-col items-center gap-3">
             <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
