@@ -1,6 +1,12 @@
 const path = require("node:path");
 const fs = require("node:fs");
 const { emit } = require("../eventChannel");
+const {
+  parseBookmarkData,
+  addBookmarkToItems,
+  removeBookmarkFromItems,
+  serializeBookmarks,
+} = require("../lib/bookmarkUtils");
 
 const defaultBookmarkFileContent = { items: [] };
 
@@ -8,7 +14,7 @@ async function getBookmarks(bookmarksFile) {
   async function reset() {
     await fs.promises.writeFile(
       bookmarksFile,
-      JSON.stringify(defaultBookmarkFileContent, null, 2),
+      serializeBookmarks(defaultBookmarkFileContent),
       "utf-8",
     );
     return defaultBookmarkFileContent;
@@ -18,25 +24,23 @@ async function getBookmarks(bookmarksFile) {
 
   try {
     const raw = await fs.promises.readFile(bookmarksFile, "utf-8");
-    const trimmed = raw.trim();
-
-    return trimmed ? JSON.parse(trimmed) : reset();
+    return parseBookmarkData(raw);
   } catch (err) {
     if (err.code === "ENOENT") {
       return reset();
     }
-
     throw err;
   }
 }
 
 async function addBookmark(bookmarksFile, filePath) {
   const data = await getBookmarks(bookmarksFile);
-  if (!data.items.some((item) => item.path === filePath)) {
-    data.items.push({ type: "file", path: filePath });
+  const newItems = addBookmarkToItems(data.items, filePath);
+  if (newItems !== data.items) {
+    data.items = newItems;
     await fs.promises.writeFile(
       bookmarksFile,
-      JSON.stringify(data, null, 2),
+      serializeBookmarks(data),
       "utf-8",
     );
   }
@@ -49,10 +53,10 @@ async function addBookmark(bookmarksFile, filePath) {
 
 async function removeBookmark(bookmarksFile, filePath) {
   const data = await getBookmarks(bookmarksFile);
-  data.items = data.items.filter((item) => item.path !== filePath);
+  data.items = removeBookmarkFromItems(data.items, filePath);
   await fs.promises.writeFile(
     bookmarksFile,
-    JSON.stringify(data, null, 2),
+    serializeBookmarks(data),
     "utf-8",
   );
   emit({

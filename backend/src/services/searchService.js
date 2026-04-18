@@ -1,6 +1,10 @@
 const path = require("node:path");
 const { execFile } = require("node:child_process");
 const { promisify } = require("node:util");
+const {
+  parseFindSearchOutput,
+  parseRgOutput,
+} = require("../lib/fileUtils");
 
 const execFileAsync = promisify(execFile);
 
@@ -24,11 +28,7 @@ async function searchFiles(rootDir, query) {
       ],
       { encoding: "utf-8", maxBuffer: 10 * 1024 * 1024 },
     );
-    files = stdout
-      .trim()
-      .split("\n")
-      .filter(Boolean)
-      .map((f) => path.relative(rootDir, f));
+    files = parseFindSearchOutput(stdout, rootDir);
   } catch (e) {
     console.error(e);
   }
@@ -39,19 +39,9 @@ async function searchFiles(rootDir, query) {
       encoding: "utf-8",
       maxBuffer: 10 * 1024 * 1024,
     });
-    contentMatches = stdout
-      .trim()
-      .split("\n")
-      .filter(Boolean)
-      .slice(0, 50)
-      .map((f) => path.relative(rootDir, f));
+    contentMatches = parseRgOutput(stdout, rootDir, 50);
   } catch (err) {
-    contentMatches = (err.stdout || "")
-      .trim()
-      .split("\n")
-      .filter(Boolean)
-      .slice(0, 50)
-      .map((f) => path.relative(rootDir, f));
+    contentMatches = parseRgOutput(err.stdout || "", rootDir, 50);
   }
 
   return { files, contentMatches };

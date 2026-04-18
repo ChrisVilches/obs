@@ -3,6 +3,17 @@ const fs = require("node:fs");
 const { execFile } = require("node:child_process");
 const { promisify } = require("node:util");
 const { emit } = require("../eventChannel");
+const {
+  FileAccessDeniedError,
+  shouldIgnoreFile,
+  ensureTrailingNewline,
+  assertPathInsideRoot,
+  isTextType,
+  resolveRawPath,
+  classifyByMimeAndExt,
+  toggleCheckboxInContent,
+  parseFindRecentOutput,
+} = require("../lib/fileUtils");
 
 const execFileAsync = promisify(execFile);
 const { getBookmarks } = require("./bookmarkService");
@@ -10,20 +21,7 @@ const { getBookmarks } = require("./bookmarkService");
 let _fileTypeFromFile;
 
 class VersionConflictError extends Error {}
-class FileAccessDeniedError extends Error {}
 class InvalidFileModification extends Error {}
-
-function shouldIgnoreFile(entryName) {
-  return entryName.startsWith(".");
-}
-
-function ensureTrailingNewline(fileContent = "") {
-  if (fileContent === "") {
-    return "";
-  }
-
-  return fileContent.endsWith("\n") ? fileContent : `${fileContent}\n`;
-}
 
 async function listFiles(rootDir) {
   async function listRecursive(dir) {
@@ -53,29 +51,7 @@ async function getRecentFiles(rootDir, n) {
     { encoding: "utf-8", maxBuffer: 10 * 1024 * 1024 },
   );
 
-  const files = stdout
-    .trim()
-    .split("\n")
-    .filter(Boolean)
-    .map((line) => {
-      const tabIndex = line.indexOf("\t");
-      return {
-        path: path.relative(rootDir, line.substring(tabIndex + 1)),
-        mtime: new Date(
-          parseFloat(line.substring(0, tabIndex)) * 1000,
-        ).toISOString(),
-      };
-    })
-    .sort((a, b) => b.mtime.localeCompare(a.mtime))
-    .slice(0, n);
-
-  return { recent: files };
-}
-
-function assertPathInsideRoot(rootDir, fullPath) {
-  if (!fullPath.startsWith(rootDir)) {
-    throw new FileAccessDeniedError();
-  }
+  return { recent: parseFindRecentOutput(stdout, rootDir, n) };
 }
 
 async function classifyFile(fullPath) {
@@ -83,18 +59,11 @@ async function classifyFile(fullPath) {
 
   const result = await _fileTypeFromFile(fullPath);
   if (result) {
-    const mime = result.mime;
-    if (mime.startsWith("image/")) return "image";
-    if (mime.startsWith("audio/")) return "audio";
-    if (mime.startsWith("video/")) return "video";
-    return "binary";
+    return classifyByMimeAndExt(result.mime, null);
   }
   const ext = path.extname(fullPath).toLowerCase();
-  if (ext === ".md") return "markdown";
-  return "text";
+  return classifyByMimeAndExt(null, ext);
 }
-
-const isTextType = (type) => type === "text" || type === "markdown";
 
 async function getFileInfo(rootDir, bookmarksFile, relativePath) {
   const fullPath = path.join(rootDir, relativePath);
@@ -126,8 +95,6 @@ async function getFileInfo(rootDir, bookmarksFile, relativePath) {
   return result;
 }
 
-// TODO: this is a good candidate to write unit tests
-// for the regex, and for how it changes the checkbox, etc.
 async function toggleFileCheckbox(rootDir, file, checked, line, mtime) {
   const fullPath = path.join(rootDir, file);
   assertPathInsideRoot(rootDir, fullPath);
@@ -137,27 +104,17 @@ async function toggleFileCheckbox(rootDir, file, checked, line, mtime) {
     throw new VersionConflictError();
   }
 
-  let content = await fs.promises.readFile(fullPath, "utf-8");
+  const content = await fs.promises.readFile(fullPath, "utf-8");
 
-  const lines = content.split("\n");
-  const idx = line - 1;
-
-  const checkboxRegex = /^\s*(-\s|(\d+\.\s))\[[ x]\]/;
-  if (!checkboxRegex.test(lines[idx])) {
+  const result = toggleCheckboxInContent(content, line, checked);
+  if (result.error === "NO_CHECKBOX") {
     throw new InvalidFileModification("There is no checkbox at this position");
   }
-
-  const bracketPos = lines[idx].indexOf("[");
-  const afterCheckbox = lines[idx].substring(bracketPos + 3);
-  if (checked) {
-    lines[idx] = lines[idx].substring(0, bracketPos) + "[x]" + afterCheckbox;
-  } else {
-    lines[idx] = lines[idx].substring(0, bracketPos) + "[ ]" + afterCheckbox;
+  if (result.error === "INVALID_LINE") {
+    throw new InvalidFileModification("Invalid line number");
   }
 
-  content = ensureTrailingNewline(lines.join("\n"));
-
-  await fs.promises.writeFile(fullPath, content, "utf-8");
+  await fs.promises.writeFile(fullPath, result.content, "utf-8");
   emit({
     type: checked ? "file_checkbox_checked" : "file_checkbox_unchecked",
     file,
@@ -183,19 +140,6 @@ async function writeFileContent(rootDir, file, content, mtime, force) {
   await fs.promises.writeFile(fullPath, content, "utf-8");
   emit({ type: "file_updated", file, timestamp: new Date().toISOString() });
   return true;
-}
-
-function resolveRawPath(rootDir, relativePath, current) {
-  let fullPath;
-  if (current) {
-    const noteDir = path.dirname(current);
-    const baseDir = path.resolve(rootDir, noteDir);
-    fullPath = path.resolve(baseDir, relativePath);
-  } else {
-    fullPath = path.resolve(rootDir, relativePath);
-  }
-  assertPathInsideRoot(rootDir, fullPath);
-  return fullPath;
 }
 
 module.exports = {
