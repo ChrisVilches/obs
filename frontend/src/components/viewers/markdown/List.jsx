@@ -203,8 +203,6 @@ export function LiComponent({ node, children }) {
     node.children[1].children[0]?.properties?.type === "checkbox";
 
   if (looseCheckbox || tightCheckbox) {
-    // TODO: fix the hover color. We can't use opacity because the elements are nested and the colors stack up,
-    // getting progressively less transparent.
     return <TaskLiComponent node={node}>{children}</TaskLiComponent>;
   }
 
