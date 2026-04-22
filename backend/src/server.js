@@ -127,6 +127,7 @@ app.get('/api/files', (req, res) => {
   }
 });
 
+// TODO: Doesn't work 100% correctly. It identifies bash and python files as binary.
 function classifyFile(fullPath) {
   const mimeType = mime.lookup(fullPath) || 'application/octet-stream';
 
