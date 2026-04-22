@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { ChevronRightIcon } from '@heroicons/react/24/outline';
 import SearchBar from './SearchBar';
 
 // TODO: The API returns only files (flat paths), so folders are derived by
@@ -92,14 +93,9 @@ function TreeNode({ node, depth, selectedFile, onClose, expandedSet, onToggle })
         className="w-full flex items-center gap-1 px-3 py-1.5 rounded-md text-sm text-gray-400 hover:bg-gray-800 hover:text-gray-200 transition-colors"
         style={{ paddingLeft: `${12 + depth * 16}px` }}
       >
-        <svg
+        <ChevronRightIcon
           className={`w-3 h-3 shrink-0 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-        </svg>
+        />
         <span className="truncate">{node.name}</span>
       </button>
       {isExpanded && node.children.length > 0 && (
