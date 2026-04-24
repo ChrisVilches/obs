@@ -8,7 +8,8 @@
     "start": "npm --prefix backend start",
     "lint": "biome check --write .",
     "format": "biome format --write .",
-    "check": "biome check ."
+    "check": "biome check .",
+    "test": "concurrently -n backend,frontend -c blue,green \"npm --prefix backend run test\" \"npm --prefix frontend run test\""
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.15",
