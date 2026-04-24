@@ -13,6 +13,31 @@ export const InteractiveCheckboxContext = createContext({
   setLoading: () => {},
 });
 
+const isListNode = (node) => node.tagName === "ul" || node.tagName === "ol";
+
+export function rehypeDebugLists() {
+  return (tree) => {
+    const output = []
+    function dfs(u, depth) {
+      const indent = " ".repeat(depth * 2)
+      if (u.type === "text") {
+        if (u.value.trim().length) output.push(indent + `"${u.value}"`)
+        return
+      }
+      output.push(`${indent}${u.tagName}`)
+
+      for (const v of u.children ?? []) {
+        dfs(v, depth + 1)
+      }
+    }
+
+    for (const child of tree.children) {
+      dfs(child, 0)
+    }
+    console.log(output.join("\n"))
+  }
+}
+
 /**
  * Rehype plugin that enriches the HAST tree with checklist metadata.
  *

@@ -12,6 +12,7 @@ import {
   LiComponent,
   ListComponent,
   rehypeListMetadata,
+  rehypeDebugLists,
 } from "./markdown/List";
 import MarkdownImage from "./markdown/MarkdownImage";
 import Table from "./markdown/Table";
@@ -31,7 +32,11 @@ export default function MarkdownViewer({ file, content, mtime }) {
             remarkMath,
             !config.strictLineBreaks ? remarkBreaks : null,
           ].filter((x) => x)}
-          rehypePlugins={[rehypeKatex, rehypeListMetadata]}
+          rehypePlugins={[
+            rehypeKatex,
+            rehypeListMetadata,
+            process.env.NODE_ENV !== "production" ? rehypeDebugLists : null,
+          ].filter((x) => x)}
           components={{
             img(props) {
               return <MarkdownImage {...props} file={file} />;
