@@ -1,7 +1,7 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
-const mime = require('mime-types');
+let _fileTypeFromFile;
 const { emit } = require('./eventChannel');
 
 // TODO: lots of Sync functions here. Maybe I should use async variants.
@@ -127,22 +127,32 @@ app.get('/api/files', (req, res) => {
   }
 });
 
-// TODO: Doesn't work 100% correctly. It identifies bash and python files as binary.
-function classifyFile(fullPath) {
-  const mimeType = mime.lookup(fullPath) || 'application/octet-stream';
+// TODO: works better than mime-types, but still doesn't get which text file is
+// a source code or just plain text.
+async function classifyFile(fullPath) {
+  if (!_fileTypeFromFile) {
+    _fileTypeFromFile = (await import('file-type')).fileTypeFromFile;
+  }
 
-  if (mimeType === 'text/markdown') return 'markdown';
-  if (mimeType.startsWith('image/')) return 'image';
-  if (mimeType.startsWith('audio/')) return 'audio';
-  if (mimeType.startsWith('video/')) return 'video';
-  if (mimeType.startsWith('text/')) return 'text';
+  const result = await _fileTypeFromFile(fullPath);
 
-  return 'binary';
+  if (result) {
+    const mime = result.mime;
+    if (mime.startsWith('image/')) return 'image';
+    if (mime.startsWith('audio/')) return 'audio';
+    if (mime.startsWith('video/')) return 'video';
+    return 'binary';
+  }
+
+  const ext = path.extname(fullPath).toLowerCase();
+  if (ext === '.md') return 'markdown';
+
+  return 'text';
 }
 
 const TEXT_TYPES = new Set(['text', 'markdown']);
 
-app.get('/api/files/info', (req, res) => {
+app.get('/api/files/info', async (req, res) => {
   try {
     const relativePath = req.query.file;
     if (!relativePath) {
@@ -156,7 +166,7 @@ app.get('/api/files/info', (req, res) => {
       return res.status(404).json({ error: 'File not found' });
     }
 
-    const type = classifyFile(fullPath);
+    const type = await classifyFile(fullPath);
     const bookmarkData = readBookmarks();
     const isBookmarked = bookmarkData.items.some(item => item.path === relativePath);
 
