@@ -145,7 +145,7 @@ app.get("/api/config", async (_req, res) => {
   res.json(await getAppConfig(APP_CONFIG_FILE));
 });
 
-app.put("/api/config", async (req, res) => {
+app.patch("/api/config", async (req, res) => {
   const updates = z.object({ strictLineBreaks: z.boolean() }).parse(req.body);
   res.json(await updateAppConfig(APP_CONFIG_FILE, updates));
 });

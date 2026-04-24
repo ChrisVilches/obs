@@ -29,7 +29,7 @@ npm run start         # node backend/src/server.js (production)
 | PUT | `/api/files/content` | Body `{file, content}`. Writes to disk. |
 | GET | `/api/files/raw?file=<relpath>` | Binary/sendFile variant |
 | GET/POST/DELETE | `/api/bookmarks` | Reads/writes `bookmarks.json` in `CONFIG_PATH` |
-| GET/PUT | `/api/config` | Reads/writes `app.json` in `CONFIG_PATH` |
+| GET/PATCH | `/api/config` | Reads/writes `app.json` in `CONFIG_PATH` |
 
 ## Frontend
 

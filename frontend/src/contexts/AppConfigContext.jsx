@@ -33,12 +33,15 @@ export function AppConfigProvider({ children }) {
   });
 
   useEffect(() => {
-    fetcher("/api/config")
-      .then((serverConfig) => {
+    (async () => {
+      try {
+        const serverConfig = await fetcher("/api/config");
         setConfig(serverConfig);
         saveToLocalStorage(serverConfig);
-      })
-      .catch(() => {});
+      } catch (err) {
+        console.error("Failed to sync config from server:", err.message);
+      }
+    })();
   }, []);
 
   const updateConfig = useCallback(async (updates) => {
@@ -49,7 +52,7 @@ export function AppConfigProvider({ children }) {
     });
 
     await fetcher("/api/config", {
-      method: "PUT",
+      method: "PATCH",
       body: updates,
     });
   }, []);

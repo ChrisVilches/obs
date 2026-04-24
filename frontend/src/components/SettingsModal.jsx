@@ -16,9 +16,8 @@ function ToggleSwitch({ checked, saving, onChange }) {
       className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-900 ${trackClass}`}
     >
       <span
-        className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-200 ${
-          saving ? "animate-pulse" : ""
-        } ${checked ? "translate-x-[18px]" : "translate-x-[2px]"}`}
+        className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-200 ${saving ? "animate-pulse" : ""
+          } ${checked ? "translate-x-[18px]" : "translate-x-[2px]"}`}
       />
     </button>
   );
@@ -54,6 +53,9 @@ const categories = [
 ];
 
 export default function SettingsModal({ open, onClose }) {
+  // Values come from the local context (initialized from localStorage, synced
+  // from the server once on app mount). The modal does not re-fetch on open —
+  // it always reflects whatever is currently in context.
   const { config, updateConfig } = useAppConfig();
   const [savingKey, setSavingKey] = useState(null);
 
