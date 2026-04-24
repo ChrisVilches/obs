@@ -14,7 +14,11 @@ async function getAppConfig(configFile) {
     return { ...defaultConfig, ...parsed };
   } catch (err) {
     if (err.code === "ENOENT") {
-      await fs.promises.writeFile(configFile, JSON.stringify({}, null, 2), "utf-8");
+      await fs.promises.writeFile(
+        configFile,
+        JSON.stringify({}, null, 2),
+        "utf-8",
+      );
       return { ...defaultConfig };
     }
     throw err;
@@ -24,7 +28,11 @@ async function getAppConfig(configFile) {
 async function updateAppConfig(configFile, updates) {
   const current = await getAppConfig(configFile);
   const merged = { ...current, ...updates };
-  await fs.promises.writeFile(configFile, JSON.stringify(merged, null, 2), "utf-8");
+  await fs.promises.writeFile(
+    configFile,
+    JSON.stringify(merged, null, 2),
+    "utf-8",
+  );
   emit({
     type: "config_updated",
     timestamp: new Date().toISOString(),

@@ -1,6 +1,7 @@
 import {
   BookmarkIcon,
   ChevronRightIcon,
+  Cog6ToothIcon,
   MagnifyingGlassIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
@@ -68,6 +69,7 @@ function SidemenuHeader({
   onClose,
   onSearchClick,
   onBookmarkClick,
+  onSettingsClick,
 }) {
   return (
     <div className="flex items-center justify-between px-4 h-14 border-b border-gray-800 shrink-0">
@@ -108,6 +110,15 @@ function SidemenuHeader({
           title="Search"
         >
           <MagnifyingGlassIcon className="w-5 h-5" />
+        </button>
+        <button
+          type="button"
+          onClick={onSettingsClick}
+          className="p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
+          aria-label="Settings"
+          title="Settings"
+        >
+          <Cog6ToothIcon className="w-5 h-5" />
         </button>
       </div>
     </div>
@@ -279,6 +290,7 @@ export default function Sidemenu({
   folderName,
   onBookmarkClick,
   onSearchClick,
+  onSettingsClick,
 }) {
   const [searchParams] = useSearchParams();
   // NOTE: This query parameter can be present on any page, not just the file viewer.
@@ -335,6 +347,7 @@ export default function Sidemenu({
         onClose={onClose}
         onSearchClick={onSearchClick}
         onBookmarkClick={onBookmarkClick}
+        onSettingsClick={onSettingsClick}
       />
       <nav className="flex-1 overflow-y-auto overflow-x-hidden p-2">
         {loading ? (

@@ -23,7 +23,11 @@ export function useEditBlocker({ enabled, hasUnsavedChanges }) {
 
 export function UnsavedChangesModal({ blocker }) {
   return (
-    <Modal open={blocker.state === "blocked"} onClose={() => blocker.reset()} title="Unsaved Changes">
+    <Modal
+      open={blocker.state === "blocked"}
+      onClose={() => blocker.reset()}
+      title="Unsaved Changes"
+    >
       <p>You have unsaved changes. Are you sure you want to leave this page?</p>
       <div className="mt-4 flex justify-end gap-2">
         <Button variant="secondary" onClick={() => blocker.reset()}>

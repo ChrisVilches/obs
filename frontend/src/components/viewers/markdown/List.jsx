@@ -1,16 +1,16 @@
 import { CheckIcon, EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import { createContext, useContext, useState } from "react";
 import { useSWRConfig } from "swr";
+import { visit } from "unist-util-visit";
 import { fetcher } from "../../../utils/fetcher";
 import { showErrorToast } from "../../../utils/toast";
-import { visit } from "unist-util-visit";
 
-export const TasksContext = createContext({ hide: false, setHide: () => { } });
+export const TasksContext = createContext({ hide: false, setHide: () => {} });
 export const InteractiveCheckboxContext = createContext({
   file: null,
   mtime: null,
   loading: false,
-  setLoading: () => { },
+  setLoading: () => {},
 });
 
 /**
@@ -24,7 +24,7 @@ export const InteractiveCheckboxContext = createContext({
  * `ListComponent` can skip re-rendering them as standalone task lists.
  */
 export function rehypeListMetadata() {
-  const isList = (node) => node.tagName === "ul" || node.tagName === "ol"
+  const isList = (node) => node.tagName === "ul" || node.tagName === "ol";
 
   return (tree) => {
     visit(tree, "element", (node) => {
@@ -71,10 +71,9 @@ function TaskListComponent({ Tag, total, complete, children }) {
             {/* Progress bar: emerald when complete, indigo while in-progress */}
             <div className="relative flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
               <div
-                className={`absolute inset-y-0 left-0 rounded-full transition-all duration-700 ease-out ${complete === total
-                  ? "bg-emerald-500"
-                  : "bg-indigo-500"
-                  }`}
+                className={`absolute inset-y-0 left-0 rounded-full transition-all duration-700 ease-out ${
+                  complete === total ? "bg-emerald-500" : "bg-indigo-500"
+                }`}
                 style={{ width: `${pct}%` }}
               />
             </div>
@@ -182,8 +181,9 @@ function TaskLiComponent({ node, children }) {
           type="button"
           disabled={loading}
           onClick={handleClick}
-          className={`disabled:opacity-50 inline-flex items-center justify-center size-4 rounded border-2 mt-[5px] shrink-0 transition-colors ${checked ? "bg-emerald-600 border-emerald-700" : "border-gray-500"
-            }`}
+          className={`disabled:opacity-50 inline-flex items-center justify-center size-4 rounded border-2 mt-[5px] shrink-0 transition-colors ${
+            checked ? "bg-emerald-600 border-emerald-700" : "border-gray-500"
+          }`}
         >
           {checked && (
             <CheckIcon className="size-3 text-white" strokeWidth={3} />

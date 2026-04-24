@@ -11,6 +11,7 @@ import useSWR from "swr";
 import FileList from "../components/FileList";
 import Modal from "../components/Modal";
 import SearchBar from "../components/SearchBar";
+import SettingsModal from "../components/SettingsModal";
 import Sidemenu from "../components/Sidemenu";
 import useKeyShortcut from "../hooks/useKeyShortcut";
 import useResizable from "../hooks/useResizable";
@@ -46,6 +47,7 @@ export default function Layout() {
   const files = filesData?.files || [];
   const folderName = filesData?.folderName || "";
   const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const [settingsModalOpen, setSettingsModalOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const {
     ref: sidebarRef,
@@ -82,15 +84,16 @@ export default function Layout() {
       setSidebarOpen(false);
       setSearchModalOpen(true);
     },
+    onSettingsClick: () => {
+      setSidebarOpen(false);
+      setSettingsModalOpen(true);
+    },
   };
 
   return (
     <div className="flex h-screen bg-gray-950">
       <Transition show={sidebarOpen}>
-        <Dialog
-          onClose={setSidebarOpen}
-          className="relative z-50 md:hidden"
-        >
+        <Dialog onClose={setSidebarOpen} className="relative z-50 md:hidden">
           <TransitionChild
             enter="transition-opacity duration-300"
             enterFrom="opacity-0"
@@ -186,6 +189,11 @@ export default function Layout() {
           selectedFile={selectedFile}
         />
       </Modal>
+
+      <SettingsModal
+        open={settingsModalOpen}
+        onClose={() => setSettingsModalOpen(false)}
+      />
     </div>
   );
 }
