@@ -18,16 +18,18 @@ function initApp() {
     process.exit(1);
   }
 
-  const BOOKMARKS_REL = process.env.BOOKMARKS_PATH;
-  if (!BOOKMARKS_REL) {
-    console.error("FATAL: BOOKMARKS_PATH environment variable is not set.");
+  const CONFIG_REL = process.env.CONFIG_PATH;
+  if (!CONFIG_REL) {
+    console.error("FATAL: CONFIG_PATH environment variable is not set.");
     process.exit(1);
   }
-  const BOOKMARKS_FILE = path.join(ROOT_DIR, BOOKMARKS_REL);
+  const CONFIG_DIR = path.join(ROOT_DIR, CONFIG_REL);
+  const BOOKMARKS_FILE = path.join(CONFIG_DIR, "bookmarks.json");
+  const APP_CONFIG_FILE = path.join(CONFIG_DIR, "app.json");
 
   app.use(express.json());
 
-  return { app, ROOT_DIR, BOOKMARKS_FILE, PORT };
+  return { app, ROOT_DIR, CONFIG_DIR, BOOKMARKS_FILE, APP_CONFIG_FILE, PORT };
 }
 
 module.exports = initApp;

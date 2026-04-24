@@ -16,13 +16,17 @@ const {
   addBookmark,
   removeBookmark,
 } = require("./services/bookmarkService");
+const {
+  getAppConfig,
+  updateAppConfig,
+} = require("./services/appConfigService");
 const { searchFiles } = require("./services/searchService");
 const { getStatus } = require("./services/statusService");
 const { z } = require("zod");
 const { fromError, createErrorMap } = require("zod-validation-error");
 const initApp = require("./initApp");
 
-const { app, ROOT_DIR, BOOKMARKS_FILE, PORT } = initApp();
+const { app, ROOT_DIR, BOOKMARKS_FILE, APP_CONFIG_FILE, PORT } = initApp();
 
 z.config({
   customError: createErrorMap(),
@@ -33,7 +37,7 @@ const pathSchema = z.string().min(1);
 if (process.env.NODE_ENV !== "production") {
   app.use((_req, _res, next) => {
     const time = Math.random() * 400 + 600;
-    setTimeout(next, time);
+    setTimeout(next, 0 * time);
   });
 }
 
@@ -135,6 +139,17 @@ app.get("/api/files/raw", (req, res) => {
     res.attachment(path.basename(file));
   }
   res.sendFile(fullPath);
+});
+
+app.get("/api/config", async (_req, res) => {
+  res.json(await getAppConfig(APP_CONFIG_FILE));
+});
+
+app.put("/api/config", async (req, res) => {
+  const updates = z
+    .object({ strictLineBreaks: z.boolean() })
+    .parse(req.body);
+  res.json(await updateAppConfig(APP_CONFIG_FILE, updates));
 });
 
 app.get("/api", (_req, res) => {

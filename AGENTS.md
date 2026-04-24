@@ -14,7 +14,7 @@ npm run start         # node backend/src/server.js (production)
 ## Setup
 
 - `DATA_ROOT_DIR` env var is **required** (path to file root). Backend exits if missing.
-- `BOOKMARKS_PATH` env var is **required** (relative path to bookmarks JSON file, resolved against `DATA_ROOT_DIR`). Backend exits if missing.
+- `CONFIG_PATH` env var is **required** (relative path to config directory, resolved against `DATA_ROOT_DIR`). Backend exits if missing. The directory must contain or will be auto-populated with `bookmarks.json` and `app.json`.
 - Backend dev: `node --watch src/server.js` (auto-restart)
 - Vite proxies `/api` to `localhost:5000`
 - Backend is **CJS** (`require`). Frontend is **ESM** (`import`).
@@ -28,7 +28,8 @@ npm run start         # node backend/src/server.js (production)
 | GET | `/api/files/content?file=<relpath>` | Returns `{content, isBookmarked}` |
 | PUT | `/api/files/content` | Body `{file, content}`. Writes to disk. |
 | GET | `/api/files/raw?file=<relpath>` | Binary/sendFile variant |
-| GET/POST/DELETE | `/api/bookmarks` | Reads/writes the file at `BOOKMARKS_PATH` |
+| GET/POST/DELETE | `/api/bookmarks` | Reads/writes `bookmarks.json` in `CONFIG_PATH` |
+| GET/PUT | `/api/config` | Reads/writes `app.json` in `CONFIG_PATH` |
 
 ## Frontend
 
@@ -41,5 +42,5 @@ npm run start         # node backend/src/server.js (production)
 ## Deployment
 
 - Multi-stage Dockerfile (`FROM node:22-alpine`)
-- Env: `PORT` (default 5000), `DATA_ROOT_DIR`, `BOOKMARKS_PATH`, `EVENT_CHANNEL` (stdout|stderr|file://)
+- Env: `PORT` (default 5000), `DATA_ROOT_DIR`, `CONFIG_PATH`, `EVENT_CHANNEL` (stdout|stderr|file://)
 - `EVENT_CHANNEL` emits JSON-line events for file_bookmarked, file_unbookmarked, file_updated
