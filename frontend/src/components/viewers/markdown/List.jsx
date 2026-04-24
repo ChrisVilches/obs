@@ -13,8 +13,6 @@ export const InteractiveCheckboxContext = createContext({
   setLoading: () => {},
 });
 
-const isListNode = (node) => node.tagName === "ul" || node.tagName === "ol";
-
 export function rehypeDebugLists() {
   return (tree) => {
     const output = []
