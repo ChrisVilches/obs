@@ -8,6 +8,6 @@
   },
   "dependencies": {
     "express": "^5.1.0",
-    "file-type": "^20.4.1"
+    "file-type": "^22.0.1"
   }
 }
