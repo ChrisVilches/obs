@@ -1,6 +1,4 @@
-import { useCallback, useState } from "react";
 import { useAppConfig } from "../contexts/AppConfigContext";
-import { showErrorToast } from "../utils/toast";
 import Modal from "./Modal";
 
 function ToggleSwitch({ checked, saving, onChange }) {
@@ -56,22 +54,7 @@ export default function SettingsModal({ open, onClose }) {
   // Values come from the local context (initialized from localStorage, synced
   // from the server once on app mount). The modal does not re-fetch on open —
   // it always reflects whatever is currently in context.
-  const { config, updateConfig } = useAppConfig();
-  const [savingKey, setSavingKey] = useState(null);
-
-  const handleToggle = useCallback(
-    async (key, value) => {
-      setSavingKey(key);
-      try {
-        await updateConfig({ [key]: value });
-      } catch (err) {
-        showErrorToast(err.message);
-      } finally {
-        setSavingKey(null);
-      }
-    },
-    [updateConfig],
-  );
+  const { config, saving, updateConfig } = useAppConfig();
 
   return (
     <Modal open={open} onClose={onClose} title="Settings">
@@ -87,8 +70,8 @@ export default function SettingsModal({ open, onClose }) {
                 name={setting.name}
                 description={setting.description}
                 checked={config[setting.key]}
-                saving={savingKey === setting.key}
-                onChange={(value) => handleToggle(setting.key, value)}
+                saving={saving}
+                onChange={(value) => updateConfig({ [setting.key]: value })}
               />
             ))}
           </div>

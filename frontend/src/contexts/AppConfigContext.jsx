@@ -6,6 +6,7 @@ import {
   useState,
 } from "react";
 import { fetcher } from "../utils/fetcher";
+import { showErrorToast } from "../utils/toast";
 
 const LOCAL_STORAGE_KEY = "appConfig";
 
@@ -31,6 +32,7 @@ export function AppConfigProvider({ children }) {
     const stored = loadFromLocalStorage();
     return { ...defaultConfig, ...stored };
   });
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -45,20 +47,23 @@ export function AppConfigProvider({ children }) {
   }, []);
 
   const updateConfig = useCallback(async (updates) => {
-    setConfig((prev) => {
-      const next = { ...prev, ...updates };
-      saveToLocalStorage(next);
-      return next;
-    });
-
-    await fetcher("/api/config", {
-      method: "PATCH",
-      body: updates,
-    });
+    setSaving(true);
+    try {
+      const serverConfig = await fetcher("/api/config", {
+        method: "PATCH",
+        body: updates,
+      });
+      setConfig(serverConfig);
+      saveToLocalStorage(serverConfig);
+    } catch (err) {
+      showErrorToast(err.message);
+    } finally {
+      setSaving(false);
+    }
   }, []);
 
   return (
-    <AppConfigContext.Provider value={{ config, updateConfig }}>
+    <AppConfigContext.Provider value={{ config, saving, updateConfig }}>
       {children}
     </AppConfigContext.Provider>
   );
