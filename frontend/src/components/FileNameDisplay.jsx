@@ -1,6 +1,6 @@
 import Modal from "./Modal";
 
-function formatBytesBinary(bytes, decimals = 2) {
+export function formatBytesBinary(bytes, decimals = 2) {
   if (decimals < 0) throw new Error("decimals must be >= 0");
   if (bytes < 0) return "Invalid size";
   if (bytes === 0) return "0 B";
@@ -20,7 +20,7 @@ function formatBytesBinary(bytes, decimals = 2) {
   return `${formattedValue} ${sizes[unitIndex]}`;
 }
 
-function formatLocalDateTime(isoString) {
+export function formatLocalDateTime(isoString) {
   const d = new Date(isoString);
 
   return (

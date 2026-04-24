@@ -52,7 +52,7 @@ const extToIcon = {
   rtf: DocumentTextIcon,
 };
 
-function getFileIcon(path) {
+export function getFileIcon(path) {
   const ext = path.split(".").pop().toLowerCase();
   return extToIcon[ext] || DocumentIcon;
 }
@@ -62,11 +62,11 @@ function FileIcon({ path, className }) {
   return <Icon className={className} />;
 }
 
-function dirPath(path) {
+export function dirPath(path) {
   return path.includes("/") ? `/${path.slice(0, path.lastIndexOf("/"))}` : "/";
 }
 
-function formatRelativeTime(isoString) {
+export function formatRelativeTime(isoString) {
   const diff = Date.now() - new Date(isoString).getTime();
   const minutes = Math.floor(diff / 60000);
   if (minutes < 1) return "just now";

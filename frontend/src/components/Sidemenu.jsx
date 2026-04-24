@@ -114,7 +114,7 @@ function SidemenuHeader({
   );
 }
 
-function buildTree(files) {
+export function buildTree(files) {
   const root = [];
 
   for (const filePath of files) {
