@@ -22,7 +22,6 @@ function ToggleSwitch({ checked, saving, onChange }) {
   );
 }
 
-// TODO: word break is weird
 function SettingRow({ name, description, checked, saving, onChange }) {
   return (
     <div className="flex items-start justify-between gap-4 py-3">

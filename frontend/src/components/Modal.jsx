@@ -54,7 +54,7 @@ export default function Modal({
                 </button>
               </div>
               <div
-                className={`px-5 py-4 text-sm text-gray-400 break-all ${childrenClass}`}
+                className={`px-5 py-4 text-sm text-gray-400 ${childrenClass}`}
               >
                 {children}
               </div>
