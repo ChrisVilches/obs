@@ -54,11 +54,7 @@ async function addBookmark(bookmarksFile, filePath) {
 async function removeBookmark(bookmarksFile, filePath) {
   const data = await getBookmarks(bookmarksFile);
   data.items = removeBookmarkFromItems(data.items, filePath);
-  await fs.promises.writeFile(
-    bookmarksFile,
-    serializeBookmarks(data),
-    "utf-8",
-  );
+  await fs.promises.writeFile(bookmarksFile, serializeBookmarks(data), "utf-8");
   emit({
     type: "file_unbookmarked",
     file: filePath,

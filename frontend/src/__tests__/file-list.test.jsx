@@ -125,22 +125,22 @@ describe("formatRelativeTime", () => {
     expect(formatRelativeTime(now)).toBe("just now");
   });
 
-  test('returns minutes for 1-59 minutes', () => {
+  test("returns minutes for 1-59 minutes", () => {
     const dt = new Date(Date.now() - 5 * 60 * 1000).toISOString();
     expect(formatRelativeTime(dt)).toBe("5m ago");
   });
 
-  test('returns hours for 1-23 hours', () => {
+  test("returns hours for 1-23 hours", () => {
     const dt = new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString();
     expect(formatRelativeTime(dt)).toBe("3h ago");
   });
 
-  test('returns days for 1-29 days', () => {
+  test("returns days for 1-29 days", () => {
     const dt = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString();
     expect(formatRelativeTime(dt)).toBe("5d ago");
   });
 
-  test('returns months for 30+ days', () => {
+  test("returns months for 30+ days", () => {
     const dt = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString();
     expect(formatRelativeTime(dt)).toBe("2mo ago");
   });

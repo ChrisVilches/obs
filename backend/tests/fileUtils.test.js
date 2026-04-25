@@ -232,10 +232,7 @@ describe("toggleCheckboxInLine", () => {
   });
 
   it("handles numbered lists", () => {
-    assert.equal(
-      toggleCheckboxInLine("1. [ ] first", true),
-      "1. [x] first",
-    );
+    assert.equal(toggleCheckboxInLine("1. [ ] first", true), "1. [x] first");
     assert.equal(
       toggleCheckboxInLine("99. [x] do stuff", false),
       "99. [ ] do stuff",
@@ -372,11 +369,7 @@ describe("parseRgOutput", () => {
   });
 
   it("returns relative paths from absolute paths", () => {
-    const result = parseRgOutput(
-      "/root/sub/deep/file.md\n",
-      "/root",
-      50,
-    );
+    const result = parseRgOutput("/root/sub/deep/file.md\n", "/root", 50);
     assert.deepEqual(result, ["sub/deep/file.md"]);
   });
 });

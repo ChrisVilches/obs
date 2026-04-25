@@ -22,11 +22,13 @@ describe("Table", () => {
     expect(screen.getByText("Alice")).toBeInTheDocument();
   });
 
-  test('wraps table in a div with overflow-auto', () => {
+  test("wraps table in a div with overflow-auto", () => {
     const { container } = render(
       <Table>
         <tbody>
-          <tr><td>x</td></tr>
+          <tr>
+            <td>x</td>
+          </tr>
         </tbody>
       </Table>,
     );

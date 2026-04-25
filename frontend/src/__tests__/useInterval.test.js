@@ -37,10 +37,9 @@ describe("useInterval", () => {
     vi.useFakeTimers();
     const cb1 = vi.fn();
     const cb2 = vi.fn();
-    const { rerender } = renderHook(
-      ({ cb, delay }) => useInterval(cb, delay),
-      { initialProps: { cb: cb1, delay: 100 } },
-    );
+    const { rerender } = renderHook(({ cb, delay }) => useInterval(cb, delay), {
+      initialProps: { cb: cb1, delay: 100 },
+    });
 
     vi.advanceTimersByTime(100);
     expect(cb1).toHaveBeenCalledTimes(1);

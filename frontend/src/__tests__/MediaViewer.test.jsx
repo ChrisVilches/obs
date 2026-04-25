@@ -4,17 +4,13 @@ import MediaViewer from "../components/viewers/MediaViewer";
 
 describe("MediaViewer", () => {
   test("renders an audio element when type is audio", () => {
-    const { container } = render(
-      <MediaViewer file="song.mp3" type="audio" />,
-    );
+    const { container } = render(<MediaViewer file="song.mp3" type="audio" />);
     expect(container.querySelector("audio")).toBeInTheDocument();
     expect(container.querySelector("video")).not.toBeInTheDocument();
   });
 
   test("renders a video element when type is video", () => {
-    const { container } = render(
-      <MediaViewer file="movie.mp4" type="video" />,
-    );
+    const { container } = render(<MediaViewer file="movie.mp4" type="video" />);
     expect(container.querySelector("video")).toBeInTheDocument();
   });
 

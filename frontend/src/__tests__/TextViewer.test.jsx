@@ -14,7 +14,9 @@ describe("TextViewer", () => {
   });
 
   test("renders multi-line content", () => {
-    const { container } = render(<TextViewer content={"line1\nline2\nline3"} />);
+    const { container } = render(
+      <TextViewer content={"line1\nline2\nline3"} />,
+    );
     expect(container.querySelector("pre")).toBeInTheDocument();
     expect(container.textContent).toBe("line1\nline2\nline3");
   });

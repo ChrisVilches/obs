@@ -13,7 +13,9 @@ describe("Code", () => {
 
   test("renders block code when start and end line differ", () => {
     const node = { position: { start: { line: 1 }, end: { line: 3 } } };
-    const { container } = render(<Code node={node}>{'line1\nline2\nline3'}</Code>);
+    const { container } = render(
+      <Code node={node}>{"line1\nline2\nline3"}</Code>,
+    );
     const code = container.querySelector("code");
     expect(code).toBeInTheDocument();
     expect(code.tagName).toBe("CODE");

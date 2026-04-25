@@ -45,10 +45,9 @@ describe("useDebounce", () => {
 
   test("uses default delay of 150ms", async () => {
     vi.useFakeTimers();
-    const { result, rerender } = renderHook(
-      ({ value }) => useDebounce(value),
-      { initialProps: { value: "x" } },
-    );
+    const { result, rerender } = renderHook(({ value }) => useDebounce(value), {
+      initialProps: { value: "x" },
+    });
 
     rerender({ value: "y" });
     await act(() => vi.advanceTimersByTimeAsync(149));

@@ -8,15 +8,13 @@ describe("ErrorDisplay", () => {
     expect(screen.getByText("Something went wrong")).toBeInTheDocument();
   });
 
-  test('renders default message when none provided', () => {
+  test("renders default message when none provided", () => {
     render(<ErrorDisplay />);
     expect(screen.getByText("An error occurred")).toBeInTheDocument();
   });
 
   test("renders the file path when provided", () => {
-    render(
-      <ErrorDisplay message="Not found" file="/path/to/file.md" />,
-    );
+    render(<ErrorDisplay message="Not found" file="/path/to/file.md" />);
     expect(screen.getByText("/path/to/file.md")).toBeInTheDocument();
   });
 

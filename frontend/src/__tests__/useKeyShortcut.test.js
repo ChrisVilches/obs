@@ -42,9 +42,7 @@ describe("useKeyShortcut", () => {
     input.focus();
 
     const callback = vi.fn();
-    renderHook(() =>
-      useKeyShortcut("Enter", callback, { ignoreInputs: true }),
-    );
+    renderHook(() => useKeyShortcut("Enter", callback, { ignoreInputs: true }));
 
     document.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
     expect(callback).not.toHaveBeenCalled();

@@ -6,11 +6,7 @@ import FileList from "../components/FileList";
 function renderFileList(props = {}) {
   return render(
     <MemoryRouter>
-      <FileList
-        items={[]}
-        emptyMessage="No files found."
-        {...props}
-      />
+      <FileList items={[]} emptyMessage="No files found." {...props} />
     </MemoryRouter>,
   );
 }
@@ -33,21 +29,12 @@ describe("FileList", () => {
 
   test("renders file items as links", () => {
     renderFileList({
-      items: [
-        { path: "dir/file1.md" },
-        { path: "file2.txt" },
-      ],
+      items: [{ path: "dir/file1.md" }, { path: "file2.txt" }],
     });
     const links = screen.getAllByRole("link");
     expect(links).toHaveLength(2);
-    expect(links[0]).toHaveAttribute(
-      "href",
-      "/file?f=dir%2Ffile1.md",
-    );
-    expect(links[1]).toHaveAttribute(
-      "href",
-      "/file?f=file2.txt",
-    );
+    expect(links[0]).toHaveAttribute("href", "/file?f=dir%2Ffile1.md");
+    expect(links[1]).toHaveAttribute("href", "/file?f=file2.txt");
   });
 
   test("renders file names from path", () => {
@@ -78,11 +65,7 @@ describe("FileList", () => {
 
   test("highlights selected index", () => {
     renderFileList({
-      items: [
-        { path: "a.md" },
-        { path: "b.md" },
-        { path: "c.md" },
-      ],
+      items: [{ path: "a.md" }, { path: "b.md" }, { path: "c.md" }],
       selectedIndex: 1,
     });
     const links = screen.getAllByRole("link");

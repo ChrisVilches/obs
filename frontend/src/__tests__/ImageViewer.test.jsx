@@ -17,9 +17,6 @@ describe("ImageViewer", () => {
   test("constructs correct src URL", () => {
     render(<ImageViewer file="dir/photo.png" />);
     const img = screen.getByAltText("dir/photo.png");
-    expect(img).toHaveAttribute(
-      "src",
-      "/api/files/raw?file=dir%2Fphoto.png",
-    );
+    expect(img).toHaveAttribute("src", "/api/files/raw?file=dir%2Fphoto.png");
   });
 });

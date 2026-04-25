@@ -17,11 +17,7 @@ describe("MarkdownImage", () => {
 
   test("transforms local relative paths with current file context", () => {
     render(
-      <MarkdownImage
-        src="assets/img.png"
-        alt="Local"
-        file="docs/readme.md"
-      />,
+      <MarkdownImage src="assets/img.png" alt="Local" file="docs/readme.md" />,
     );
     const img = screen.getByAltText("Local");
     expect(img).toHaveAttribute(
@@ -31,13 +27,7 @@ describe("MarkdownImage", () => {
   });
 
   test("transforms local absolute paths", () => {
-    render(
-      <MarkdownImage
-        src="/images/logo.png"
-        alt="Logo"
-        file="index.md"
-      />,
-    );
+    render(<MarkdownImage src="/images/logo.png" alt="Logo" file="index.md" />);
     const img = screen.getByAltText("Logo");
     expect(img).toHaveAttribute(
       "src",
