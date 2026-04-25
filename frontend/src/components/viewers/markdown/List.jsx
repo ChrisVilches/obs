@@ -5,14 +5,19 @@ import { visit } from "unist-util-visit";
 import { fetcher } from "../../../utils/fetcher";
 import { showErrorToast } from "../../../utils/toast";
 
-export const TasksContext = createContext({ hide: false, setHide: () => {} });
+export const TasksContext = createContext({ hide: false, setHide: () => { } });
 export const InteractiveCheckboxContext = createContext({
   file: null,
   mtime: null,
   loading: false,
-  setLoading: () => {},
+  setLoading: () => { },
 });
 
+/**
+ * In "loose" Markdown lists, item content is wrapped in a `<p>`.
+ * Skips leading whitespace-only text nodes (AST artifacts) to find
+ * the first meaningful child, returning it if it's a `<p>`.
+ */
 function ifLooseGetParagraph(node) {
   const child = node.children.find(
     (c) => !(c.type === "text" && c.value.trim() === ""),
@@ -65,12 +70,15 @@ export function rehypeDebugLists() {
 /**
  * Rehype plugin that enriches the HAST tree with checklist metadata.
  *
- * Traverses every top-level `<ul>` element, counting all descendant
+ * Traverses every top-level `<ul>` or `<ol>` element, counting all descendant
  * `<input type="checkbox">` nodes (total + checked). The counts are
- * stored on the `<ul>` node as `checkboxInfo: { total, complete }`.
+ * stored on the list node as `checkboxInfo: { total, complete }`.
  *
- * Nested `<ul>` elements are marked with `hasParentList: true` so
- * `ListComponent` can skip re-rendering them as standalone task lists.
+ * Nested lists are marked with `hasParentList: true` so `ListComponent`
+ * can skip re-rendering them as standalone task lists.
+ *
+ * Uses a manual DFS instead of a second `visit` pass so that parent-child
+ * relationships are preserved for correctly marking nested lists.
  */
 export function rehypeListMetadata() {
   const isList = (node) => node.tagName === "ul" || node.tagName === "ol";
@@ -108,6 +116,13 @@ export function rehypeListMetadata() {
   };
 }
 
+/**
+ * Wraps a list with a task-completion progress bar and a show/hide toggle
+ * for completed items. The toggle state is scoped via `TasksContext` so
+ * that only the `<li>` checkbox items inside this list react to it.
+ *
+ * Only invoked when `total > 0` (guaranteed by the caller, `ListComponent`).
+ */
 function TaskListComponent({ Tag, total, complete, children }) {
   const [hide, setHide] = useState(false);
   const pct = total ? Math.round((complete / total) * 100) : 0;
@@ -120,9 +135,8 @@ function TaskListComponent({ Tag, total, complete, children }) {
             {/* Progress bar: emerald when complete, indigo while in-progress */}
             <div className="relative flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
               <div
-                className={`absolute inset-y-0 left-0 rounded-full transition-all duration-700 ease-out ${
-                  complete === total ? "bg-emerald-500" : "bg-indigo-500"
-                }`}
+                className={`absolute inset-y-0 left-0 rounded-full transition-all duration-700 ease-out ${complete === total ? "bg-emerald-500" : "bg-indigo-500"
+                  }`}
                 style={{ width: `${pct}%` }}
               />
             </div>
@@ -138,9 +152,9 @@ function TaskListComponent({ Tag, total, complete, children }) {
               className="flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-gray-300 transition-colors"
             >
               {hide ? (
-                <EyeIcon className="size-3.5" />
-              ) : (
                 <EyeSlashIcon className="size-3.5" />
+              ) : (
+                <EyeIcon className="size-3.5" />
               )}
               <span>{hide ? "Show completed" : "Hide completed"}</span>
             </button>
@@ -156,7 +170,7 @@ export function ListComponent({ node, children }) {
   const isNested = Boolean(node.hasParentList);
   const Tag = node.tagName; // "ul" or "ol"
 
-  // `checkboxInfo` is guaranteed to exist on any <ul> that passes
+  // `checkboxInfo` is guaranteed to exist on any list element that passes
   // through `rehypeListMetadata` — this component is only used in that pipeline.
   if (!isNested && node.checkboxInfo.total > 0) {
     return (
@@ -197,7 +211,7 @@ function TaskLiComponent({ node, children, checkbox }) {
             checked: !checked,
             // Relies on remark's standard position info — every HAST
             // element parsed by remark should carry a `position` block.
-            line: node.position.start.line,
+            line: node.position?.start?.line,
             mtime,
             file,
           },
@@ -224,9 +238,8 @@ function TaskLiComponent({ node, children, checkbox }) {
           type="button"
           disabled={loading}
           onClick={handleClick}
-          className={`disabled:opacity-50 inline-flex items-center justify-center size-4 rounded border-2 mt-[5px] shrink-0 transition-colors ${
-            checked ? "bg-emerald-600 border-emerald-700" : "border-gray-500"
-          }`}
+          className={`disabled:opacity-50 inline-flex items-center justify-center size-4 rounded border-2 mt-[5px] shrink-0 transition-colors ${checked ? "bg-emerald-600 border-emerald-700" : "border-gray-500"
+            }`}
         >
           {checked && (
             <CheckIcon className="size-3 text-white" strokeWidth={3} />
