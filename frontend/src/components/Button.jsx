@@ -25,7 +25,7 @@ export default function Button({
     return (
       <a href={href} className={classes} {...props}>
         {icon}
-        {children && <span className="hidden md:inline">{children}</span>}
+        {children && (icon ? <span className="hidden md:inline">{children}</span> : children)}
       </a>
     );
   }
@@ -33,7 +33,7 @@ export default function Button({
   return (
     <button onClick={onClick} className={classes} {...props}>
       {icon}
-      {children && <span className="hidden md:inline">{children}</span>}
+      {children && (icon ? <span className="hidden md:inline">{children}</span> : children)}
     </button>
   );
 }
