@@ -127,6 +127,7 @@ function TaskListComponent({ Tag, total, complete, children }) {
   const [hide, setHide] = useState(false);
   const pct = total ? Math.round((complete / total) * 100) : 0;
 
+  // TODO: the progress bar is inside a ul/ol. Is this HTML correct?
   return (
     <TasksContext.Provider value={{ hide, setHide }}>
       <Tag className="pl-0 [&_input[type='checkbox']]:hidden">
