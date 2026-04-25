@@ -231,8 +231,6 @@ function TaskLiComponent({ node, children, checkbox }) {
     }
   };
 
-  // TODO: why are some "loose" but they don't have a paragraph as first element? analyze
-  // (i think it's because of how I changed things.)
   return (
     <li className="list-none flex items-start gap-2 hover:bg-[#10131E] rounded pl-0 py-0.5">
       <div className="flex items-center h-6">
