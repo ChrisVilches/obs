@@ -13,27 +13,53 @@ export const InteractiveCheckboxContext = createContext({
   setLoading: () => {},
 });
 
+function ifLooseGetParagraph(node) {
+  const child = node.children.find(
+    (c) => !(c.type === "text" && c.value.trim() === ""),
+  );
+  return child?.tagName === "p" ? child : null;
+}
+
+function firstChildIfIsCheckbox(node) {
+  return node?.children[0]?.properties?.type === "checkbox"
+    ? node.children[0]
+    : null;
+}
+
+// Li elements can have a checkbox if they have a "- [ ]" (or numbered)
+// and lists can be loose or tight, so this function gets the checkbox considering both cases.
+// tight: checkbox directly in <li>  |  loose: checkbox inside <p> inside <li>
+function tryGetLiCheckbox(node) {
+  return (
+    firstChildIfIsCheckbox(node) ||
+    firstChildIfIsCheckbox(ifLooseGetParagraph(node))
+  );
+}
+
 export function rehypeDebugLists() {
   return (tree) => {
-    const output = []
+    const output = [];
     function dfs(u, depth) {
-      const indent = " ".repeat(depth * 2)
+      const indent = " ".repeat(depth * 2);
       if (u.type === "text") {
-        if (u.value.trim().length) output.push(indent + `"${u.value}"`)
-        return
+        if (u.value.trim().length) output.push(indent + `"${u.value}"`);
+        return;
       }
-      output.push(`${indent}${u.tagName}`)
+      const liHasParagraph = u.tagName === "li" && ifLooseGetParagraph(u);
+      output.push(
+        `${indent}${u.tagName}${liHasParagraph ? " (HAS PARAGRAPH**)" : ""}`,
+      );
 
       for (const v of u.children ?? []) {
-        dfs(v, depth + 1)
+        dfs(v, depth + 1);
       }
     }
 
     for (const child of tree.children) {
-      dfs(child, 0)
+      dfs(child, 0);
     }
-    console.log(output.join("\n"))
-  }
+    console.log(output.join("\n"));
+  };
 }
 
 /**
@@ -147,20 +173,14 @@ export function ListComponent({ node, children }) {
   return <Tag className={!isNested ? "pl-0" : ""}>{children}</Tag>;
 }
 
-function TaskLiComponent({ node, children }) {
+function TaskLiComponent({ node, children, checkbox }) {
   const ctx = useContext(TasksContext);
   const { file, mtime, loading, setLoading } = useContext(
     InteractiveCheckboxContext,
   );
-  // Makes the same AST shape assumptions as LiComponent (tight vs loose checkbox).
-  // TODO: the detection pattern here diverges from LiComponent — this branch
-  // blindly reaches into children[1].children[0] without verifying the
-  // intermediate node is a <p>, so a non-<p> wrapper between <li> and checkbox
-  // (e.g. a <div> injected by a remark plugin) would cause checked to read
-  // from an unrelated node rather than falling through to children[0].
-  const checked =
-    node.children?.[1]?.children?.[0]?.properties?.checked ||
-    node.children?.[0]?.properties?.checked;
+
+  if (!checkbox) throw new Error("checkbox should be defined!");
+  const checked = checkbox.properties.checked;
 
   if (checked && ctx.hide) return null;
   const { mutate } = useSWRConfig();
@@ -219,16 +239,14 @@ function TaskLiComponent({ node, children }) {
 }
 
 export function LiComponent({ node, children }) {
-  // tight: checkbox directly in <li>  |  loose: checkbox inside <p> inside <li>
-  // TODO: fragile child-index assumptions; prefer find operations.
-  const tightCheckbox = node.children[0]?.properties?.type === "checkbox";
-  const looseCheckbox =
-    node.children.length >= 2 &&
-    node.children[1].tagName === "p" &&
-    node.children[1].children[0]?.properties?.type === "checkbox";
+  const checkbox = tryGetLiCheckbox(node);
 
-  if (looseCheckbox || tightCheckbox) {
-    return <TaskLiComponent node={node}>{children}</TaskLiComponent>;
+  if (checkbox) {
+    return (
+      <TaskLiComponent checkbox={checkbox} node={node}>
+        {children}
+      </TaskLiComponent>
+    );
   }
 
   // TODO: ordered lists (<ol>) are rendered with bullet markers instead

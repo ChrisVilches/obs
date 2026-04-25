@@ -11,8 +11,8 @@ import {
   InteractiveCheckboxContext,
   LiComponent,
   ListComponent,
-  rehypeListMetadata,
   rehypeDebugLists,
+  rehypeListMetadata,
 } from "./markdown/List";
 import MarkdownImage from "./markdown/MarkdownImage";
 import Table from "./markdown/Table";
