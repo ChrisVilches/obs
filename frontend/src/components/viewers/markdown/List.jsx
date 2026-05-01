@@ -127,43 +127,37 @@ function TaskListComponent({ Tag, total, complete, children }) {
   const [hide, setHide] = useState(false);
   const pct = total ? Math.round((complete / total) * 100) : 0;
 
-  // TODO: the progress bar is inside a ul/ol. Is this HTML correct?
   return (
     <TasksContext.Provider value={{ hide, setHide }}>
-      <Tag className="pl-0 [&_input[type='checkbox']]:hidden">
-        <div className="mb-3 group">
-          <div className="flex items-center gap-3">
-            {/* Progress bar: emerald when complete, indigo while in-progress */}
-            <div className="relative flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
-              <div
-                className={`absolute inset-y-0 left-0 rounded-full transition-all duration-700 ease-out ${
-                  complete === total ? "bg-emerald-500" : "bg-indigo-500"
+      <div className="mb-3 group">
+        <div className="flex items-center gap-3">
+          <div className="relative flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
+            <div
+              className={`absolute inset-y-0 left-0 rounded-full transition-all duration-700 ease-out ${complete === total ? "bg-emerald-500" : "bg-indigo-500"
                 }`}
-                style={{ width: `${pct}%` }}
-              />
-            </div>
-            <span className="text-xs font-medium text-gray-500 tabular-nums">
-              {complete} / {total}
-            </span>
+              style={{ width: `${pct}%` }}
+            />
           </div>
-          {/* Show/hide toggle: eye icon flips, label changes */}
-          <div className="flex justify-center mt-2">
-            <button
-              type="button"
-              onClick={() => setHide((h) => !h)}
-              className="flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-gray-300 transition-colors"
-            >
-              {hide ? (
-                <EyeSlashIcon className="size-3.5" />
-              ) : (
-                <EyeIcon className="size-3.5" />
-              )}
-              <span>{hide ? "Show completed" : "Hide completed"}</span>
-            </button>
-          </div>
+          <span className="text-xs font-medium text-gray-500 tabular-nums">
+            {complete} / {total}
+          </span>
         </div>
-        {children}
-      </Tag>
+        <div className="flex justify-center mt-2">
+          <button
+            type="button"
+            onClick={() => setHide((h) => !h)}
+            className="flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-gray-300 transition-colors"
+          >
+            {hide ? (
+              <EyeSlashIcon className="size-3.5" />
+            ) : (
+              <EyeIcon className="size-3.5" />
+            )}
+            <span>{hide ? "Show completed" : "Hide completed"}</span>
+          </button>
+        </div>
+      </div>
+      <Tag className="pl-0 [&_input[type='checkbox']]:hidden">{children}</Tag>
     </TasksContext.Provider>
   );
 }
