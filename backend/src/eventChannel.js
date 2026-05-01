@@ -160,6 +160,8 @@ if (!channelConfig) {
 }
 
 function emit(event) {
+  logger.debug("event emitted", { event });
+
   recentEvents.push(event);
   if (recentEvents.length > MAX_RECENT_EVENTS) {
     recentEvents.shift();
@@ -170,7 +172,6 @@ function emit(event) {
   try {
     writeFn(JSON.stringify(event));
   } catch (err) {
-    // Never let event emission crash the app
     logger.error("event-channel emit failed", { err });
   }
 }
