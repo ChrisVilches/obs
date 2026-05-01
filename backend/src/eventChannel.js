@@ -160,7 +160,7 @@ if (!channelConfig) {
 }
 
 function emit(event) {
-  logger.debug("event emitted", { event });
+  logger.info("event emitted", { event });
 
   recentEvents.push(event);
   if (recentEvents.length > MAX_RECENT_EVENTS) {
