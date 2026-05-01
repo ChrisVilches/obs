@@ -1,5 +1,6 @@
 const fs = require("node:fs");
 const path = require("node:path");
+const logger = require("./logger");
 
 const channelConfig = process.env.EVENT_CHANNEL;
 
@@ -30,8 +31,9 @@ function createFileWriter(filePath) {
   try {
     const stat = fs.statSync(filePath);
     if (stat.isDirectory()) {
-      console.error(
-        `[event-channel] cannot open "${filePath}": path is a directory, expected a regular file or FIFO`,
+      logger.error(
+        "cannot open path: is a directory, expected a regular file or FIFO",
+        { filePath },
       );
       process.exit(1);
     }
@@ -72,15 +74,15 @@ function createFileWriter(filePath) {
       stream = null;
 
       if (err.code === "EISDIR") {
-        console.error(
-          `[event-channel] cannot open "${filePath}": path is a directory, expected a regular file or FIFO`,
+        logger.error(
+          "cannot open path: is a directory, expected a regular file or FIFO",
+          { filePath },
         );
         process.exit(1);
         return;
       }
 
-      // Avoid crashing app because of event transport
-      console.error("[event-channel]", err.message);
+      logger.error("event-channel stream error", { err });
 
       // Retry later
       setTimeout(openStream, 1000);
@@ -153,7 +155,7 @@ if (!channelConfig) {
   writeFn = write;
   cleanupFn = cleanup;
 } else {
-  console.error(`[event-channel] unsupported channel: ${channelConfig}`);
+  logger.error("unsupported event channel", { channel: channelConfig });
   process.exit(1);
 }
 
@@ -169,7 +171,7 @@ function emit(event) {
     writeFn(JSON.stringify(event));
   } catch (err) {
     // Never let event emission crash the app
-    console.error("[event-channel emit]", err.message);
+    logger.error("event-channel emit failed", { err });
   }
 }
 

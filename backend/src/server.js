@@ -1,5 +1,7 @@
 const path = require("node:path");
 const express = require("express");
+const expressWinston = require("express-winston");
+const logger = require("./logger");
 const {
   listFiles,
   getRecentFiles,
@@ -41,17 +43,7 @@ if (process.env.NODE_ENV !== "production") {
   });
 }
 
-if (process.env.NODE_ENV !== "production") {
-  app.use((req, res, next) => {
-    const start = Date.now();
-    res.on("finish", () => {
-      console.log(
-        `${req.method} ${req.url} ${res.statusCode} ${Date.now() - start}ms`,
-      );
-    });
-    next();
-  });
-}
+app.use(expressWinston.logger({ winstonInstance: logger }));
 
 app.get("/api/bookmarks", async (_req, res) => {
   res.json(await getBookmarks(BOOKMARKS_FILE));
@@ -161,7 +153,6 @@ app.use((err, _req, res, _next) => {
     return res.status(400).json({ error: fromError(err).toString() });
   }
   if (err.code === "ENOENT") {
-    console.log(err);
     return res.status(404).json({ error: "File not found" });
   }
   if (err instanceof VersionConflictError) {
@@ -176,7 +167,7 @@ app.use((err, _req, res, _next) => {
     return res.status(400).json({ error: err.message });
   }
 
-  console.error("Unhandled error:", err);
+  logger.error("unhandled error", { err });
   res.status(500).json({
     error:
       process.env.NODE_ENV === "production"
@@ -192,6 +183,5 @@ app.use((_req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-  console.log(`Serving notes from: ${ROOT_DIR}`);
+  logger.info("server started", { port: PORT, rootDir: ROOT_DIR });
 });

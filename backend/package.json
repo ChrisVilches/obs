@@ -10,7 +10,9 @@
   },
   "dependencies": {
     "express": "^5.1.0",
+    "express-winston": "^4.2.0",
     "file-type": "^22.0.1",
+    "winston": "^3.19.0",
     "zod": "^4.4.3",
     "zod-validation-error": "^5.0.0"
   }

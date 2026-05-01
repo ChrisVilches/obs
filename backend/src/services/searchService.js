@@ -2,6 +2,7 @@ const path = require("node:path");
 const { execFile } = require("node:child_process");
 const { promisify } = require("node:util");
 const { parseFindSearchOutput, parseRgOutput } = require("../lib/fileUtils");
+const logger = require("../logger");
 
 const execFileAsync = promisify(execFile);
 
@@ -27,7 +28,7 @@ async function searchFiles(rootDir, query) {
     );
     files = parseFindSearchOutput(stdout, rootDir);
   } catch (e) {
-    console.error(e);
+    logger.error("find command failed", { err: e });
   }
 
   let contentMatches = [];
