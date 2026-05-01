@@ -37,7 +37,7 @@ const pathSchema = z.string().min(1);
 if (process.env.NODE_ENV !== "production") {
   app.use((_req, _res, next) => {
     const time = Math.random() * 400 + 600;
-    setTimeout(next, 0 * time);
+    setTimeout(next, time);
   });
 }
 
