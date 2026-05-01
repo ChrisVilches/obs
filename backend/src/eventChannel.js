@@ -22,8 +22,12 @@ function createFileWriter(filePath) {
   // (Safe even if target is a FIFO.)
   try {
     fs.mkdirSync(path.dirname(filePath), { recursive: true });
-  } catch {
-    // TODO: do something with the error
+  } catch (err) {
+    logger.error("failed to create parent directory for event channel file", {
+      dir: path.dirname(filePath),
+      err,
+    });
+    process.exit(1);
   }
 
   // Fail immediately if the target exists as a directory (e.g. Docker bind
@@ -37,8 +41,16 @@ function createFileWriter(filePath) {
       );
       process.exit(1);
     }
-  } catch {
-    // Path does not exist yet — will be created by createWriteStream
+  } catch (err) {
+    if (err.code !== "ENOENT") {
+      logger.error("failed to stat log path", {
+        filePath,
+        err,
+      });
+      process.exit(1);
+    }
+
+    // Path does not exist yet — createWriteStream will create it
   }
 
   let stream = null;
