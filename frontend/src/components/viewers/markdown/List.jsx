@@ -181,8 +181,6 @@ export function ListComponent({ node, children }) {
   }
 
 
-  // TODO: (WIP) The key is to only adjust the horizontal position on the top level list so that
-  // nested lists have indentation.
   return <Tag className={isNested ? "" : "pl-5"}> {children}</Tag >;
 }
 
