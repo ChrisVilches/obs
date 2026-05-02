@@ -132,7 +132,7 @@ export default function Layout() {
         {/* biome-ignore lint/a11y/noStaticElementInteractions: drag resize handle */}
         <div
           onMouseDown={onHandleMouseDown}
-          className="absolute right-[-4px] top-0 bottom-0 w-1 cursor-col-resize hover:bg-indigo-500/50 active:bg-indigo-500/70 z-10 shrink-0"
+          className="absolute right-[-4px] top-0 bottom-0 w-1 cursor-col-resize hover:bg-indigo-500/50 active:bg-indigo-500/70 z-50 shrink-0"
         />
         <Sidemenu {...sideMenuProps} />
       </aside>
