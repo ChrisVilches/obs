@@ -1,5 +1,5 @@
 import { EllipsisHorizontalIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { useCallback, useEffect, useState } from "react";
+import { useRef, useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useSWR from "swr";
 import useDebounce from "../hooks/useDebounce";
@@ -86,12 +86,46 @@ function SearchInputIcon({ loading, onClear }) {
 
 const EMPTY_RESULTS = { all: [], files: [], content: [] };
 
+function useAutoFocusWorkaround() {
+  // Workaround for a bug: When using two Dialog components with transitions
+  // enabled, opening a search modal while closing the sidemenu dialog causes the
+  // auto focus input in the search modal to briefly receive focus and then
+  // immediately lose it. Specifically: (1) the sidemenu dialog is open, (2)
+  // clicking a button inside it opens a search modal (which contains an input
+  // with auto focus) and simultaneously sets the sidemenu to close, (3) the
+  // input in the search modal flickers—it appears focused for a moment and then
+  // loses focus. This does not occur if the sidemenu remains open during the
+  // transition, and it does not occur when transitions are disabled on both
+  // dialogs.
+
+  const elementRef = useRef(null);
+
+  const autoFocusRef = useCallback((el) => {
+    elementRef.current = el;
+  }, []);
+
+  useEffect(() => {
+    const handler = (ev) => {
+      console.log(ev);
+
+      elementRef.current?.focus();
+    };
+
+    document.body.addEventListener("focusout", handler, {
+      once: true,
+    });
+
+    return () => {
+      document.body.removeEventListener("focusout", handler);
+    };
+  }, []);
+
+  return autoFocusRef
+}
+
 export default function SearchBar({ onClose }) {
   const navigate = useNavigate();
-  const autoFocusRef = useCallback((el) => {
-    if (!el) return;
-    setTimeout(() => el.focus());
-  }, []);
+  const autoFocusRef = useAutoFocusWorkaround()
 
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebounce(query, 150);
