@@ -27,6 +27,7 @@ export default function MarkdownViewer({ file, content, mtime }) {
     >
       <div className="p-6 prose prose-invert max-w-full">
         <ReactMarkdown
+          key={file}
           remarkPlugins={[
             remarkGfm,
             remarkMath,
