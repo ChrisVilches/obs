@@ -6,7 +6,7 @@ import {
 } from "@headlessui/react";
 import { Bars3Icon } from "@heroicons/react/24/outline";
 import { useState } from "react";
-import { Outlet, useSearchParams } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import useSWR from "swr";
 import FileList from "../components/FileList";
 import Modal from "../components/Modal";
@@ -66,8 +66,6 @@ export default function Layout() {
 
   useKeyShortcut("/", () => setSearchModalOpen(true));
   const bookmarksModal = useBookmarksModal();
-  const [searchParams] = useSearchParams();
-  const selectedFile = searchParams.get("f");
 
   if (filesError)
     return <div className="p-4 text-red-400">Error: {filesError.message}</div>;
@@ -186,7 +184,7 @@ export default function Layout() {
       >
         <SearchBar
           onClose={() => setSearchModalOpen(false)}
-          selectedFile={selectedFile}
+          focusDelay={400}
         />
       </Modal>
 

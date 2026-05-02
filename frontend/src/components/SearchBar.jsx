@@ -1,10 +1,18 @@
 import { EllipsisHorizontalIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { useRef, useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useSWR from "swr";
 import useDebounce from "../hooks/useDebounce";
 import useListKeyboardNav from "../hooks/useListKeyboardNav";
 import FileList from "./FileList";
+
+// When two Headless UI Dialogs compete for focus (e.g. the mobile sidebar is
+// closing while the search modal is opening), the closing dialog restores focus
+// to its trigger element after its leave transition completes. This steals focus
+// from the search input. A caller-provided `focusDelay` lets the modal's enter
+// animation finish and the closing dialog's focus restoration resolve before we
+// auto-focus the search input. Callers set this to match their transition durations
+// so the component stays modal-agnostic.
 
 function Results({ results, tab, setTab, selectedIndex, onClose }) {
   const tabs = [
@@ -86,46 +94,20 @@ function SearchInputIcon({ loading, onClear }) {
 
 const EMPTY_RESULTS = { all: [], files: [], content: [] };
 
-function useAutoFocusWorkaround() {
-  // Workaround for a bug: When using two Dialog components with transitions
-  // enabled, opening a search modal while closing the sidemenu dialog causes the
-  // auto focus input in the search modal to briefly receive focus and then
-  // immediately lose it. Specifically: (1) the sidemenu dialog is open, (2)
-  // clicking a button inside it opens a search modal (which contains an input
-  // with auto focus) and simultaneously sets the sidemenu to close, (3) the
-  // input in the search modal flickers—it appears focused for a moment and then
-  // loses focus. This does not occur if the sidemenu remains open during the
-  // transition, and it does not occur when transitions are disabled on both
-  // dialogs.
-
-  const elementRef = useRef(null);
-
-  const autoFocusRef = useCallback((el) => {
-    elementRef.current = el;
-  }, []);
-
-  useEffect(() => {
-    const handler = (ev) => {
-      console.log(ev);
-
-      elementRef.current?.focus();
-    };
-
-    document.body.addEventListener("focusout", handler, {
-      once: true,
-    });
-
-    return () => {
-      document.body.removeEventListener("focusout", handler);
-    };
-  }, []);
-
-  return autoFocusRef
-}
-
-export default function SearchBar({ onClose }) {
+export default function SearchBar({ onClose, focusDelay = 0 }) {
   const navigate = useNavigate();
-  const autoFocusRef = useAutoFocusWorkaround()
+  const inputRef = useCallback(
+    (el) => {
+      if (!el) return;
+      if (focusDelay === 0) {
+        el.focus();
+      } else {
+        const timer = setTimeout(() => el.focus(), focusDelay);
+        return () => clearTimeout(timer);
+      }
+    },
+    [focusDelay],
+  );
 
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebounce(query, 150);
@@ -173,7 +155,7 @@ export default function SearchBar({ onClose }) {
       <div className="shrink-0">
         <div className="relative mb-2">
           <input
-            ref={autoFocusRef}
+            ref={inputRef}
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
