@@ -235,14 +235,14 @@ function TaskLiComponent({ node, children, checkbox }) {
           type="button"
           disabled={loading}
           onClick={handleClick}
-          className={`absolute -left-5 top-0 disabled:opacity-50 inline-flex items-center justify-center size-4 rounded border-2 mt-[5px] shrink-0 transition-colors ${checked ? "bg-emerald-600 border-emerald-700" : "border-gray-500"
+          className={`absolute -left-5 disabled:opacity-50 inline-flex items-center justify-center size-4 rounded border-2 mt-[5px] shrink-0 transition-colors ${checked ? "bg-emerald-600 border-emerald-700" : "border-gray-500"
             }`}
         >
           {checked && (
             <CheckIcon className="size-3 text-white" strokeWidth={3} />
           )}
         </button>
-        <span className="[&>*:first-child]:mt-0 w-full">{children}</span>
+        <span className="[&>*:first-child]:mt-0">{children}</span>
       </div>
     </li>
   );
