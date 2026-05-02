@@ -157,7 +157,7 @@ function TaskListComponent({ Tag, total, complete, children }) {
           </button>
         </div>
       </div>
-      <Tag className="pl-0 [&_input[type='checkbox']]:hidden">{children}</Tag>
+      <Tag className="pl-5 [&_input[type='checkbox']]:hidden">{children}</Tag>
     </TasksContext.Provider>
   );
 }
@@ -180,7 +180,10 @@ export function ListComponent({ node, children }) {
     );
   }
 
-  return <Tag className={!isNested ? "pl-0" : ""}>{children}</Tag>;
+
+  // TODO: (WIP) The key is to only adjust the horizontal position on the top level list so that
+  // nested lists have indentation.
+  return <Tag className={isNested ? "" : "pl-5"}> {children}</Tag >;
 }
 
 function TaskLiComponent({ node, children, checkbox }) {
@@ -226,22 +229,21 @@ function TaskLiComponent({ node, children, checkbox }) {
   };
 
   return (
-    <li className="list-none flex items-start gap-2 hover:bg-[#10131E] rounded pl-0 py-0.5">
-      <div className="flex items-center h-6">
+    <li className="list-none relative hover:bg-[#10131E]">
+      <div className="flex items-start rounded pl-">
         <button
           type="button"
           disabled={loading}
           onClick={handleClick}
-          className={`disabled:opacity-50 inline-flex items-center justify-center size-4 rounded border-2 mt-[5px] shrink-0 transition-colors ${
-            checked ? "bg-emerald-600 border-emerald-700" : "border-gray-500"
-          }`}
+          className={`absolute -left-5 top-0 disabled:opacity-50 inline-flex items-center justify-center size-4 rounded border-2 mt-[5px] shrink-0 transition-colors ${checked ? "bg-emerald-600 border-emerald-700" : "border-gray-500"
+            }`}
         >
           {checked && (
             <CheckIcon className="size-3 text-white" strokeWidth={3} />
           )}
         </button>
+        <span className="[&>*:first-child]:mt-0 w-full">{children}</span>
       </div>
-      <span className="[&>*:first-child]:mt-0 w-full">{children}</span>
     </li>
   );
 }
@@ -257,14 +259,5 @@ export function LiComponent({ node, children }) {
     );
   }
 
-  // TODO: ordered lists (<ol>) are rendered with bullet markers instead
-  // of numbers — the parent CSS intervention isn't working.
-  return (
-    <li className="flex items-start gap-3 pl-0">
-      <span className="mt-1 h-4 w-4 shrink-0 flex items-center justify-center">
-        <span className="h-1.5 w-1.5 rounded-full bg-current" />
-      </span>
-      <span className="[&>*:first-child]:mt-0 w-full">{children}</span>
-    </li>
-  );
+  return <li className="[&>*:first-child]:mt-0">{children}</li>;
 }
