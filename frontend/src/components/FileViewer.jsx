@@ -143,6 +143,12 @@ export default function FileViewer({ file, onBookmarkChange }) {
         <textarea
           value={editContent}
           onChange={(e) => setEditContent(e.target.value)}
+          onKeyDown={(e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+              e.preventDefault();
+              handleSave();
+            }
+          }}
           className="flex-1 p-6 text-sm text-gray-200 bg-gray-900 font-mono resize-none outline-none border-2 border-indigo-500/50"
           spellCheck={false}
         />
