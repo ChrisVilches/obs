@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import ErrorDisplay from './ErrorDisplay';
 import FileToolbar from './FileToolbar';
-import TextViewer from './TextViewer';
-import ImageViewer from './ImageViewer';
-import MarkdownViewer from './MarkdownViewer';
-import MediaViewer from './MediaViewer';
-import BinaryFileDisplay from './BinaryFileDisplay';
+import TextViewer from './viewers/TextViewer';
+import ImageViewer from './viewers/ImageViewer';
+import MarkdownViewer from './viewers/MarkdownViewer';
+import MediaViewer from './viewers/MediaViewer';
+import BinaryFileViewer from './viewers/BinaryFileViewer';
 
 export default function FileViewer({ file, onBookmarkChange }) {
   const [info, setInfo] = useState(null);
@@ -153,7 +153,7 @@ export default function FileViewer({ file, onBookmarkChange }) {
       ) : type === 'audio' || type === 'video' ? (
         <MediaViewer key={refreshKey} file={file} type={type} />
       ) : type === 'binary' ? (
-        <BinaryFileDisplay file={file} />
+        <BinaryFileViewer file={file} />
       ) : (
         <TextViewer key={refreshKey} content={info.content} />
       )}

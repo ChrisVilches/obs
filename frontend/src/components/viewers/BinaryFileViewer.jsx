@@ -1,7 +1,7 @@
 import { DocumentIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline';
-import Button from './Button';
+import Button from '../Button';
 
-export default function BinaryFileDisplay({ file }) {
+export default function BinaryFileViewer({ file }) {
   return (
     <div className="flex flex-col items-center justify-center p-12 text-center">
       <DocumentIcon className="w-16 h-16 text-gray-600 mb-4" />
