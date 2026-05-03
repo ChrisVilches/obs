@@ -5,6 +5,9 @@ import SearchResultItem from './SearchResultItem';
 // TODO: This only works if all the file paths are loaded and are in memory. If
 // not, then the search would need to be implemented in the server-side since
 // we couldn't filter here.
+// However, since the search result is very simple (just a list, without rendering it
+// as a tree), I can implement it via server easily, and I can implement my other
+// requirement, which is to search by content, and maybe fuzzy, etc.
 
 export default function SearchBar({ files, onClose, selectedFile, onSearchActive }) {
   const [query, setQuery] = useState('');
