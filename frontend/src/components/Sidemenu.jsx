@@ -200,7 +200,7 @@ export default function Sidemenu({ files, onClose, sidebarOpen }) {
   }, [sidebarOpen, selectedFile]);
 
   return (
-    <nav className="flex-1 overflow-y-auto p-2">
+    <nav className="flex-1 overflow-y-auto overflow-x-hidden p-2">
       <SearchBar
         files={files}
         onClose={onClose}

@@ -16,10 +16,10 @@ export default function SearchResultItem({ file, selectedFile, onClose }) {
             : 'text-gray-400 hover:bg-gray-800'
         }`}
       >
-        <span className={`block text-sm leading-tight ${file === selectedFile ? 'font-medium' : ''}`}>
+        <span className={`block text-sm leading-tight break-words ${file === selectedFile ? 'font-medium' : ''}`}>
           {name}
         </span>
-        <span className={`block text-xs leading-tight mt-0.5 ${file === selectedFile ? 'text-indigo-400/70' : 'text-gray-600'}`}>
+        <span className={`block text-xs leading-tight mt-0.5 break-words ${file === selectedFile ? 'text-indigo-400/70' : 'text-gray-600'}`}>
           {dir}
         </span>
       </Link>
