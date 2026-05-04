@@ -124,21 +124,7 @@ export default function Sidemenu({ files, onClose, sidebarOpen }) {
 
   const tree = useMemo(() => buildTree(files), [files]);
 
-  const allDirPaths = useMemo(() => {
-    const paths = [];
-    function collect(nodes) {
-      for (const node of nodes) {
-        if (node.type === 'directory') {
-          paths.push(node.path);
-          collect(node.children);
-        }
-      }
-    }
-    collect(tree);
-    return paths;
-  }, [tree]);
-
-  const [expandedSet, setExpandedSet] = useState(() => new Set(allDirPaths));
+  const [expandedSet, setExpandedSet] = useState(() => new Set());
 
   function handleToggle(path) {
     setExpandedSet(prev => {
