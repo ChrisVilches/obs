@@ -82,13 +82,16 @@ export default function Home() {
 
   return (
     <div className="flex h-screen bg-gray-950">
-      <button
-        onClick={() => setSidebarOpen(true)}
-        className="fixed top-3 left-3 z-40 md:hidden p-2 rounded-md text-gray-400 bg-gray-900 border border-gray-800 hover:text-white hover:bg-gray-800 transition-colors"
-        aria-label="Open sidebar"
-      >
-        <Bars3Icon className="w-5 h-5" />
-      </button>
+      <div className="fixed top-0 left-0 right-0 z-40 md:hidden flex items-center gap-2 px-3 h-12 bg-gray-900 border-b border-gray-800">
+        <button
+          onClick={() => setSidebarOpen(true)}
+          className="p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-800 transition-colors shrink-0"
+          aria-label="Open sidebar"
+        >
+          <Bars3Icon className="w-5 h-5" />
+        </button>
+        <Link to="/" className="text-sm font-semibold text-gray-400 uppercase tracking-wider truncate hover:text-indigo-400 transition-colors">{folderName}</Link>
+      </div>
 
       <Transition show={sidebarOpen}>
         <Dialog onClose={setSidebarOpen} className="relative z-50 md:hidden">
@@ -142,12 +145,14 @@ export default function Home() {
         <Link to="/" className="px-4 h-14 flex items-center border-b border-gray-800 shrink-0 text-sm font-semibold text-gray-400 uppercase tracking-wider hover:text-indigo-400 transition-colors">{folderName}</Link>
         <Sidemenu files={files} />
       </aside>
-      <main className="flex-1 overflow-auto bg-gray-950 pt-12 md:pt-0">
-        {selectedFile ? (
-          <FileViewer file={selectedFile} onBookmarkChange={reloadBookmarks} />
-        ) : (
-          <BookmarksList bookmarks={bookmarks} loading={bookmarksLoading} onSelect={() => setSidebarOpen(false)} />
-        )}
+      <main className="flex-1 flex flex-col bg-gray-950 pt-12 md:pt-0">
+        <div className="flex-1 overflow-auto">
+          {selectedFile ? (
+            <FileViewer file={selectedFile} onBookmarkChange={reloadBookmarks} />
+          ) : (
+            <BookmarksList bookmarks={bookmarks} loading={bookmarksLoading} onSelect={() => setSidebarOpen(false)} />
+          )}
+        </div>
       </main>
     </div>
   );
