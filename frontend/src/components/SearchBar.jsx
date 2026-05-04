@@ -1,17 +1,12 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import SearchResultItem from './SearchResultItem';
 
-// TODO: This only works if all the file paths are loaded and are in memory. If
-// not, then the search would need to be implemented in the server-side since
-// we couldn't filter here.
-// However, since the search result is very simple (just a list, without rendering it
-// as a tree), I can implement it via server easily, and I can implement my other
-// requirement, which is to search by content, and maybe fuzzy, etc.
-
-export default function SearchBar({ files, onClose, selectedFile, onSearchActive }) {
+export default function SearchBar({ onClose, selectedFile, onSearchActive }) {
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (query === '') {
@@ -28,15 +23,33 @@ export default function SearchBar({ files, onClose, selectedFile, onSearchActive
     onSearchActive?.(debouncedQuery.length > 0);
   }, [debouncedQuery, onSearchActive]);
 
-  const filteredFiles = useMemo(() => {
-    if (!debouncedQuery) return [];
-    const lower = debouncedQuery.toLowerCase();
-    return files.filter(f => f.toLowerCase().includes(lower));
-  }, [files, debouncedQuery]);
+  useEffect(() => {
+    if (!debouncedQuery) {
+      setResults([]);
+      return;
+    }
+    let cancelled = false;
+    setLoading(true);
+    fetch(`/api/files/search?q=${encodeURIComponent(debouncedQuery)}`)
+      .then(res => res.json())
+      .then(data => {
+        if (!cancelled) {
+          setResults(data.files || []);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setResults([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [debouncedQuery]);
 
   function handleClear() {
     setQuery('');
     setDebouncedQuery('');
+    setResults([]);
   }
 
   return (
@@ -61,9 +74,11 @@ export default function SearchBar({ files, onClose, selectedFile, onSearchActive
       </div>
       {debouncedQuery && (
         <div className="border-t border-gray-800">
-          {filteredFiles.length > 0 ? (
+          {loading ? (
+            <p className="px-3 py-2 text-sm text-gray-500">Searching...</p>
+          ) : results.length > 0 ? (
             <ul>
-              {filteredFiles.map(file => (
+              {results.map(file => (
                 <SearchResultItem
                   key={file}
                   file={file}
