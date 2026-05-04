@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import SearchResultItem from './SearchResultItem';
 
+// TODO: Search results need to be deduplicated for the "All" tab.
+
 export default function SearchBar({ onClose, selectedFile, onSearchActive }) {
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
