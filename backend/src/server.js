@@ -22,6 +22,13 @@ if (!fs.existsSync(ROOT_DIR)) {
   process.exit(1);
 }
 
+const BOOKMARKS_REL = process.env.BOOKMARKS_PATH;
+if (!BOOKMARKS_REL) {
+  console.error('FATAL: BOOKMARKS_PATH environment variable is not set.');
+  process.exit(1);
+}
+const BOOKMARKS_FILE = path.join(ROOT_DIR, BOOKMARKS_REL);
+
 app.use(express.json());
 
 if (process.env.NODE_ENV !== 'production') {
@@ -55,11 +62,20 @@ function listFilesRecursive(dir, root) {
 }
 
 function readBookmarks() {
-  const bookmarksPath = path.join(ROOT_DIR, '.obsidian', 'bookmarks.json');
-  if (!fs.existsSync(bookmarksPath)) {
+  const dir = path.dirname(BOOKMARKS_FILE);
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+  if (!fs.existsSync(BOOKMARKS_FILE)) {
+    fs.writeFileSync(BOOKMARKS_FILE, JSON.stringify({ items: [] }, null, 2), 'utf-8');
     return { items: [] };
   }
-  return JSON.parse(fs.readFileSync(bookmarksPath, 'utf-8'));
+  const raw = fs.readFileSync(BOOKMARKS_FILE, 'utf-8').trim();
+  if (!raw) {
+    fs.writeFileSync(BOOKMARKS_FILE, JSON.stringify({ items: [] }, null, 2), 'utf-8');
+    return { items: [] };
+  }
+  return JSON.parse(raw);
 }
 
 app.get('/api/bookmarks', (req, res) => {
@@ -76,23 +92,15 @@ app.post('/api/bookmarks', (req, res) => {
     if (!filePath) {
       return res.status(400).json({ error: 'Missing "path" in request body' });
     }
-    const bookmarksPath = path.join(ROOT_DIR, '.obsidian', 'bookmarks.json');
-    const dir = path.dirname(bookmarksPath);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    const data = fs.existsSync(bookmarksPath)
-      ? JSON.parse(fs.readFileSync(bookmarksPath, 'utf-8'))
-      : { items: [] };
+    const data = readBookmarks();
     if (data.items.some(item => item.path === filePath)) {
       return res.json({ success: true, message: 'Already bookmarked' });
     }
     data.items.push({
       type: 'file',
       path: filePath,
-      title: path.basename(filePath),
     });
-    fs.writeFileSync(bookmarksPath, JSON.stringify(data, null, 2), 'utf-8');
+    fs.writeFileSync(BOOKMARKS_FILE, JSON.stringify(data, null, 2), 'utf-8');
     emit({ type: 'file_bookmarked', file: filePath, timestamp: new Date().toISOString() });
     res.json({ success: true, message: 'Bookmarked' });
   } catch (err) {
@@ -106,13 +114,9 @@ app.delete('/api/bookmarks', (req, res) => {
     if (!filePath) {
       return res.status(400).json({ error: 'Missing "path" query parameter' });
     }
-    const bookmarksPath = path.join(ROOT_DIR, '.obsidian', 'bookmarks.json');
-    if (!fs.existsSync(bookmarksPath)) {
-      return res.json({ success: true, message: 'Not found' });
-    }
-    const data = JSON.parse(fs.readFileSync(bookmarksPath, 'utf-8'));
+    const data = readBookmarks();
     data.items = data.items.filter(item => item.path !== filePath);
-    fs.writeFileSync(bookmarksPath, JSON.stringify(data, null, 2), 'utf-8');
+    fs.writeFileSync(BOOKMARKS_FILE, JSON.stringify(data, null, 2), 'utf-8');
     emit({ type: 'file_unbookmarked', file: filePath, timestamp: new Date().toISOString() });
     res.json({ success: true, message: 'Unbookmarked' });
   } catch (err) {
