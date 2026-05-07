@@ -213,11 +213,12 @@ app.get('/api/files/info', async (req, res) => {
       return res.status(404).json({ error: 'File not found' });
     }
 
+    const stat = fs.statSync(fullPath);
     const type = await classifyFile(fullPath);
     const bookmarkData = readBookmarks();
     const isBookmarked = bookmarkData.items.some(item => item.path === relativePath);
 
-    const result = { type, isBookmarked };
+    const result = { type, isBookmarked, mtime: stat.mtime.toISOString() };
 
     if (TEXT_TYPES.has(type)) {
       result.content = fs.readFileSync(fullPath, 'utf-8');
@@ -242,10 +243,11 @@ app.get('/api/files/content', (req, res) => {
     if (!fullPath.startsWith(ROOT_DIR)) {
       return res.status(403).json({ error: 'Access denied' });
     }
+    const stat = fs.statSync(fullPath);
     const content = fs.readFileSync(fullPath, 'utf-8');
     const bookmarkData = readBookmarks();
     const isBookmarked = bookmarkData.items.some(item => item.path === relativePath);
-    res.json({ content, isBookmarked });
+    res.json({ content, isBookmarked, mtime: stat.mtime.toISOString() });
   } catch (err) {
     if (err.code === 'ENOENT') {
       return res.status(404).json({ error: 'File not found' });

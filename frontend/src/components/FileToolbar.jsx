@@ -27,6 +27,11 @@ export default function FileToolbar({
         onShowFileNameModal={onShowFileNameModal}
         saveMessage={saveMessage}
       />
+      {info?.mtime && (
+        <span className="text-xs text-gray-600 shrink-0 ml-2">
+          {new Date(info.mtime).toLocaleString()}
+        </span>
+      )}
       <div className="flex items-center">
         {loading ? (
           <div className="w-5 h-5 border-2 border-gray-600 border-t-transparent rounded-full animate-spin" />
