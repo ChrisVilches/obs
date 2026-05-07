@@ -259,7 +259,7 @@ app.get('/api/files/info', async (req, res) => {
 // TODO: Large files don't work (and the error isn't pretty, so at least fix the error)
 app.put('/api/files/content', (req, res) => {
   try {
-    const { file, content } = req.body;
+    const { file, content, mtime, force } = req.body;
     if (!file) {
       return res.status(400).json({ error: 'Missing "file" in request body' });
     }
@@ -270,13 +270,22 @@ app.put('/api/files/content', (req, res) => {
     if (!fullPath.startsWith(ROOT_DIR)) {
       return res.status(403).json({ error: 'Access denied' });
     }
+
+    if (mtime && !force && fs.existsSync(fullPath)) {
+      const stat = fs.statSync(fullPath);
+      if (stat.mtime.toISOString() !== mtime) {
+        return res.status(409).json({ error: 'File modified by another user' });
+      }
+    }
+
     const existing = fs.existsSync(fullPath) ? fs.readFileSync(fullPath, 'utf-8') : '';
     if (existing === content) {
       return res.json({ success: true, message: 'No changes' });
     }
     fs.writeFileSync(fullPath, content, 'utf-8');
+    const newStat = fs.statSync(fullPath);
     emit({ type: 'file_updated', file, timestamp: new Date().toISOString() });
-    res.json({ success: true, message: 'Updated' });
+    res.json({ success: true, message: 'Updated', mtime: newStat.mtime.toISOString() });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
