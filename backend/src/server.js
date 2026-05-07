@@ -274,7 +274,7 @@ app.put('/api/files/content', (req, res) => {
     if (mtime && !force && fs.existsSync(fullPath)) {
       const stat = fs.statSync(fullPath);
       if (stat.mtime.toISOString() !== mtime) {
-        return res.status(409).json({ error: 'File modified by another user' });
+        return res.status(409).json({ error: 'VERSION_CONFLICT' });
       }
     }
 
