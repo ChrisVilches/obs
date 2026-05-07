@@ -1,5 +1,9 @@
 import { Link } from 'react-router-dom';
 
+// TODO: List doesn't get updated when the user uses the history buttons to go back and forth.
+// I think it should, since the user probably expects it to get reloaded.
+// I think even the button to bookmarks doesn't reload it (that's bad).
+
 export default function BookmarksList({ bookmarks, loading, onSelect }) {
   return (
     <div className="p-8">
