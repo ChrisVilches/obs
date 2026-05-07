@@ -14,7 +14,7 @@ npm run start         # node backend/src/server.js (production)
 ## Setup
 
 - `DATA_ROOT_DIR` env var is **required** (path to file root). Backend exits if missing.
-- `BOOKMARKS_PATH` env var is **required** (path to bookmarks JSON file). Backend exits if missing.
+- `BOOKMARKS_PATH` env var is **required** (relative path to bookmarks JSON file, resolved against `DATA_ROOT_DIR`). Backend exits if missing.
 - Backend dev: `node --watch src/server.js` (auto-restart)
 - Vite proxies `/api` to `localhost:5000`
 - Backend is **CJS** (`require`). Frontend is **ESM** (`import`).
