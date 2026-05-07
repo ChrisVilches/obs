@@ -143,7 +143,7 @@ app.get('/api/files/search', (req, res) => {
         '!', '-path', '*/.*',
       ], { encoding: 'utf-8', maxBuffer: 10 * 1024 * 1024 });
       files = stdout.trim().split('\n').filter(Boolean).map(f => path.relative(ROOT_DIR, f));
-    } catch (_) {}
+    } catch (_) { }
 
     let contentMatches = [];
     try {
@@ -233,28 +233,28 @@ app.get('/api/files/info', async (req, res) => {
   }
 });
 
-app.get('/api/files/content', (req, res) => {
-  try {
-    const relativePath = req.query.file;
-    if (!relativePath) {
-      return res.status(400).json({ error: 'Missing "file" query parameter' });
-    }
-    const fullPath = path.join(ROOT_DIR, relativePath);
-    if (!fullPath.startsWith(ROOT_DIR)) {
-      return res.status(403).json({ error: 'Access denied' });
-    }
-    const stat = fs.statSync(fullPath);
-    const content = fs.readFileSync(fullPath, 'utf-8');
-    const bookmarkData = readBookmarks();
-    const isBookmarked = bookmarkData.items.some(item => item.path === relativePath);
-    res.json({ content, isBookmarked, mtime: stat.mtime.toISOString() });
-  } catch (err) {
-    if (err.code === 'ENOENT') {
-      return res.status(404).json({ error: 'File not found' });
-    }
-    res.status(500).json({ error: err.message });
-  }
-});
+// app.get('/api/files/content', (req, res) => {
+//   try {
+//     const relativePath = req.query.file;
+//     if (!relativePath) {
+//       return res.status(400).json({ error: 'Missing "file" query parameter' });
+//     }
+//     const fullPath = path.join(ROOT_DIR, relativePath);
+//     if (!fullPath.startsWith(ROOT_DIR)) {
+//       return res.status(403).json({ error: 'Access denied' });
+//     }
+//     const stat = fs.statSync(fullPath);
+//     const content = fs.readFileSync(fullPath, 'utf-8');
+//     const bookmarkData = readBookmarks();
+//     const isBookmarked = bookmarkData.items.some(item => item.path === relativePath);
+//     res.json({ content, isBookmarked, mtime: stat.mtime.toISOString() });
+//   } catch (err) {
+//     if (err.code === 'ENOENT') {
+//       return res.status(404).json({ error: 'File not found' });
+//     }
+//     res.status(500).json({ error: err.message });
+//   }
+// });
 
 // TODO: Large files don't work (and the error isn't pretty, so at least fix the error)
 app.put('/api/files/content', (req, res) => {
