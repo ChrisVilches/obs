@@ -175,7 +175,7 @@ export default function Layout() {
       >
         <SearchBar
           onClose={() => setSearchModalOpen(false)}
-          focusDelay={400}
+          focusDelay={100}
         />
       </Modal>
 
