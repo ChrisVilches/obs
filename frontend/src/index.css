@@ -6,6 +6,14 @@
   --dialog-transition-duration: 50ms;
 }
 
+button, [role="button"], [role="switch"], [role="tab"] {
+  cursor: pointer;
+}
+
+button:disabled, [role="button"][aria-disabled="true"] {
+  cursor: default;
+}
+
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--color-gray-700) transparent;
