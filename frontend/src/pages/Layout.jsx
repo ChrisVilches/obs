@@ -1,8 +1,7 @@
 import {
   Dialog,
+  DialogBackdrop,
   DialogPanel,
-  Transition,
-  TransitionChild,
 } from "@headlessui/react";
 import { Bars3Icon } from "@heroicons/react/24/outline";
 import { useState } from "react";
@@ -81,37 +80,23 @@ export default function Layout() {
 
   return (
     <div className="flex h-screen bg-gray-950">
-      <Transition show={sidebarOpen}>
-        <Dialog onClose={setSidebarOpen} className="relative z-50 md:hidden">
-          <TransitionChild
-            enter="transition-opacity duration-(--dialog-transition-duration)"
-            enterFrom="opacity-0"
-            enterTo="opacity-100"
-            leave="transition-opacity duration-(--dialog-transition-duration)"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
+      <Dialog open={sidebarOpen} onClose={setSidebarOpen} className="relative z-50 md:hidden">
+        <DialogBackdrop
+          transition
+          className="fixed inset-0 bg-black/60 transition-opacity duration-(--dialog-transition-duration) data-closed:opacity-0"
+        />
+        <div className="fixed inset-0 flex">
+          <DialogPanel
+            transition
+            className="w-72 h-full bg-gray-900 border-r border-gray-800 flex flex-col transition-transform duration-(--dialog-transition-duration) data-closed:-translate-x-full"
           >
-            <div className="fixed inset-0 bg-black/60" />
-          </TransitionChild>
-          <div className="fixed inset-0 flex">
-            <TransitionChild
-              enter="transition-transform duration-(--dialog-transition-duration)"
-              enterFrom="-translate-x-full"
-              enterTo="translate-x-0"
-              leave="transition-transform duration-(--dialog-transition-duration)"
-              leaveFrom="translate-x-0"
-              leaveTo="-translate-x-full"
-            >
-              <DialogPanel className="w-72 h-full bg-gray-900 border-r border-gray-800 flex flex-col">
-                <Sidemenu
-                  {...sideMenuProps}
-                  onClose={() => setSidebarOpen(false)}
-                />
-              </DialogPanel>
-            </TransitionChild>
-          </div>
-        </Dialog>
-      </Transition>
+            <Sidemenu
+              {...sideMenuProps}
+              onClose={() => setSidebarOpen(false)}
+            />
+          </DialogPanel>
+        </div>
+      </Dialog>
 
       <aside
         ref={sidebarRef}
