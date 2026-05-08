@@ -19,10 +19,10 @@ export default function Modal({
     <Transition show={open}>
       <Dialog onClose={onClose} className="relative z-50">
         <TransitionChild
-          enter="transition-opacity duration-300"
+          enter="transition-opacity duration-(--dialog-transition-duration)"
           enterFrom="opacity-0"
           enterTo="opacity-100"
-          leave="transition-opacity duration-200"
+          leave="transition-opacity duration-(--dialog-transition-duration)"
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
@@ -30,12 +30,12 @@ export default function Modal({
         </TransitionChild>
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <TransitionChild
-            enter="transition-transform duration-300"
-            enterFrom="scale-95 opacity-0"
+            enter="transition-[scale,opacity] duration-(--dialog-transition-duration)"
+            enterFrom="scale-90 opacity-0"
             enterTo="scale-100 opacity-100"
-            leave="transition-transform duration-200"
+            leave="transition-[scale,opacity] duration-(--dialog-transition-duration)"
             leaveFrom="scale-100 opacity-100"
-            leaveTo="scale-95 opacity-0"
+            leaveTo="scale-90 opacity-0"
           >
             <DialogPanel
               className={`w-full max-w-md bg-gray-900 border border-gray-800 rounded-xl shadow-xl ${className}`}

@@ -84,10 +84,10 @@ export default function Layout() {
       <Transition show={sidebarOpen}>
         <Dialog onClose={setSidebarOpen} className="relative z-50 md:hidden">
           <TransitionChild
-            enter="transition-opacity duration-300"
+            enter="transition-opacity duration-(--dialog-transition-duration)"
             enterFrom="opacity-0"
             enterTo="opacity-100"
-            leave="transition-opacity duration-200"
+            leave="transition-opacity duration-(--dialog-transition-duration)"
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
@@ -95,10 +95,10 @@ export default function Layout() {
           </TransitionChild>
           <div className="fixed inset-0 flex">
             <TransitionChild
-              enter="transition-transform duration-300"
+              enter="transition-transform duration-(--dialog-transition-duration)"
               enterFrom="-translate-x-full"
               enterTo="translate-x-0"
-              leave="transition-transform duration-200"
+              leave="transition-transform duration-(--dialog-transition-duration)"
               leaveFrom="translate-x-0"
               leaveTo="-translate-x-full"
             >

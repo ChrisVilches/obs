@@ -1,10 +1,30 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --dialog-transition-duration: 1500ms;
+}
 
 * {
-  @apply scrollbar-thin;
-  @apply scrollbar-thumb-gray-700 ;
-  @apply scrollbar-track-transparent;
-  @apply hover:scrollbar-thumb-gray-600;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-gray-700) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--color-gray-700);
+  border-radius: 9999px;
+}
+
+*:hover::-webkit-scrollbar-thumb {
+  background-color: var(--color-gray-600);
 }
