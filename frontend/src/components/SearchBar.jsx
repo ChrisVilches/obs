@@ -1,18 +1,10 @@
 import { EllipsisHorizontalIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useSWR from "swr";
 import useDebounce from "../hooks/useDebounce";
 import useListKeyboardNav from "../hooks/useListKeyboardNav";
 import FileList from "./FileList";
-
-// When two Headless UI Dialogs compete for focus (e.g. the mobile sidebar is
-// closing while the search modal is opening), the closing dialog restores focus
-// to its trigger element after its leave transition completes. This steals focus
-// from the search input. A caller-provided `focusDelay` lets the modal's enter
-// animation finish and the closing dialog's focus restoration resolve before we
-// auto-focus the search input. Callers set this to match their transition durations
-// so the component stays modal-agnostic.
 
 function Results({ results, tab, setTab, selectedIndex, onClose }) {
   const tabs = [
@@ -94,20 +86,8 @@ function SearchInputIcon({ loading, onClear }) {
 
 const EMPTY_RESULTS = { all: [], files: [], content: [] };
 
-export default function SearchBar({ onClose, focusDelay = 0 }) {
+export default function SearchBar({ onClose }) {
   const navigate = useNavigate();
-  const inputRef = useCallback(
-    (el) => {
-      if (!el) return;
-      if (focusDelay === 0) {
-        el.focus();
-      } else {
-        const timer = setTimeout(() => el.focus(), focusDelay);
-        return () => clearTimeout(timer);
-      }
-    },
-    [focusDelay],
-  );
 
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebounce(query, 150);
@@ -155,7 +135,7 @@ export default function SearchBar({ onClose, focusDelay = 0 }) {
       <div className="shrink-0">
         <div className="relative mb-2">
           <input
-            ref={inputRef}
+            autoFocus
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}

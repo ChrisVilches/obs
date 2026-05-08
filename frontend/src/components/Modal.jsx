@@ -15,15 +15,17 @@ export default function Modal({
   childrenClass = "",
 }) {
   return (
+    // Transitions are intentionally omitted from all dialogs in this app.
+    // Headless UI transitions introduce focus-stealing (the closing dialog
+    // restores focus to its trigger, making autofocus unreliable), cause glitchy
+    // behavior when dialogs close alongside sidebar clicks, add mobile rendering
+    // overhead, and create edge cases that offer negligible added value. Removing
+    // them keeps the UX simple and predictable.
     <Dialog open={open} onClose={onClose} className="relative z-50">
-      <DialogBackdrop
-        transition
-        className="fixed inset-0 bg-black/60 transition-opacity duration-(--dialog-transition-duration) data-closed:opacity-0"
-      />
+      <DialogBackdrop className="fixed inset-0 bg-black/60" />
       <div className="fixed inset-0 flex items-center justify-center p-4">
         <DialogPanel
-          transition
-          className={`w-full max-w-md bg-gray-900 border border-gray-800 rounded-xl shadow-xl transition-[scale,opacity] duration-(--dialog-transition-duration) data-closed:scale-90 data-closed:opacity-0 ${className}`}
+          className={`w-full max-w-md bg-gray-900 border border-gray-800 rounded-xl shadow-xl ${className}`}
         >
           <div className="flex items-center justify-between px-5 py-4 border-b border-gray-800 shrink-0">
             <DialogTitle className="text-sm font-semibold text-gray-300">

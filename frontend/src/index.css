@@ -2,10 +2,6 @@
 
 @plugin "@tailwindcss/typography";
 
-@theme {
-  --dialog-transition-duration: 50ms;
-}
-
 button, [role="button"], [role="switch"], [role="tab"] {
   cursor: pointer;
 }

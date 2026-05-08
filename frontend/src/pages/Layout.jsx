@@ -81,15 +81,9 @@ export default function Layout() {
   return (
     <div className="flex h-screen bg-gray-950">
       <Dialog open={sidebarOpen} onClose={setSidebarOpen} className="relative z-50 md:hidden">
-        <DialogBackdrop
-          transition
-          className="fixed inset-0 bg-black/60 transition-opacity duration-(--dialog-transition-duration) data-closed:opacity-0"
-        />
+        <DialogBackdrop className="fixed inset-0 bg-black/60" />
         <div className="fixed inset-0 flex">
-          <DialogPanel
-            transition
-            className="w-72 h-full bg-gray-900 border-r border-gray-800 flex flex-col transition-transform duration-(--dialog-transition-duration) data-closed:-translate-x-full"
-          >
+          <DialogPanel className="w-72 h-full bg-gray-900 border-r border-gray-800 flex flex-col">
             <Sidemenu
               {...sideMenuProps}
               onClose={() => setSidebarOpen(false)}
@@ -160,7 +154,6 @@ export default function Layout() {
       >
         <SearchBar
           onClose={() => setSearchModalOpen(false)}
-          focusDelay={100}
         />
       </Modal>
 
