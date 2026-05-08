@@ -18,19 +18,10 @@ import useResizable from "../hooks/useResizable";
 
 function useBookmarksModal() {
   const [isOpen, setIsOpen] = useState(false);
-  const { data, isLoading, mutate } = useSWR("/api/bookmarks");
-
-  const open = async () => {
-    setIsOpen(true);
-    try {
-      await mutate();
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  const { data, isLoading } = useSWR(isOpen && "/api/bookmarks");
 
   return {
-    open,
+    open: () => setIsOpen(true),
     close: () => setIsOpen(false),
     isOpen,
     bookmarks: data?.items ?? [],
