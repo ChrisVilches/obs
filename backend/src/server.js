@@ -288,9 +288,8 @@ app.put('/api/files/content', (req, res) => {
       return res.json({ success: true, message: 'No changes' });
     }
     fs.writeFileSync(fullPath, content, 'utf-8');
-    const newStat = fs.statSync(fullPath);
     emit({ type: 'file_updated', file, timestamp: new Date().toISOString() });
-    res.json({ success: true, message: 'Updated', mtime: newStat.mtime.toISOString() });
+    res.json({ success: true, message: 'Updated' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

@@ -64,9 +64,6 @@ export default function FileViewer({ file, onBookmarkChange }) {
           return;
         }
         if (data.error) throw new Error(data.error);
-        if (data.mtime) {
-          setInfo((prev) => (prev ? { ...prev, mtime: data.mtime } : prev));
-        }
         setSaveMessage(data.message);
         setEditMode(false);
         setRefreshKey((k) => k + 1);
@@ -87,9 +84,6 @@ export default function FileViewer({ file, onBookmarkChange }) {
       .then((res) => res.json())
       .then((data) => {
         if (data.error) throw new Error(data.error);
-        if (data.mtime) {
-          setInfo((prev) => (prev ? { ...prev, mtime: data.mtime } : prev));
-        }
         setSaveMessage(data.message);
         setEditMode(false);
         setRefreshKey((k) => k + 1);
