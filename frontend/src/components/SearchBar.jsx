@@ -1,5 +1,5 @@
 import { EllipsisHorizontalIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import useSWR from "swr";
 import useDebounce from "../hooks/useDebounce";
@@ -22,11 +22,10 @@ function Results({ results, tab, setTab, selectedIndex, onClose }) {
               type="button"
               key={t.key}
               onClick={() => setTab(t.key)}
-              className={`flex-1 px-2 py-1.5 text-xs font-medium transition-colors ${
-                tab === t.key
-                  ? "text-indigo-400 border-b-2 border-indigo-400"
-                  : "text-gray-500 hover:text-gray-300"
-              }`}
+              className={`flex-1 px-2 py-1.5 text-xs font-medium transition-colors ${tab === t.key
+                ? "text-indigo-400 border-b-2 border-indigo-400"
+                : "text-gray-500 hover:text-gray-300"
+                }`}
             >
               {t.label} ({t.count})
             </button>
@@ -88,6 +87,14 @@ const EMPTY_RESULTS = { all: [], files: [], content: [] };
 
 export default function SearchBar({ onClose }) {
   const navigate = useNavigate();
+  const inputRef = useCallback((el) => {
+    // When the search modal is opened from the sidemenu, the sidemenu
+    // dialog closes concurrently. Headless UI restores focus to the
+    // dialog's trigger element on close, which steals focus from this
+    // input. A brief setTimeout defers the focus call until after the
+    // close lifecycle completes.
+    setTimeout(() => el?.focus(), 80);
+  }, []);
 
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebounce(query, 150);
@@ -135,7 +142,7 @@ export default function SearchBar({ onClose }) {
       <div className="shrink-0">
         <div className="relative mb-2">
           <input
-            autoFocus
+            ref={inputRef}
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
