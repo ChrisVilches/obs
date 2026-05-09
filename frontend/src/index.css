@@ -10,6 +10,11 @@ button:disabled, [role="button"][aria-disabled="true"] {
   cursor: default;
 }
 
+.markdown-container .katex-display {
+  @apply overflow-x-auto;
+  @apply overflow-y-hidden;
+}
+
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--color-gray-700) transparent;

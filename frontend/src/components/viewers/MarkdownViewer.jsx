@@ -25,7 +25,7 @@ export default function MarkdownViewer({ file, content, mtime }) {
     <InteractiveCheckboxContext.Provider
       value={{ file, mtime, loading, setLoading }}
     >
-      <div className="p-6 prose prose-invert max-w-full">
+      <div className="p-6 prose prose-invert max-w-full markdown-container">
         <ReactMarkdown
           key={file}
           remarkPlugins={[
