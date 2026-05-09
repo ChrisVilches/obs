@@ -15,6 +15,7 @@ import {
   rehypeListMetadata,
 } from "./markdown/List";
 import { rehypeFixImgURL } from "./markdown/rehypeFixImgURL";
+import rehypeTightLists from "./markdown/rehypeTightLists";
 import Table from "./markdown/Table";
 
 export default function MarkdownViewer({ file, content, mtime }) {
@@ -34,6 +35,7 @@ export default function MarkdownViewer({ file, content, mtime }) {
             !config.strictLineBreaks ? remarkBreaks : null,
           ].filter((x) => x)}
           rehypePlugins={[
+            rehypeTightLists,
             [rehypeFixImgURL, file],
             rehypeKatex,
             rehypeListMetadata,
