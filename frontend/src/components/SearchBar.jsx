@@ -87,14 +87,7 @@ const EMPTY_RESULTS = { all: [], files: [], content: [] };
 
 export default function SearchBar({ onClose }) {
   const navigate = useNavigate();
-  const inputRef = useCallback((el) => {
-    // When the search modal is opened from the sidemenu, the sidemenu
-    // dialog closes concurrently. Headless UI restores focus to the
-    // dialog's trigger element on close, which steals focus from this
-    // input. A brief setTimeout defers the focus call until after the
-    // close lifecycle completes.
-    setTimeout(() => el?.focus(), 80);
-  }, []);
+  const inputRef = useCallback((el) => el?.focus(), []);
 
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebounce(query, 150);

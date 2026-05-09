@@ -92,7 +92,7 @@ function SidemenuHeader({
           {folderName}
         </Link>
       </div>
-      <div className="flex items-center gap-1">
+      <div className="hidden md:flex items-center gap-1">
         <button
           type="button"
           onClick={onBookmarkClick}

@@ -3,7 +3,12 @@ import {
   DialogBackdrop,
   DialogPanel,
 } from "@headlessui/react";
-import { Bars3Icon } from "@heroicons/react/24/outline";
+import {
+  Bars3Icon,
+  BookmarkIcon,
+  Cog6ToothIcon,
+  MagnifyingGlassIcon,
+} from "@heroicons/react/24/outline";
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import useSWR from "swr";
@@ -15,19 +20,18 @@ import Sidemenu from "../components/Sidemenu";
 import useKeyShortcut from "../hooks/useKeyShortcut";
 
 // When the user picks a file inside the search or bookmarks modal, both the
-// route navigation and the modal-close are triggered. Without a delay the
-// backdrop lifts instantly (no transition — see Modal.jsx), exposing the
-// previous file's text for a frame before the route transitions to the new
-// file's "Loading…" state. That flash of stale content is distracting.
-//
-// With a 20 ms delay, the route changes first while the backdrop stays
-// dimmed. By the time the backdrop lifts the new page is already in its
-// loading state, so no stale content is ever visible.
+// route navigation and the modal close are triggered synchronously. Without a
+// brief deferral the dialog unmounts before Headless UI's transition exit
+// phase can run, so the modal disappears abruptly rather than animating out.
+// The delay lets the close state propagate first, allowing the transition to
+// play.
 const DELAY_MODAL_CLOSE = 20
 
 function useBookmarksModal() {
   const [isOpen, setIsOpen] = useState(false);
-  const { data, isLoading } = useSWR(isOpen && "/api/bookmarks");
+  // TODO: This will load always, even when bookmarks aren't shown
+  // (e.g. a file content page)
+  const { data, isLoading } = useSWR("/api/bookmarks");
 
   return {
     open: () => setIsOpen(true),
@@ -81,9 +85,14 @@ export default function Layout() {
   return (
     <div className="h-screen flex overflow-hidden bg-gray-950">
       <Dialog open={sidebarOpen} onClose={setSidebarOpen} className="relative z-50 md:hidden">
-        <DialogBackdrop className="fixed inset-0 bg-black/60" />
+        <DialogBackdrop
+          transition
+          className="fixed inset-0 bg-black/60 transition-opacity duration-(--dialog-transition-duration) data-closed:opacity-0"
+        />
         <div className="fixed inset-0 flex">
-          <DialogPanel className="w-5/6 h-full bg-gray-900 border-r border-gray-800 flex flex-col">
+          <DialogPanel
+            transition
+            className="w-5/6 h-full bg-gray-900 border-r border-gray-800 flex flex-col transition-transform duration-(--dialog-transition-duration) data-closed:-translate-x-full">
             <Sidemenu
               {...sideMenuProps}
               onClose={() => setSidebarOpen(false)}
@@ -152,6 +161,38 @@ export default function Layout() {
         open={settingsModalOpen}
         onClose={() => setSettingsModalOpen(false)}
       />
+
+      <div className="md:hidden fixed bottom-0 left-0 right-0 flex justify-center p-3 pointer-events-none z-30">
+        <div className="flex gap-1 bg-gray-900 border border-gray-800 rounded-xl shadow-lg pointer-events-auto p-1">
+          <button
+            type="button"
+            onClick={bookmarksModal.open}
+            className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
+            aria-label="Bookmarks"
+            title="Bookmarks"
+          >
+            <BookmarkIcon className="w-5 h-5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => setSearchModalOpen(true)}
+            className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
+            aria-label="Search"
+            title="Search"
+          >
+            <MagnifyingGlassIcon className="w-5 h-5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => setSettingsModalOpen(true)}
+            className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
+            aria-label="Settings"
+            title="Settings"
+          >
+            <Cog6ToothIcon className="w-5 h-5" />
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
