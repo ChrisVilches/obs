@@ -15,5 +15,10 @@ export default function FilePage() {
     );
   }
 
-  return <FileViewer file={file} />;
+  return (
+    <>
+      <title>{file}</title>
+      <FileViewer file={file} />
+    </>
+  );
 }
