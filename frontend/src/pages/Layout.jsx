@@ -14,6 +14,17 @@ import SettingsModal from "../components/SettingsModal";
 import Sidemenu from "../components/Sidemenu";
 import useKeyShortcut from "../hooks/useKeyShortcut";
 
+// When the user picks a file inside the search or bookmarks modal, both the
+// route navigation and the modal-close are triggered. Without a delay the
+// backdrop lifts instantly (no transition — see Modal.jsx), exposing the
+// previous file's text for a frame before the route transitions to the new
+// file's "Loading…" state. That flash of stale content is distracting.
+//
+// With a 20 ms delay, the route changes first while the backdrop stays
+// dimmed. By the time the backdrop lifts the new page is already in its
+// loading state, so no stale content is ever visible.
+const DELAY_MODAL_CLOSE = 20
+
 function useBookmarksModal() {
   const [isOpen, setIsOpen] = useState(false);
   const { data, isLoading } = useSWR(isOpen && "/api/bookmarks");
@@ -121,7 +132,7 @@ export default function Layout() {
           items={bookmarksModal.bookmarks}
           loading={bookmarksModal.isLoading}
           emptyMessage="No bookmarks found."
-          onItemClick={bookmarksModal.close}
+          onItemClick={() => setTimeout(() => bookmarksModal.close(), DELAY_MODAL_CLOSE)}
         />
       </Modal>
 
@@ -133,7 +144,7 @@ export default function Layout() {
         childrenClass="flex-1 min-h-0"
       >
         <SearchBar
-          onClose={() => setSearchModalOpen(false)}
+          onClose={() => setTimeout(() => setSearchModalOpen(false), DELAY_MODAL_CLOSE)}
         />
       </Modal>
 
