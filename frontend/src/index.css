@@ -15,6 +15,18 @@ button:disabled, [role="button"][aria-disabled="true"] {
   @apply overflow-y-hidden;
 }
 
+/*
+Inline markdown images can inherit block display styles from global img rules,
+which causes them to break onto separate lines inside paragraphs.
+
+Force images inside <p> tags to behave inline again while keeping predictable
+sizing/alignment behavior.
+*/
+.markdown-container img {
+  @apply rounded-md;
+  @apply inline-block align-middle;
+}
+
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--color-gray-700) transparent;

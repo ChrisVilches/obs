@@ -14,7 +14,7 @@ import {
   rehypeDebugLists,
   rehypeListMetadata,
 } from "./markdown/List";
-import MarkdownImage from "./markdown/MarkdownImage";
+import { rehypeFixImgURL } from "./markdown/rehypeFixImgURL";
 import Table from "./markdown/Table";
 
 export default function MarkdownViewer({ file, content, mtime }) {
@@ -34,14 +34,12 @@ export default function MarkdownViewer({ file, content, mtime }) {
             !config.strictLineBreaks ? remarkBreaks : null,
           ].filter((x) => x)}
           rehypePlugins={[
+            [rehypeFixImgURL, file],
             rehypeKatex,
             rehypeListMetadata,
             process.env.NODE_ENV !== "production" ? rehypeDebugLists : null,
           ].filter((x) => x)}
           components={{
-            img(props) {
-              return <MarkdownImage {...props} file={file} />;
-            },
             ul: ListComponent,
             ol: ListComponent,
             li: LiComponent,
