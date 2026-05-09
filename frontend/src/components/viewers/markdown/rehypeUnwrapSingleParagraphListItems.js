@@ -10,7 +10,7 @@ function isElement(node, tagName) {
 // where they aren't needed. This makes lists render tighter.
 // Multi-paragraph list items are intentionally left alone — those
 // genuinely need the paragraph separation.
-export default function rehypeTightLists() {
+export default function rehypeUnwrapSingleParagraphListItems() {
   return (tree) => {
     visit(tree, 'element', (node) => {
       if (!isElement(node, 'li')) return
