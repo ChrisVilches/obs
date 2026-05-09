@@ -27,14 +27,6 @@ sizing/alignment behavior.
   @apply inline-block align-middle;
 }
 
-/* In loose Markdown lists, list items may contain <p> tags.
-   Remove the default paragraph spacing inside lists to avoid
-   excessive vertical gaps between list items and nested content. */
-.markdown-container ul p,
-.markdown-container ol p {
-  @apply my-0 py-0;
-}
-
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--color-gray-700) transparent;
