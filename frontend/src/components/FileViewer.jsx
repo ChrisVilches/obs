@@ -24,6 +24,7 @@ export default function FileViewer({ file, onBookmarkChange }) {
     setInfo(null);
     setError(null);
     setEditMode(false);
+    setSaveMessage(null);
     fetch(`/api/files/info?file=${encodeURIComponent(file)}`)
       .then((res) => res.json())
       .then((data) => {
@@ -35,10 +36,6 @@ export default function FileViewer({ file, onBookmarkChange }) {
 
   useEffect(() => {
     loadFile();
-  }, [file]);
-
-  useEffect(() => {
-    setSaveMessage(null);
   }, [file]);
 
   if (!file) return null;
@@ -66,6 +63,8 @@ export default function FileViewer({ file, onBookmarkChange }) {
     const refetchFetch = fetch(`/api/files/info?file=${encodeURIComponent(file)}`)
       .then((res) => res.json());
 
+    // TODO: This is weird. Why is it executing it simultaneously? it should be in series
+    // since it needs to fetch the data that was saved.
     Promise.all([saveFetch, refetchFetch])
       .then(([saveData, newInfo]) => {
         if (saveData.error === 'VERSION_CONFLICT') {
