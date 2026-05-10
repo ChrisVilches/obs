@@ -35,7 +35,7 @@ app.use(express.json());
 
 if (process.env.NODE_ENV !== 'production') {
   app.use((_req, _res, next) => {
-    setTimeout(next, 500);
+    setTimeout(next, 1500);
   });
 }
 

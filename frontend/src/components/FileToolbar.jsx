@@ -2,19 +2,21 @@ import { ArrowPathIcon, PencilIcon, BookmarkIcon, CheckIcon, XMarkIcon } from '@
 import FileNameDisplay from './FileNameDisplay';
 import Button from './Button';
 
-function EditModeButtons({ onSave, onCancel }) {
+function EditModeButtons({ onSave, onCancel, saving }) {
   return (<div className="flex items-center space-x-2">
     <Button
       variant="primary"
-      icon={<CheckIcon className="w-4 h-4" />}
+      icon={saving ? <div className="w-4 h-4 border-2 border-green-300 border-t-transparent rounded-full animate-spin" /> : <CheckIcon className="w-4 h-4" />}
       onClick={onSave}
+      disabled={saving}
     >
-      Save
+      {saving ? 'Saving...' : 'Save'}
     </Button>
     <Button
       variant="secondary"
       icon={<XMarkIcon className="w-4 h-4" />}
       onClick={onCancel}
+      disabled={saving}
     >
       Cancel
     </Button>
@@ -49,6 +51,7 @@ export default function FileToolbar({
   file,
   info,
   editMode,
+  saving,
   saveMessage,
   showFileNameModal,
   onShowFileNameModal,
@@ -80,7 +83,7 @@ export default function FileToolbar({
             <div className="w-5 h-5 border-2 border-gray-600 border-t-transparent rounded-full animate-spin" />
           ) : (
             editMode ? (
-              <EditModeButtons onCancel={onCancel} onSave={onSave} />
+              <EditModeButtons onCancel={onCancel} onSave={onSave} saving={saving} />
             ) : (
               <>
                 {info && (
