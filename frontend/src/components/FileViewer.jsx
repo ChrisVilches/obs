@@ -147,7 +147,6 @@ export default function FileViewer({ file, onBookmarkChange }) {
       <div className="min-h-full flex flex-col">
         <FileToolbar
           file={file}
-          error
           onReload={loadFile}
           showFileNameModal={showFileNameModal}
           onShowFileNameModal={setShowFileNameModal}

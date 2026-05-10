@@ -86,7 +86,10 @@ function readBookmarks() {
   return JSON.parse(raw);
 }
 
-app.get('/api/bookmarks', (req, res) => {
+// TODO: Is this fetching ALL bookmarks? why? is that necessary?
+// I know there's one list that lists all, but I think this is used
+// in another endpoint as well that MAYBE doesn't really need it.
+app.get('/api/bookmarks', (_req, res) => {
   res.json(readBookmarks());
 });
 
@@ -156,7 +159,7 @@ app.get('/api/files/search', (req, res) => {
   res.json({ files, contentMatches });
 });
 
-app.get('/api/files', (req, res) => {
+app.get('/api/files', (_req, res) => {
   const files = listFilesRecursive(ROOT_DIR, ROOT_DIR);
   const folderName = path.basename(ROOT_DIR);
   res.json({ files, folderName });
@@ -281,7 +284,7 @@ app.get('/api/files/raw', (req, res) => {
 
 app.use(express.static(path.join(__dirname, '..', '..', 'frontend', 'dist')));
 
-app.use((err, req, res, next) => {
+app.use((err, _req, res, _next) => {
   if (err.code === 'ENOENT') {
     return res.status(404).json({ error: 'File not found' });
   }
@@ -289,7 +292,7 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: err.message });
 });
 
-app.use((req, res) => {
+app.use((_req, res) => {
   res.sendFile(path.join(__dirname, '..', '..', 'frontend', 'dist', 'index.html'));
 });
 
