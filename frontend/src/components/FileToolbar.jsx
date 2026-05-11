@@ -2,6 +2,19 @@ import { ArrowPathIcon, PencilIcon, BookmarkIcon, CheckIcon, XMarkIcon } from '@
 import FileNameDisplay from './FileNameDisplay';
 import Button from './Button';
 
+function formatLocalDateTime(isoString) {
+  const d = new Date(isoString);
+
+  return (
+    `${d.getFullYear()}-` +
+    `${String(d.getMonth() + 1).padStart(2, "0")}-` +
+    `${String(d.getDate()).padStart(2, "0")} ` +
+    `${String(d.getHours()).padStart(2, "0")}:` +
+    `${String(d.getMinutes()).padStart(2, "0")}:` +
+    `${String(d.getSeconds()).padStart(2, "0")}`
+  );
+}
+
 function EditModeButtons({ onSave, onCancel, saving }) {
   return (<div className="flex items-center space-x-2">
     <Button
@@ -59,7 +72,6 @@ export default function FileToolbar({
   onCancel,
   onSave,
   onToggleBookmark,
-  onReload,
   loading,
 }) {
   const canBeEdited = info?.type === 'text' || info?.type === 'markdown';
@@ -74,7 +86,7 @@ export default function FileToolbar({
       />
       {info && (
         <span className="text-xs text-gray-600 shrink-0 ml-2">
-          {new Date(info.mtime).toLocaleString()}
+          {formatLocalDateTime(info.mtime)}
         </span>
       )}
       <div className="flex items-center">
@@ -85,24 +97,14 @@ export default function FileToolbar({
             editMode ? (
               <EditModeButtons onCancel={onCancel} onSave={onSave} saving={saving} />
             ) : (
-              <>
-                {info && (
-                  <ButtonsWhenFileExists
-                    canBeEdited={canBeEdited}
-                    isBookmarked={info.isBookmarked}
-                    onEdit={onEdit}
-                    onToggleBookmark={onToggleBookmark}
-                  />
-                )}
-
-                <Button
-                  variant="secondary"
-                  icon={<ArrowPathIcon className="w-4 h-4" />}
-                  onClick={onReload}
-                >
-                  Reload
-                </Button>
-              </>
+              info && (
+                <ButtonsWhenFileExists
+                  canBeEdited={canBeEdited}
+                  isBookmarked={info.isBookmarked}
+                  onEdit={onEdit}
+                  onToggleBookmark={onToggleBookmark}
+                />
+              )
             )
           )}
         </div>

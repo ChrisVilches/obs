@@ -9,6 +9,8 @@ import MarkdownViewer from './viewers/MarkdownViewer';
 import MediaViewer from './viewers/MediaViewer';
 import BinaryFileViewer from './viewers/BinaryFileViewer';
 
+// TODO: when and why is "file" null? I want to make it strictly required
+// (and validate the parent).
 export default function FileViewer({ file, onBookmarkChange }) {
   const [info, setInfo] = useState(null);
   const [error, setError] = useState(null);
@@ -19,19 +21,23 @@ export default function FileViewer({ file, onBookmarkChange }) {
   const [showFileNameModal, setShowFileNameModal] = useState(false);
   const [showConflictModal, setShowConflictModal] = useState(false);
 
-  function loadFile() {
+  async function loadFile() {
     if (!file) return;
+
     setInfo(null);
     setError(null);
     setEditMode(false);
     setSaveMessage(null);
-    fetch(`/api/files/info?file=${encodeURIComponent(file)}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.error) throw new Error(data.error);
-        setInfo(data);
-      })
-      .catch((err) => setError(err.message));
+
+    try {
+      const res = await fetch(`/api/files/info?file=${encodeURIComponent(file)}`);
+      const data = await res.json();
+
+      if (data.error) throw new Error(data.error);
+      setInfo(data);
+    } catch (err) {
+      setError(err.message);
+    }
   }
 
   useEffect(() => {
@@ -50,69 +56,36 @@ export default function FileViewer({ file, onBookmarkChange }) {
     setEditMode(false);
   }
 
-  function handleSave() {
+  async function handleSave(force = false) {
     setSaving(true);
-    const body = { file, content: editContent, mtime: info.mtime };
-
-    const saveFetch = fetch('/api/files/content', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    }).then((res) => res.json());
-
-    const refetchFetch = fetch(`/api/files/info?file=${encodeURIComponent(file)}`)
-      .then((res) => res.json());
-
-    // TODO: This is weird. Why is it executing it simultaneously? it should be in series
-    // since it needs to fetch the data that was saved.
-    Promise.all([saveFetch, refetchFetch])
-      .then(([saveData, newInfo]) => {
-        if (saveData.error === 'VERSION_CONFLICT') {
-          setShowConflictModal(true);
-          setSaving(false);
-          return;
-        }
-        if (saveData.error) throw new Error(saveData.error);
-        if (newInfo.error) throw new Error(newInfo.error);
-        setInfo(newInfo);
-        setSaveMessage(saveData.message);
-        setEditMode(false);
-        setSaving(false);
-      })
-      .catch((err) => {
-        setError(err.message);
-        setSaving(false);
+    if (force) setShowConflictModal(false);
+    try {
+      console.log({ content: editContent, mtime: info.mtime, force })
+      const saveRes = await fetch('/api/files/content', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ file, content: editContent, mtime: info.mtime, force }),
       });
-  }
+      const saveData = await saveRes.json();
 
-  // TODO: This is too similar to the other one. Could be implemented as just one method, with variants.
-  function handleForceSave() {
-    setShowConflictModal(false);
-    setSaving(true);
-    const body = { file, content: editContent, force: true, mtime: info.mtime };
+      if (saveData.error === 'VERSION_CONFLICT') {
+        setShowConflictModal(true);
+        return;
+      }
+      if (saveData.error) throw new Error(saveData.error);
 
-    const saveFetch = fetch('/api/files/content', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    }).then((res) => res.json());
+      const res = await fetch(`/api/files/info?file=${encodeURIComponent(file)}`);
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      setInfo(data);
 
-    const refetchFetch = fetch(`/api/files/info?file=${encodeURIComponent(file)}`)
-      .then((res) => res.json());
-
-    Promise.all([saveFetch, refetchFetch])
-      .then(([saveData, newInfo]) => {
-        if (saveData.error) throw new Error(saveData.error);
-        if (newInfo.error) throw new Error(newInfo.error);
-        setInfo(newInfo);
-        setSaveMessage(saveData.message);
-        setEditMode(false);
-        setSaving(false);
-      })
-      .catch((err) => {
-        setError(err.message);
-        setSaving(false);
-      });
+      setSaveMessage(saveData.message);
+      setEditMode(false)
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
   }
 
   function handleToggleBookmark() {
@@ -146,7 +119,6 @@ export default function FileViewer({ file, onBookmarkChange }) {
       <div className="min-h-full flex flex-col">
         <FileToolbar
           file={file}
-          onReload={loadFile}
           showFileNameModal={showFileNameModal}
           onShowFileNameModal={setShowFileNameModal}
         />
@@ -188,9 +160,8 @@ export default function FileViewer({ file, onBookmarkChange }) {
         onShowFileNameModal={setShowFileNameModal}
         onEdit={handleEdit}
         onCancel={handleCancel}
-        onSave={handleSave}
+        onSave={() => handleSave(false)}
         onToggleBookmark={handleToggleBookmark}
-        onReload={loadFile}
       />
       {editMode ? (
         <textarea
@@ -199,7 +170,7 @@ export default function FileViewer({ file, onBookmarkChange }) {
           onKeyDown={(e) => {
             if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
               e.preventDefault();
-              handleSave();
+              handleSave(false);
             }
           }}
           disabled={saving}
@@ -223,7 +194,7 @@ export default function FileViewer({ file, onBookmarkChange }) {
           <p className="mt-2">You can force save to overwrite their changes, or cancel and reload the file to see the latest version.</p>
           <div className="mt-4 flex justify-end gap-2">
             <Button variant="secondary" onClick={() => setShowConflictModal(false)} disabled={saving}>Cancel</Button>
-            <Button variant="danger" onClick={handleForceSave} disabled={saving}>Force Save</Button>
+            <Button variant="danger" onClick={() => handleSave(true)} disabled={saving}>Force Save</Button>
           </div>
         </Modal>
       )}
