@@ -71,11 +71,10 @@ function TreeNode({ node, depth, selectedFile, onClose, expandedSet, onToggle })
           to={`?file=${encodeURIComponent(node.path)}`}
           onClick={onClose}
           data-selected={isSelected || undefined}
-          className={`block px-3 py-1.5 rounded-md text-sm transition-colors ${
-            isSelected
-              ? 'bg-indigo-900/40 text-indigo-300 font-medium'
-              : 'text-gray-400 hover:bg-gray-800 hover:text-gray-200'
-          }`}
+          className={`block px-3 py-1.5 rounded-md text-sm transition-colors ${isSelected
+            ? 'bg-indigo-900/40 text-indigo-300 font-medium'
+            : 'text-gray-400 hover:bg-gray-800 hover:text-gray-200'
+            }`}
           style={{ paddingLeft: `${12 + depth * 16}px` }}
         >
           <span className="truncate block">{node.name}</span>
@@ -117,7 +116,50 @@ function TreeNode({ node, depth, selectedFile, onClose, expandedSet, onToggle })
   );
 }
 
-export default function Sidemenu({ files, onClose, sidebarOpen }) {
+function SidemenuSkeleton() {
+  const items = [
+    { depth: 0, width: 'w-3/4', folder: true },
+    { depth: 0, width: 'w-1/2', folder: true },
+    { depth: 1, width: 'w-2/3', folder: false },
+    { depth: 1, width: 'w-1/3', folder: false },
+    { depth: 1, width: 'w-3/5', folder: false },
+    { depth: 0, width: 'w-2/5', folder: true },
+    { depth: 1, width: 'w-1/2', folder: false },
+    { depth: 1, width: 'w-3/4', folder: false },
+    { depth: 1, width: 'w-2/5', folder: false },
+    { depth: 1, width: 'w-1/3', folder: false },
+    { depth: 2, width: 'w-1/2', folder: false },
+    { depth: 2, width: 'w-2/5', folder: false },
+    { depth: 0, width: 'w-3/5', folder: true },
+    { depth: 1, width: 'w-1/2', folder: false },
+    { depth: 1, width: 'w-2/3', folder: false },
+    { depth: 2, width: 'w-3/4', folder: false },
+    { depth: 2, width: 'w-2/5', folder: false },
+    { depth: 0, width: 'w-2/3', folder: true },
+    { depth: 1, width: 'w-3/5', folder: false },
+    { depth: 1, width: 'w-1/3', folder: false },
+    { depth: 2, width: 'w-1/2', folder: false },
+    { depth: 2, width: 'w-3/5', folder: false },
+  ];
+
+  return (
+    <ul className="space-y-0.5 animate-pulse" aria-hidden="true">
+      {items.map((item, i) => (
+        <li key={i}>
+          <div
+            className="flex items-center gap-1 px-3 py-1.5"
+            style={{ paddingLeft: `${12 + item.depth * 16}px` }}
+          >
+            {item.folder && <div className="w-3 h-3 rounded-sm bg-gray-800 shrink-0" />}
+            <div className={`h-3 rounded bg-gray-800 ${item.width}`} />
+          </div>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+export default function Sidemenu({ files, onClose, sidebarOpen, loading }) {
   const [searchParams] = useSearchParams();
   const selectedFile = searchParams.get('file');
   const [isSearching, setIsSearching] = useState(false);
@@ -184,6 +226,14 @@ export default function Sidemenu({ files, onClose, sidebarOpen }) {
     }, 350);
     return () => clearTimeout(id);
   }, [sidebarOpen, selectedFile]);
+
+  if (loading) {
+    return (
+      <nav className="flex-1 overflow-y-auto overflow-x-hidden p-2">
+        <SidemenuSkeleton />
+      </nav>
+    )
+  }
 
   return (
     <nav className="flex-1 overflow-y-auto overflow-x-hidden p-2">
