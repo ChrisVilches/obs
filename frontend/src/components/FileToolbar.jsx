@@ -36,7 +36,7 @@ function EditModeButtons({ onSave, onCancel, saving }) {
   </div>)
 }
 
-function ButtonsWhenFileExists({ onToggleBookmark, canBeEdited, isBookmarked, onEdit }) {
+function ButtonsWhenFileExists({ onToggleBookmark, canBeEdited, isBookmarked, onEdit, bookmarking }) {
   return (
     <>
       {canBeEdited && (
@@ -50,7 +50,11 @@ function ButtonsWhenFileExists({ onToggleBookmark, canBeEdited, isBookmarked, on
       )}
       <Button
         variant="secondary"
-        icon={<BookmarkIcon className={`w-4 h-4 ${isBookmarked ? 'fill-current' : ''}`} />}
+        icon={bookmarking ? (
+          <div className="w-4 h-4 border-2 border-yellow-300 border-t-transparent rounded-full animate-spin" />
+        ) : (
+          <BookmarkIcon className={`w-4 h-4 ${isBookmarked ? 'fill-current' : ''}`} />
+        )}
         onClick={onToggleBookmark}
         className={isBookmarked ? '!text-yellow-300 !bg-yellow-900/30 !border-yellow-700 hover:!bg-yellow-900/50 hover:!text-yellow-200' : ''}
       >
@@ -65,6 +69,7 @@ export default function FileToolbar({
   info,
   editMode,
   saving,
+  bookmarking,
   saveMessage,
   showFileNameModal,
   onShowFileNameModal,
@@ -103,6 +108,7 @@ export default function FileToolbar({
                   isBookmarked={info.isBookmarked}
                   onEdit={onEdit}
                   onToggleBookmark={onToggleBookmark}
+                  bookmarking={bookmarking}
                 />
               )
             )
