@@ -12,5 +12,6 @@ WORKDIR /app
 COPY --from=builder /app/backend /app/backend
 COPY --from=builder /app/frontend/dist /app/frontend/dist
 COPY --from=builder /app/package*.json /app/
+ENV NODE_ENV=production
 RUN npm install --omit=dev --prefix backend
 CMD ["node", "backend/src/server.js"]
