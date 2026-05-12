@@ -99,28 +99,27 @@ app.post('/api/bookmarks', (req, res) => {
     return res.status(400).json({ error: 'Missing "path" in request body' });
   }
   const data = readBookmarks();
-  if (data.items.some(item => item.path === filePath)) {
-    return res.json({ success: true, message: 'Already bookmarked' });
+  if (!data.items.some(item => item.path === filePath)) {
+    data.items.push({
+      type: 'file',
+      path: filePath,
+    });
+    fs.writeFileSync(BOOKMARKS_FILE, JSON.stringify(data, null, 2), 'utf-8');
   }
-  data.items.push({
-    type: 'file',
-    path: filePath,
-  });
-  fs.writeFileSync(BOOKMARKS_FILE, JSON.stringify(data, null, 2), 'utf-8');
   emit({ type: 'file_bookmarked', file: filePath, timestamp: new Date().toISOString() });
-  res.json({ success: true, message: 'Bookmarked' });
+  res.json({ success: true, message: 'Bookmarked', isBookmarked: true });
 });
 
 app.delete('/api/bookmarks', (req, res) => {
-  const filePath = req.query.path;
+  const { path: filePath } = req.body;
   if (!filePath) {
-    return res.status(400).json({ error: 'Missing "path" query parameter' });
+    return res.status(400).json({ error: 'Missing "path" in request body' });
   }
   const data = readBookmarks();
   data.items = data.items.filter(item => item.path !== filePath);
   fs.writeFileSync(BOOKMARKS_FILE, JSON.stringify(data, null, 2), 'utf-8');
   emit({ type: 'file_unbookmarked', file: filePath, timestamp: new Date().toISOString() });
-  res.json({ success: true, message: 'Unbookmarked' });
+  res.json({ success: true, message: 'Unbookmarked', isBookmarked: false });
 });
 
 // TODO: Not sure about this. Might be inefficient.
