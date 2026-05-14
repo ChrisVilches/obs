@@ -10,6 +10,8 @@ import Sidemenu from '../components/Sidemenu';
 // in the body, affecting the whole thing.
 // (I'm talking about the scrollbar stylized in this page. Should THAT
 // container be scrollable? or the body?)
+// Remember that on mobile the layout is weird as hell (very buggy)
+// so maybe the bug is caused by some weird layout structure.
 
 export default function Home() {
   const [files, setFiles] = useState([]);
