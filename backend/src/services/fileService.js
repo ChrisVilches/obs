@@ -5,8 +5,21 @@ const { getBookmarks } = require('./bookmarkService');
 
 let _fileTypeFromFile;
 
+class VersionConflictError extends Error { }
+class FileAccessDeniedError extends Error { }
+
 function shouldIgnoreFile(entryName) {
   return entryName.startsWith('.');
+}
+
+function ensureTrailingNewline(fileContent = '') {
+  if (fileContent === '') {
+    return '';
+  }
+
+  return fileContent.endsWith('\n')
+    ? fileContent
+    : fileContent + '\n';
 }
 
 async function listFiles(rootDir) {
@@ -32,9 +45,7 @@ async function listFiles(rootDir) {
 
 function assertPathInsideRoot(rootDir, fullPath) {
   if (!fullPath.startsWith(rootDir)) {
-    const err = new Error('Access denied');
-    err.statusCode = 403;
-    throw err;
+    throw new FileAccessDeniedError();
   }
 }
 
@@ -59,47 +70,42 @@ const TEXT_TYPES = new Set(['text', 'markdown']);
 
 async function getFileInfo(rootDir, bookmarksFile, relativePath) {
   const fullPath = path.join(rootDir, relativePath);
+
   assertPathInsideRoot(rootDir, fullPath);
-  try {
-    await fs.promises.access(fullPath);
-  } catch {
-    const err = new Error('File not found');
-    err.statusCode = 404;
-    throw err;
-  }
+
   const stat = await fs.promises.stat(fullPath);
-  const type = await classifyFile(fullPath);
-  const bookmarkData = await getBookmarks(bookmarksFile);
+
+  const [type, bookmarkData] = await Promise.all([
+    classifyFile(fullPath),
+    getBookmarks(bookmarksFile),
+  ]);
+
   const isBookmarked = bookmarkData.items.some(item => item.path === relativePath);
+
   const result = { type, isBookmarked, mtime: stat.mtime.toISOString() };
+
   if (TEXT_TYPES.has(type)) {
     result.content = await fs.promises.readFile(fullPath, 'utf-8');
   }
+
   return result;
 }
 
 async function writeFileContent(rootDir, file, content, mtime, force) {
+  content = ensureTrailingNewline(content)
   const fullPath = path.join(rootDir, file);
   assertPathInsideRoot(rootDir, fullPath);
   if (!force) {
-    try {
-      const stat = await fs.promises.stat(fullPath);
-      if (stat.mtime.toISOString() !== mtime) {
-        const err = new Error('VERSION_CONFLICT');
-        err.statusCode = 409;
-        throw err;
-      }
-    } catch (e) {
-      if (e.statusCode) throw e;
+    const stat = await fs.promises.stat(fullPath);
+    if (stat.mtime.toISOString() !== mtime) {
+      throw new VersionConflictError()
     }
   }
-  let existing = '';
-  try {
-    existing = await fs.promises.readFile(fullPath, 'utf-8');
-  } catch {}
-  if (existing === content) {
+
+  if (await fs.promises.readFile(fullPath, 'utf-8') === content) {
     return false;
   }
+
   await fs.promises.writeFile(fullPath, content, 'utf-8');
   emit({ type: 'file_updated', file, timestamp: new Date().toISOString() });
   return true;
@@ -118,4 +124,4 @@ function resolveRawPath(rootDir, relativePath, current) {
   return fullPath;
 }
 
-module.exports = { listFiles, getFileInfo, writeFileContent, resolveRawPath };
+module.exports = { listFiles, getFileInfo, writeFileContent, resolveRawPath, VersionConflictError, FileAccessDeniedError };

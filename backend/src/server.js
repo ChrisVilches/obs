@@ -1,6 +1,6 @@
 const path = require('path');
 const express = require('express');
-const { listFiles, getFileInfo, writeFileContent, resolveRawPath } = require('./services/fileService');
+const { listFiles, getFileInfo, writeFileContent, resolveRawPath, VersionConflictError, FileAccessDeniedError } = require('./services/fileService');
 const { getBookmarks, addBookmark, removeBookmark } = require('./services/bookmarkService');
 const { searchFiles } = require('./services/searchService');
 const { z } = require('zod');
@@ -98,9 +98,16 @@ app.use((err, _req, res, _next) => {
     return res.status(400).json({ error: fromError(err).toString() });
   }
   if (err.code === 'ENOENT') {
+    console.log(err)
     return res.status(404).json({ error: 'File not found' });
   }
-  console.error('Unhandled error:', err.message);
+  if (err instanceof VersionConflictError) {
+    return res.status(409).json({ error: 'Version conflict', code: 'VERSION_CONFLICT' });
+  }
+  if (err instanceof FileAccessDeniedError) {
+    return res.status(403).json({ error: 'Access denied' });
+  }
+  console.error('Unhandled error:', err);
   res.status(500).json({ error: err.message });
 });
 
