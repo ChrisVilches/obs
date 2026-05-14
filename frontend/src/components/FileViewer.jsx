@@ -22,9 +22,10 @@ export default function FileViewer({ file, onBookmarkChange }) {
   const [showFileNameModal, setShowFileNameModal] = useState(false);
   const [showConflictModal, setShowConflictModal] = useState(false);
 
-  async function loadFile() {
-    if (!file) return;
+  // TODO: remove this later
+  if (!file) throw new Error("fatal. File is null")
 
+  async function loadFile() {
     setInfo(null);
     setError(null);
     setEditMode(false);
@@ -44,8 +45,6 @@ export default function FileViewer({ file, onBookmarkChange }) {
   useEffect(() => {
     loadFile();
   }, [file]);
-
-  if (!file) return null;
 
   function handleEdit() {
     setEditContent(info.content);

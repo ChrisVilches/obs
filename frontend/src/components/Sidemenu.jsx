@@ -3,6 +3,8 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { ChevronRightIcon } from '@heroicons/react/24/outline';
 import SearchBar from './SearchBar';
 
+// TODO: scrollbar is hard to grab because of the resize functionality
+
 // TODO: The API returns only files (flat paths), so folders are derived by
 // splitting file paths. Empty folders (with no files) never appear in the
 // tree. If empty folders need to be visible, the backend would need to return
