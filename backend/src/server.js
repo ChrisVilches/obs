@@ -31,32 +31,32 @@ if (process.env.NODE_ENV !== 'production') {
   });
 }
 
-app.get('/api/bookmarks', (_req, res) => {
-  res.json(getBookmarks(BOOKMARKS_FILE));
+app.get('/api/bookmarks', async (_req, res) => {
+  res.json(await getBookmarks(BOOKMARKS_FILE));
 });
 
-app.post('/api/bookmarks', (req, res) => {
+app.post('/api/bookmarks', async (req, res) => {
   const { path } = z.object({ path: pathSchema }).parse(req.body);
-  addBookmark(BOOKMARKS_FILE, path)
+  await addBookmark(BOOKMARKS_FILE, path)
   res.json({ isBookmarked: true })
 });
 
-app.delete('/api/bookmarks', (req, res) => {
+app.delete('/api/bookmarks', async (req, res) => {
   const { path } = z.object({ path: pathSchema }).parse(req.body);
-  removeBookmark(BOOKMARKS_FILE, path)
+  await removeBookmark(BOOKMARKS_FILE, path)
   res.json({ isBookmarked: false })
 });
 
-app.get('/api/files/search', (req, res) => {
+app.get('/api/files/search', async (req, res) => {
   const q = (req.query.q ?? '').trim();
   if (!q) {
     return res.json({ files: [], contentMatches: [] });
   }
-  res.json(searchFiles(ROOT_DIR, q.trim().toLowerCase()));
+  res.json(await searchFiles(ROOT_DIR, q.trim().toLowerCase()));
 });
 
-app.get('/api/files', (_req, res) => {
-  res.json(listFiles(ROOT_DIR));
+app.get('/api/files', async (_req, res) => {
+  res.json(await listFiles(ROOT_DIR));
 });
 
 app.get('/api/files/info', async (req, res) => {
@@ -64,14 +64,14 @@ app.get('/api/files/info', async (req, res) => {
   res.json(await getFileInfo(ROOT_DIR, BOOKMARKS_FILE, file));
 });
 
-app.put('/api/files/content', (req, res) => {
+app.put('/api/files/content', async (req, res) => {
   const { file, content, mtime, force } = z.object({
     file: pathSchema,
     content: z.string().optional().transform(v => v ?? ''),
     mtime: z.iso.datetime(),
     force: z.coerce.boolean().default(false),
   }).parse(req.body);
-  const changed = writeFileContent(ROOT_DIR, file, content, mtime, force)
+  const changed = await writeFileContent(ROOT_DIR, file, content, mtime, force)
   res.json({ success: true, message: changed ? 'Updated' : 'No changes' });
 });
 

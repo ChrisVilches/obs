@@ -9,23 +9,23 @@ function shouldIgnoreFile(entryName) {
   return entryName.startsWith('.');
 }
 
-function listFiles(rootDir) {
-  function listRecursive(dir) {
-    const entries = fs.readdirSync(dir, { withFileTypes: true });
+async function listFiles(rootDir) {
+  async function listRecursive(dir) {
+    const entries = await fs.promises.readdir(dir, { withFileTypes: true });
     const files = [];
     for (const entry of entries) {
       if (shouldIgnoreFile(entry.name)) continue;
       const fullPath = path.join(dir, entry.name);
       const relativePath = path.relative(rootDir, fullPath);
       if (entry.isDirectory()) {
-        files.push(...listRecursive(fullPath));
+        files.push(...await listRecursive(fullPath));
       } else {
         files.push(relativePath);
       }
     }
     return files;
   }
-  const files = listRecursive(rootDir);
+  const files = await listRecursive(rootDir);
   const folderName = path.basename(rootDir);
   return { files, folderName };
 }
@@ -60,40 +60,49 @@ const TEXT_TYPES = new Set(['text', 'markdown']);
 async function getFileInfo(rootDir, bookmarksFile, relativePath) {
   const fullPath = path.join(rootDir, relativePath);
   assertPathInsideRoot(rootDir, fullPath);
-  if (!fs.existsSync(fullPath)) {
+  try {
+    await fs.promises.access(fullPath);
+  } catch {
     const err = new Error('File not found');
     err.statusCode = 404;
     throw err;
   }
-  const stat = fs.statSync(fullPath);
+  const stat = await fs.promises.stat(fullPath);
   const type = await classifyFile(fullPath);
-  const bookmarkData = getBookmarks(bookmarksFile);
+  const bookmarkData = await getBookmarks(bookmarksFile);
   const isBookmarked = bookmarkData.items.some(item => item.path === relativePath);
   const result = { type, isBookmarked, mtime: stat.mtime.toISOString() };
   if (TEXT_TYPES.has(type)) {
-    result.content = fs.readFileSync(fullPath, 'utf-8');
+    result.content = await fs.promises.readFile(fullPath, 'utf-8');
   }
   return result;
 }
 
-function writeFileContent(rootDir, file, content, mtime, force) {
+async function writeFileContent(rootDir, file, content, mtime, force) {
   const fullPath = path.join(rootDir, file);
   assertPathInsideRoot(rootDir, fullPath);
-  if (!force && fs.existsSync(fullPath)) {
-    const stat = fs.statSync(fullPath);
-    if (stat.mtime.toISOString() !== mtime) {
-      const err = new Error('VERSION_CONFLICT');
-      err.statusCode = 409;
-      throw err;
+  if (!force) {
+    try {
+      const stat = await fs.promises.stat(fullPath);
+      if (stat.mtime.toISOString() !== mtime) {
+        const err = new Error('VERSION_CONFLICT');
+        err.statusCode = 409;
+        throw err;
+      }
+    } catch (e) {
+      if (e.statusCode) throw e;
     }
   }
-  const existing = fs.existsSync(fullPath) ? fs.readFileSync(fullPath, 'utf-8') : '';
+  let existing = '';
+  try {
+    existing = await fs.promises.readFile(fullPath, 'utf-8');
+  } catch {}
   if (existing === content) {
-    return false
+    return false;
   }
-  fs.writeFileSync(fullPath, content, 'utf-8');
+  await fs.promises.writeFile(fullPath, content, 'utf-8');
   emit({ type: 'file_updated', file, timestamp: new Date().toISOString() });
-  return true
+  return true;
 }
 
 function resolveRawPath(rootDir, relativePath, current) {

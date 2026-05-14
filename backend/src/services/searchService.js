@@ -1,10 +1,13 @@
 const path = require('path');
-const { execFileSync } = require('child_process');
+const { execFile } = require('child_process');
+const { promisify } = require('util');
 
-function searchFiles(rootDir, query) {
+const execFileAsync = promisify(execFile);
+
+async function searchFiles(rootDir, query) {
   let files = [];
   try {
-    const stdout = execFileSync('find', [
+    const { stdout } = await execFileAsync('find', [
       rootDir,
       '-type', 'f',
       '-iname', `*${query}*`,
@@ -18,7 +21,7 @@ function searchFiles(rootDir, query) {
   try {
     const escapedQuery = query.replace(/'/g, "'\\''");
     const cmd = `grep -srilF '${escapedQuery}' '${rootDir}' --exclude-dir='.*' --exclude='.*' | head -n 50`;
-    const stdout = execFileSync('sh', ['-c', cmd], { encoding: 'utf-8' });
+    const { stdout } = await execFileAsync('sh', ['-c', cmd], { encoding: 'utf-8' });
     contentMatches = stdout.trim().split('\n').filter(Boolean).map(f => path.relative(rootDir, f));
   } catch (err) {
     contentMatches = (err.stdout || '').trim().split('\n').filter(Boolean).map(f => path.relative(rootDir, f));
