@@ -1,6 +1,6 @@
-# Deploy
+## Deployment
 
-## Build the Docker image
+### Build the Docker image
 
 TODO: Change the image name.
 
@@ -8,7 +8,7 @@ TODO: Change the image name.
 docker build -t obs-viewer .
 ```
 
-## Run the container
+### Run the container
 
 ```sh
 docker run -p 8080:8080 \
@@ -25,7 +25,7 @@ docker run -p 8080:8080 \
 - `EVENT_CHANNEL` — optional. Where to emit JSON events (one per line). Supported values: `stdout`, `stderr`, `file:///path/to/file`. Leave unset to disable events. Example: `-e EVENT_CHANNEL=stdout`.
 - `-v /path/to/your/files:/data` — bind mount your directory to `/data` (or any path, as long as `DATA_ROOT_DIR` matches).
 
-## Example integrated with an Obsidian vault (bookmarks in `.obsidian/`, events to file)
+### Example integrated with an Obsidian vault (bookmarks in `.obsidian/`, events to file)
 
 ```sh
 docker run -d -p 6001:6001 \
