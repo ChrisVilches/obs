@@ -9,7 +9,7 @@ import {
   Cog6ToothIcon,
   MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Outlet } from "react-router-dom";
 import useSWR from "swr";
 import FileList from "../components/FileList";
@@ -27,25 +27,20 @@ import useKeyShortcut from "../hooks/useKeyShortcut";
 // play.
 const DELAY_MODAL_CLOSE = 20
 
+// When the modal closes during its exit transition, setting the SWR key to
+// `false` would immediately clear the cached data, causing a flash of empty
+// state. We fix this by keeping the key truthy once the modal has been opened.
 function useBookmarksModal() {
   const [isOpen, setIsOpen] = useState(false);
-  const [enabled, setEnabled] = useState(false);
-
-  const { data, isLoading, mutate } = useSWR(enabled && "/api/bookmarks");
-
+  const fetched = useRef(false);
+  const { data, isLoading, mutate } = useSWR((isOpen || fetched.current) && "/api/bookmarks");
   return {
     open: async () => {
+      if (fetched.current) await mutate();
+      fetched.current = true;
       setIsOpen(true);
-
-      if (!enabled) {
-        setEnabled(true);
-      } else {
-        await mutate();
-      }
     },
-
     close: () => setIsOpen(false),
-
     isOpen,
     bookmarks: data?.items ?? [],
     isLoading,
