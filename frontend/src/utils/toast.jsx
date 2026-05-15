@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 
 function showToast(msg, { Icon, iconColor, bgColor, ringColor, textColor }) {
   return toast.custom((t) => (
+    // TODO: This probably has bad HTML (div can't be clickable, in most cases)
     <div
       className={`${t.visible ? "animate-enter" : "animate-leave"
         } max-w-sm w-full ${bgColor} shadow-lg rounded-lg pointer-events-auto flex ring-1 ${ringColor} cursor-pointer`}
