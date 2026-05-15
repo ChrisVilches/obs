@@ -78,7 +78,7 @@ app.put('/api/files/content', async (req, res) => {
 app.get('/api/files/raw', (req, res) => {
   const { file, current, attachment } = z.object({
     file: pathSchema,
-    current: pathSchema,
+    current: pathSchema.default('./'),
     attachment: z.enum(['true', 'false']).optional().transform(v => v === 'true'),
   }).parse(req.query);
 
