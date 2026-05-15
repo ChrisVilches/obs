@@ -9,7 +9,7 @@ OBS is a web-based file explorer with rich Markdown rendering that integrates se
 - Browse directory trees with a file explorer sidebar
 - Renders Markdown with features such as KaTeX and interactive task checkboxes
 - Edit text files in-browser
-- File events stream (e.g. file updated, checkbox checked, file bookmarked, etc.) — since the app is git-agnostic, the event stream lets you build your own automation on top of it. Pipe events to stdout or a file and write custom programs that react to them — for example, auto-committing changes to keep your vault in sync with git.
+- File events stream (e.g. file updated, checkbox checked, file bookmarked, etc.) — lets you build custom programs that react to activity in the app. Pipe events to stdout or a file and handle them however you need: sync with git, send notifications, etc.
 
 ## Tech stack
 
