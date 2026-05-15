@@ -29,13 +29,23 @@ const DELAY_MODAL_CLOSE = 20
 
 function useBookmarksModal() {
   const [isOpen, setIsOpen] = useState(false);
-  // TODO: This will load always, even when bookmarks aren't shown
-  // (e.g. a file content page)
-  const { data, isLoading } = useSWR("/api/bookmarks");
+  const [enabled, setEnabled] = useState(false);
+
+  const { data, isLoading, mutate } = useSWR(enabled && "/api/bookmarks");
 
   return {
-    open: () => setIsOpen(true),
+    open: async () => {
+      setIsOpen(true);
+
+      if (!enabled) {
+        setEnabled(true);
+      } else {
+        await mutate();
+      }
+    },
+
     close: () => setIsOpen(false),
+
     isOpen,
     bookmarks: data?.items ?? [],
     isLoading,
