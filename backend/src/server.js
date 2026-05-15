@@ -91,8 +91,6 @@ app.get('/api/files/raw', (req, res) => {
 
 app.use(express.static(path.join(__dirname, '..', '..', 'frontend', 'dist')));
 
-// TODO: Yep, the custom error should be in the code
-// but note, the frontend should be able to see the code as well.
 app.use((err, _req, res, _next) => {
   if (err instanceof z.ZodError) {
     return res.status(400).json({ error: fromError(err).toString() });
