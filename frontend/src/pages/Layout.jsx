@@ -162,6 +162,7 @@ export default function Layout() {
         onClose={() => setSettingsModalOpen(false)}
       />
 
+      {/* TODO: These buttons cover part of the page's content */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 flex justify-center p-3 pointer-events-none z-30">
         <div className="flex gap-1 bg-gray-900 border border-gray-800 rounded-xl shadow-lg pointer-events-auto p-1">
           <button
