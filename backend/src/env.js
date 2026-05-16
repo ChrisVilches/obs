@@ -36,7 +36,7 @@ const envSchema = z.object({
         } catch {
           return false;
         }
-      }, "EVENT_CHANNEL must be 'stdout', 'stderr', or 'file://path'")
+      }, "EVENT_CHANNEL must be 'stdout', 'stderr', or a valid 'file:///absolute/path' (not a directory)")
       .optional(),
   ),
 });
