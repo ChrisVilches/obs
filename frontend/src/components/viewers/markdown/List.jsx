@@ -228,7 +228,7 @@ function TaskLiComponent({ node, children, checkbox }) {
 
   return (
     <li className="list-none relative hover:bg-[#10131E]">
-      <div className="flex items-start rounded pl-">
+      <div className="flex items-start rounded">
         <button
           type="button"
           disabled={loading}
