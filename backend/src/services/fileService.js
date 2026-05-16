@@ -70,7 +70,7 @@ async function getTodoFiles(rootDir, n) {
     "sh",
     [
       "-c",
-      `rg -l '^- \\[ \\] ' '${rootDir}' | while IFS= read -r f; do printf '%s\\t%s\\n' "$(stat -c '%Y' "$f")" "$f"; done | sort -rn | head -n ${n}`,
+      `rg -l '^[-*] \\[ \\] ' '${rootDir}' | while IFS= read -r f; do printf '%s\\t%s\\n' "$(stat -c '%Y' "$f")" "$f"; done | sort -rn | head -n ${n}`,
     ],
     { encoding: "utf-8", maxBuffer: 10 * 1024 * 1024 },
   );

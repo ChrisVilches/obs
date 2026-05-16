@@ -180,6 +180,15 @@ describe("lineHasCheckbox", () => {
     assert.equal(lineHasCheckbox("  - [ ] buy milk"), true);
   });
 
+  it("matches asterisk-prefixed unchecked checkbox", () => {
+    assert.equal(lineHasCheckbox("* [ ] buy milk"), true);
+    assert.equal(lineHasCheckbox("  * [ ] buy milk"), true);
+  });
+
+  it("matches asterisk-prefixed checked checkbox", () => {
+    assert.equal(lineHasCheckbox("* [x] buy milk"), true);
+  });
+
   it("matches dash-prefixed checked checkbox", () => {
     assert.equal(lineHasCheckbox("- [x] buy milk"), true);
   });
@@ -217,18 +226,36 @@ describe("lineHasCheckbox", () => {
 
 describe("toggleCheckboxInLine", () => {
   it("toggles unchecked to checked", () => {
-    const result = toggleCheckboxInLine("- [ ] buy milk", true);
-    assert.equal(result, "- [x] buy milk");
+    assert.equal(
+      toggleCheckboxInLine("- [ ] buy milk", true),
+      "- [x] buy milk",
+    );
+    assert.equal(
+      toggleCheckboxInLine("* [ ] buy milk", true),
+      "* [x] buy milk",
+    );
   });
 
   it("toggles checked to unchecked", () => {
-    const result = toggleCheckboxInLine("- [x] buy milk", false);
-    assert.equal(result, "- [ ] buy milk");
+    assert.equal(
+      toggleCheckboxInLine("- [x] buy milk", false),
+      "- [ ] buy milk",
+    );
+    assert.equal(
+      toggleCheckboxInLine("* [x] buy milk", false),
+      "* [ ] buy milk",
+    );
   });
 
   it("handles uppercase X in checkbox", () => {
-    const result = toggleCheckboxInLine("- [X] buy milk", false);
-    assert.equal(result, "- [ ] buy milk");
+    assert.equal(
+      toggleCheckboxInLine("- [X] buy milk", false),
+      "- [ ] buy milk",
+    );
+    assert.equal(
+      toggleCheckboxInLine("* [X] buy milk", false),
+      "* [ ] buy milk",
+    );
   });
 
   it("handles numbered lists", () => {
@@ -244,6 +271,10 @@ describe("toggleCheckboxInLine", () => {
       toggleCheckboxInLine("    - [ ] task", true),
       "    - [x] task",
     );
+    assert.equal(
+      toggleCheckboxInLine("    * [ ] task", true),
+      "    * [x] task",
+    );
   });
 });
 
@@ -252,6 +283,13 @@ describe("toggleCheckboxInContent", () => {
     const content = "- [ ] first\n- [x] second\n- [ ] third\n";
     const result = toggleCheckboxInContent(content, 1, true);
     assert.equal(result.content, "- [x] first\n- [x] second\n- [ ] third\n");
+    assert.equal(result.error, null);
+  });
+
+  it("toggles asterisk-prefixed checkbox in a document", () => {
+    const content = "* [ ] first\n* [x] second\n* [ ] third\n";
+    const result = toggleCheckboxInContent(content, 1, true);
+    assert.equal(result.content, "* [x] first\n* [x] second\n* [ ] third\n");
     assert.equal(result.error, null);
   });
 
