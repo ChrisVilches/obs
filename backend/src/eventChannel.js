@@ -1,8 +1,9 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const logger = require("./logger");
+const env = require("./env");
 
-const channelConfig = process.env.EVENT_CHANNEL;
+const channelConfig = env.EVENT_CHANNEL;
 
 let writeFn = null;
 let cleanupFn = null;
@@ -166,9 +167,6 @@ if (!channelConfig) {
 
   writeFn = write;
   cleanupFn = cleanup;
-} else {
-  logger.error("unsupported event channel", { channel: channelConfig });
-  process.exit(1);
 }
 
 function emit(event) {

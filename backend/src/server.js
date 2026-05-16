@@ -26,6 +26,7 @@ const { searchFiles } = require("./services/searchService");
 const { getStatus } = require("./services/statusService");
 const { z } = require("zod");
 const { fromError, createErrorMap } = require("zod-validation-error");
+const env = require("./env");
 const initApp = require("./initApp");
 
 const { app, ROOT_DIR, BOOKMARKS_FILE, APP_CONFIG_FILE, PORT } = initApp();
@@ -36,7 +37,7 @@ z.config({
 
 const pathSchema = z.string().min(1);
 
-if (process.env.NODE_ENV !== "production") {
+if (env.NODE_ENV !== "production") {
   app.use((_req, _res, next) => {
     const time = Math.random() * 400 + 600;
     setTimeout(next, time);
@@ -170,9 +171,7 @@ app.use((err, _req, res, _next) => {
   logger.error("unhandled error", { err });
   res.status(500).json({
     error:
-      process.env.NODE_ENV === "production"
-        ? "Internal server error"
-        : err.message,
+      env.NODE_ENV === "production" ? "Internal server error" : err.message,
   });
 });
 

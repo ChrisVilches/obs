@@ -1,5 +1,6 @@
 const { execSync } = require("node:child_process");
 const { getRecentEvents } = require("../eventChannel");
+const env = require("../env");
 
 function getStatus() {
   let rgOk = false,
@@ -12,7 +13,7 @@ function getStatus() {
   } catch {}
 
   return {
-    env: process.env.NODE_ENV || null,
+    env: env.NODE_ENV,
     nodeVersion: process.version,
     dependencies: {
       rg: rgOk,
