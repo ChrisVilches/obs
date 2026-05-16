@@ -3,7 +3,7 @@ export default function MediaViewer({ file, type }) {
 
   if (type === 'audio') {
     return (
-      <div className="flex items-center justify-center p-8 h-full">
+      <div className="flex-1 flex items-center justify-center p-4">
         <audio
           src={src}
           controls
@@ -14,7 +14,7 @@ export default function MediaViewer({ file, type }) {
   }
 
   return (
-    <div className="flex items-start justify-center p-4 h-full">
+    <div className="flex-1 flex items-center justify-center p-4">
       <video
         src={src}
         controls
