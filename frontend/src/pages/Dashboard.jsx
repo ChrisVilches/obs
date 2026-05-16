@@ -26,27 +26,29 @@ export default function Dashboard() {
   return (
     <div className="min-h-full flex flex-col">
       <div className="flex-1 overflow-y-auto p-6 space-y-8">
-        <section>
-          <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
-            Recently Modified
-          </h2>
-          <FileList
-            items={recentData?.recent || []}
-            showTime
-            loading={recentLoading}
-            emptyMessage="No recent files found."
-          />
-        </section>
-        <section>
-          <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
-            Ongoing TODOs
-          </h2>
-          <FileList
-            items={todosData?.todos || []}
-            loading={todosLoading}
-            emptyMessage="No open TODOs found."
-          />
-        </section>
+        <div className="lg:grid lg:grid-cols-2 lg:gap-8 space-y-8 lg:space-y-0">
+          <section>
+            <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+              Recently Modified
+            </h2>
+            <FileList
+              items={recentData?.recent || []}
+              showTime
+              loading={recentLoading}
+              emptyMessage="No recent files found."
+            />
+          </section>
+          <section>
+            <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+              Ongoing TODOs
+            </h2>
+            <FileList
+              items={todosData?.todos || []}
+              loading={todosLoading}
+              emptyMessage="No open TODOs found."
+            />
+          </section>
+        </div>
         <section>
           <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
             Bookmarks
