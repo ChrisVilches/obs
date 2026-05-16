@@ -112,3 +112,11 @@ server {
     }
 }
 ```
+
+## Future work
+
+- Add file
+- Delete file
+- Move file
+- More markdown components (mermaid diagrams, video embeddings, etc.)
+
