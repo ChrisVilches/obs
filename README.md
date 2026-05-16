@@ -115,8 +115,8 @@ server {
 
 ## Future work
 
-- Add file
-- Delete file
-- Move file
-- More markdown components (mermaid diagrams, video embeddings, etc.)
+- Add, delete, and move files
+- Light theme
+- More Markdown components (e.g. Mermaid diagrams, video embeds)
+- **Idea:** webhooks as an alternative to event streaming for inter-process communication
 
