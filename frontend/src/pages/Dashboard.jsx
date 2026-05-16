@@ -11,6 +11,9 @@ export default function Dashboard() {
   const { data: recentData, isLoading: recentLoading } = useSWR(
     "/api/files/recent?n=10",
   );
+  const { data: todosData, isLoading: todosLoading } = useSWR(
+    "/api/files/todos?n=10",
+  );
   const { data: bookmarksData, isLoading: bookmarksLoading } =
     useSWR("/api/bookmarks");
 
@@ -32,6 +35,16 @@ export default function Dashboard() {
             showTime
             loading={recentLoading}
             emptyMessage="No recent files found."
+          />
+        </section>
+        <section>
+          <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+            Ongoing TODOs
+          </h2>
+          <FileList
+            items={todosData?.todos || []}
+            loading={todosLoading}
+            emptyMessage="No open TODOs found."
           />
         </section>
         <section>

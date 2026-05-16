@@ -5,6 +5,7 @@ const logger = require("./logger");
 const {
   listFiles,
   getRecentFiles,
+  getTodoFiles,
   getFileInfo,
   toggleFileCheckbox,
   writeFileContent,
@@ -79,6 +80,13 @@ app.get("/api/files/recent", async (req, res) => {
     .object({ n: z.coerce.number().int().min(5).max(50) })
     .parse(req.query);
   res.json(await getRecentFiles(ROOT_DIR, n));
+});
+
+app.get("/api/files/todos", async (req, res) => {
+  const { n } = z
+    .object({ n: z.coerce.number().int().min(5).max(50) })
+    .parse(req.query);
+  res.json(await getTodoFiles(ROOT_DIR, n));
 });
 
 app.get("/api/files/info", async (req, res) => {

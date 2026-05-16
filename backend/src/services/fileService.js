@@ -65,6 +65,18 @@ async function classifyFile(fullPath) {
   return classifyByMimeAndExt(null, ext);
 }
 
+async function getTodoFiles(rootDir, n) {
+  const { stdout } = await execFileAsync(
+    "sh",
+    [
+      "-c",
+      `rg -l '^- \\[ \\] ' '${rootDir}' | while IFS= read -r f; do printf '%s\\t%s\\n' "$(stat -c '%Y' "$f")" "$f"; done | sort -rn | head -n ${n}`,
+    ],
+    { encoding: "utf-8", maxBuffer: 10 * 1024 * 1024 },
+  );
+  return { todos: parseFindRecentOutput(stdout, rootDir, n) };
+}
+
 async function getFileInfo(rootDir, bookmarksFile, relativePath) {
   const fullPath = path.join(rootDir, relativePath);
 
@@ -145,6 +157,7 @@ async function writeFileContent(rootDir, file, content, mtime, force) {
 module.exports = {
   listFiles,
   getRecentFiles,
+  getTodoFiles,
   getFileInfo,
   toggleFileCheckbox,
   writeFileContent,

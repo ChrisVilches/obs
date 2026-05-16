@@ -31,6 +31,7 @@ npm run start         # node backend/src/server.js (production)
 | GET | `/api/files/raw?file=<relpath>` | Binary/sendFile variant |
 | PUT | `/api/files/checkbox` | Body `{file, checked, line, mtime}`. Toggles a checkbox on disk. |
 | GET | `/api/files/recent?n=<5-50>` | Recently modified files |
+| GET | `/api/files/todos?n=<5-50>` | Files with open TODOs (`- [ ] ` at line start) |
 | GET | `/api/files/search?q=<query>` | Full-text search (filenames + content via ripgrep) |
 | GET/POST/DELETE | `/api/bookmarks` | Reads/writes `bookmarks.json` in `CONFIG_PATH` |
 | GET/PATCH | `/api/config` | Reads/writes `app.json` in `CONFIG_PATH` |
@@ -42,7 +43,7 @@ npm run start         # node backend/src/server.js (production)
 - `react-router-dom` v7 with `BrowserRouter`
 - Routes: `/` (Dashboard), `/file?f=` (FilePage), `*` fallback to Dashboard
 - File viewer supports: text, markdown (react-markdown), images, audio/video, binary
-- Dashboard shows recently modified files and bookmarks
+- Dashboard shows recently modified files, ongoing TODOs, and bookmarks
 
 ## Deployment
 
