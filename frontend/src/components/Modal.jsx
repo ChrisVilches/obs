@@ -1,10 +1,9 @@
-import {
-  Dialog,
-  DialogBackdrop,
-  DialogPanel,
-  DialogTitle,
-} from "@headlessui/react";
+import * as Dialog from "@radix-ui/react-dialog";
 import { XMarkIcon } from "@heroicons/react/24/outline";
+
+// TODO: add horizontal spacing
+// TODO: not related to just this file, but remove all headless ui workarounds
+// (delays, flattening the dialogs, bottom button toolbar, etc)
 
 export default function Modal({
   open,
@@ -15,36 +14,31 @@ export default function Modal({
   childrenClass = "",
 }) {
   return (
-    <Dialog open={open} onClose={onClose} className="relative z-50">
-      <DialogBackdrop
-        transition
-        className="fixed inset-0 bg-black/60 transition-opacity duration-(--dialog-transition-duration) data-closed:opacity-0"
-      />
-      <div className="fixed inset-0 flex items-center justify-center p-4">
-        <DialogPanel
-          transition
-          className={`w-full max-w-md bg-gray-900 border border-gray-800 rounded-xl shadow-xl transition-[scale,opacity] duration-(--dialog-transition-duration) data-closed:scale-90 data-closed:opacity-0 ${className}`}
+    <Dialog.Root open={open} onOpenChange={(o) => !o && onClose()}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-dialog-overlay-show data-[state=closed]:animate-dialog-overlay-hide" />
+        <Dialog.Content
+          className={`fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 bg-gray-900 border border-gray-800 rounded-xl shadow-xl outline-none data-[state=open]:animate-dialog-content-show data-[state=closed]:animate-dialog-content-hide ${className}`}
         >
           <div className="flex items-center justify-between px-5 py-4 border-b border-gray-800 shrink-0">
-            <DialogTitle className="text-sm font-semibold text-gray-300">
+            <Dialog.Title className="text-sm font-semibold text-gray-300">
               {title}
-            </DialogTitle>
-            <button
-              type="button"
-              onClick={onClose}
-              className="p-1 rounded-md text-gray-500 hover:text-white hover:bg-gray-800 transition-colors"
-              aria-label="Close"
-            >
-              <XMarkIcon className="w-5 h-5" />
-            </button>
+            </Dialog.Title>
+            <Dialog.Close asChild>
+              <button
+                type="button"
+                className="p-1 rounded-md text-gray-500 hover:text-white hover:bg-gray-800 transition-colors"
+                aria-label="Close"
+              >
+                <XMarkIcon className="w-5 h-5" />
+              </button>
+            </Dialog.Close>
           </div>
-          <div
-            className={`px-5 py-4 text-sm text-gray-400 ${childrenClass}`}
-          >
+          <div className={`px-5 py-4 text-sm text-gray-400 ${childrenClass}`}>
             {children}
           </div>
-        </DialogPanel>
-      </div>
-    </Dialog>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }

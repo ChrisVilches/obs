@@ -92,7 +92,7 @@ function SidemenuHeader({
           {folderName}
         </Link>
       </div>
-      <div className="hidden md:flex items-center gap-1">
+      <div className="flex items-center gap-1">
         <button
           type="button"
           onClick={onBookmarkClick}
@@ -189,11 +189,10 @@ function TreeNode({
           to={`/file?f=${encodeURIComponent(node.path)}`}
           ref={isSelected ? selectedNodeRef : null}
           onClick={onClose}
-          className={`block px-3 py-1.5 rounded-md text-sm transition-colors ${
-            isSelected
+          className={`block px-3 py-1.5 rounded-md text-sm transition-colors ${isSelected
               ? "bg-indigo-900/40 text-indigo-300 font-medium"
               : "text-gray-400 hover:bg-gray-800 hover:text-gray-200"
-          }`}
+            }`}
           style={{ paddingLeft: `${12 + depth * 16}px` }}
         >
           <span className="truncate block">{node.name}</span>

@@ -87,9 +87,6 @@ const EMPTY_RESULTS = { all: [], files: [], content: [] };
 
 export default function SearchBar({ onClose }) {
   const navigate = useNavigate();
-  const inputRef = useCallback((el) => {
-    setTimeout(() => el?.focus(), 80);
-  }, []);
 
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebounce(query, 150);
@@ -137,7 +134,7 @@ export default function SearchBar({ onClose }) {
       <div className="shrink-0">
         <div className="relative mb-2">
           <input
-            ref={inputRef}
+            autoFocus
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}

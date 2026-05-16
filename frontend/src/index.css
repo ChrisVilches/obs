@@ -3,7 +3,38 @@
 @plugin "@tailwindcss/typography";
 
 @theme {
-  --dialog-transition-duration: 100ms;
+  --dialog-transition-duration: 200ms;
+  --animate-dialog-overlay-show: dialog-overlay-show var(--dialog-transition-duration) ease-out;
+  --animate-dialog-overlay-hide: dialog-overlay-hide var(--dialog-transition-duration) ease-out forwards;
+  --animate-dialog-content-show: dialog-content-show var(--dialog-transition-duration) ease-out;
+  --animate-dialog-content-hide: dialog-content-hide var(--dialog-transition-duration) ease-out forwards;
+  --animate-drawer-show: drawer-show var(--dialog-transition-duration) ease-out;
+  --animate-drawer-hide: drawer-hide var(--dialog-transition-duration) ease-out forwards;
+}
+
+@keyframes dialog-overlay-show {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes dialog-overlay-hide {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+@keyframes dialog-content-show {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes dialog-content-hide {
+  from { opacity: 1; transform: scale(1); }
+  to { opacity: 0; transform: scale(0.9); }
+}
+@keyframes drawer-show {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+@keyframes drawer-hide {
+  from { transform: translateX(0); }
+  to { transform: translateX(-100%); }
 }
 
 button, [role="button"], [role="switch"], [role="tab"] {
