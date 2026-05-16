@@ -1,19 +1,6 @@
-import { ArrowPathIcon, PencilIcon, BookmarkIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, BookmarkIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import FileNameDisplay from './FileNameDisplay';
 import Button from './Button';
-
-function formatLocalDateTime(isoString) {
-  const d = new Date(isoString);
-
-  return (
-    `${d.getFullYear()}-` +
-    `${String(d.getMonth() + 1).padStart(2, "0")}-` +
-    `${String(d.getDate()).padStart(2, "0")} ` +
-    `${String(d.getHours()).padStart(2, "0")}:` +
-    `${String(d.getMinutes()).padStart(2, "0")}:` +
-    `${String(d.getSeconds()).padStart(2, "0")}`
-  );
-}
 
 function EditModeButtons({ onSave, onCancel, saving }) {
   return (<div className="flex items-center space-x-2">
@@ -85,15 +72,11 @@ export default function FileToolbar({
     <div className="sticky top-0 z-10 flex items-center justify-between px-4 h-14 border-b border-gray-800 bg-gray-900 shrink-0">
       <FileNameDisplay
         file={file}
+        info={info}
         showFileNameModal={showFileNameModal}
         onShowFileNameModal={onShowFileNameModal}
         saveMessage={saveMessage}
       />
-      {info && (
-        <span className="text-xs text-gray-600 shrink-0 ml-2">
-          {formatLocalDateTime(info.mtime)}
-        </span>
-      )}
       <div className="flex items-center">
         <div className="flex items-center space-x-2">
           {loading ? (
