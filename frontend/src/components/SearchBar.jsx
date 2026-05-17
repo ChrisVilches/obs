@@ -78,15 +78,17 @@ export default function SearchBar({ onClose, selectedFile, onSearchActive }) {
   ];
 
   return (
-    <div>
-      <div className="relative mb-2">
-        <input
-          type="text"
-          value={query}
-          onChange={e => setQuery(e.target.value)}
-          placeholder="Search files..."
-          className="w-full bg-gray-800 text-gray-200 text-sm rounded-md px-3 py-1.5 pr-8 border border-gray-700 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-        />
+    <div className="flex flex-col h-full">
+      <div className="shrink-0">
+        <div className="relative mb-2">
+          <input
+            autoFocus
+            type="text"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder="Search files..."
+            className="w-full bg-gray-800 text-gray-200 text-sm rounded-md px-3 py-1.5 pr-8 border border-gray-700 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+          />
         {query && (
           loading ? (
             <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center p-1">
@@ -103,42 +105,47 @@ export default function SearchBar({ onClose, selectedFile, onSearchActive }) {
           )
         )}
       </div>
+      </div>
       {debouncedQuery && (
-        <div className="border-t border-gray-800">
+        <div className="border-t border-gray-800 flex flex-col flex-1 min-h-0">
           {hasAnyResults ? (
             <>
-              <div className="flex border-b border-gray-700">
-                {tabs.map(t => (
-                  <button
-                    key={t.key}
-                    onClick={() => setTab(t.key)}
-                    className={`flex-1 px-2 py-1.5 text-xs font-medium transition-colors ${tab === t.key
-                      ? 'text-indigo-400 border-b-2 border-indigo-400'
-                      : 'text-gray-500 hover:text-gray-300'
-                      }`}
-                  >
-                    {t.label} ({t.count})
-                  </button>
-                ))}
+              <div className="shrink-0">
+                <div className="flex border-b border-gray-700">
+                  {tabs.map(t => (
+                    <button
+                      key={t.key}
+                      onClick={() => setTab(t.key)}
+                      className={`flex-1 px-2 py-1.5 text-xs font-medium transition-colors ${tab === t.key
+                        ? 'text-indigo-400 border-b-2 border-indigo-400'
+                        : 'text-gray-500 hover:text-gray-300'
+                        }`}
+                    >
+                      {t.label} ({t.count})
+                    </button>
+                  ))}
+                </div>
               </div>
-              {showFiles && visibleFiles.length > 0 && (
-                <div>
-                  <ul>
-                    {visibleFiles.map(file => (
-                      <SearchResultItem key={file} file={file} selectedFile={selectedFile} onClose={onClose} />
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {showContent && visibleContent.length > 0 && (
-                <div className={showFiles && visibleFiles.length > 0 ? 'mt-2' : ''}>
-                  <ul>
-                    {visibleContent.map(file => (
-                      <SearchResultItem key={file} file={file} selectedFile={selectedFile} onClose={onClose} />
-                    ))}
-                  </ul>
-                </div>
-              )}
+              <div className="overflow-y-auto flex-1 min-h-0 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600">
+                {showFiles && visibleFiles.length > 0 && (
+                  <div>
+                    <ul>
+                      {visibleFiles.map(file => (
+                        <SearchResultItem key={file} file={file} selectedFile={selectedFile} onClose={onClose} />
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {showContent && visibleContent.length > 0 && (
+                  <div className={showFiles && visibleFiles.length > 0 ? 'mt-2' : ''}>
+                    <ul>
+                      {visibleContent.map(file => (
+                        <SearchResultItem key={file} file={file} selectedFile={selectedFile} onClose={onClose} />
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
             </>
           ) : loading ? (
             <p className="px-3 py-2 text-sm text-gray-500">Searching...</p>
