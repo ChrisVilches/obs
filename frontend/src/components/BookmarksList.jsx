@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import PageHeader from './PageHeader';
 
 // TODO: List doesn't get updated when the user uses the history buttons to go back and forth.
 // I think it should, since the user probably expects it to get reloaded.
@@ -7,11 +8,7 @@ import { Link } from 'react-router-dom';
 export default function BookmarksList({ bookmarks, loading, onSelect }) {
   return (
     <div className="min-h-full flex flex-col">
-      <div className="sticky top-0 z-10 flex items-center px-4 h-14 border-b border-gray-800 bg-gray-900 shrink-0 pl-12 md:pl-4">
-        <div className="flex-1 flex justify-center md:justify-start min-w-0">
-          <h1 className="text-sm font-semibold text-gray-300">Bookmarks</h1>
-        </div>
-      </div>
+      <PageHeader title={<h1 className="text-sm font-semibold text-gray-300">Bookmarks</h1>} />
       <div className="flex-1 p-8">
         {loading ? (
           <p className="text-gray-500">Loading...</p>
