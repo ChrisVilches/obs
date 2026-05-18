@@ -1,6 +1,6 @@
 const path = require('path');
 const express = require('express');
-const { listFiles, getFileInfo, writeFileContent, resolveRawPath, VersionConflictError, FileAccessDeniedError } = require('./services/fileService');
+const { listFiles, getRecentFiles, getFileInfo, writeFileContent, resolveRawPath, VersionConflictError, FileAccessDeniedError } = require('./services/fileService');
 const { getBookmarks, addBookmark, removeBookmark } = require('./services/bookmarkService');
 const { searchFiles } = require('./services/searchService');
 const { z } = require('zod');
@@ -62,6 +62,11 @@ app.get('/api/files/search', async (req, res) => {
 
 app.get('/api/files', async (_req, res) => {
   res.json(await listFiles(ROOT_DIR));
+});
+
+app.get('/api/files/recent', async (req, res) => {
+  const { n } = z.object({ n: z.coerce.number().int().min(5).max(50) }).parse(req.query);
+  res.json(await getRecentFiles(ROOT_DIR, n));
 });
 
 app.get('/api/files/info', async (req, res) => {
