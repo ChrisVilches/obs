@@ -24,7 +24,7 @@ function SidemenuFooter() {
   );
 }
 
-function SidemenuHeader({ folderName, onClose, onSearchClick }) {
+function SidemenuHeader({ folderName, onClose, onSearchClick, onBookmarkClick }) {
   return (
     <div className="flex items-center justify-between px-4 h-14 border-b border-gray-800 shrink-0">
       <div className="flex items-center gap-2">
@@ -40,14 +40,14 @@ function SidemenuHeader({ folderName, onClose, onSearchClick }) {
         <Link to="/" className="text-sm font-semibold text-gray-400 uppercase tracking-wider hover:text-indigo-400 transition-colors">{folderName}</Link>
       </div>
       <div className="flex items-center gap-1">
-        <Link
-          to="/"
+        <button
+          onClick={onBookmarkClick}
           className="p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
           aria-label="Bookmarks"
           title="Bookmarks"
         >
           <BookmarkIcon className="w-5 h-5" />
-        </Link>
+        </button>
         <button
           onClick={onSearchClick}
           className="p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
@@ -219,7 +219,7 @@ function SidemenuSkeleton() {
   );
 }
 
-export default function Sidemenu({ files, onClose, sidebarOpen, loading, folderName }) {
+export default function Sidemenu({ files, onClose, sidebarOpen, loading, folderName, onBookmarkClick }) {
   const navRef = useRef(null);
   const [searchParams] = useSearchParams();
   const selectedFile = searchParams.get('file');
@@ -294,7 +294,7 @@ export default function Sidemenu({ files, onClose, sidebarOpen, loading, folderN
   if (loading) {
     return (
       <div className="flex flex-col flex-1 min-h-0">
-        <SidemenuHeader folderName={folderName} onClose={onClose} onSearchClick={() => setSearchOpen(true)} />
+        <SidemenuHeader folderName={folderName} onClose={onClose} onSearchClick={() => setSearchOpen(true)} onBookmarkClick={onBookmarkClick} />
         <nav className="flex-1 overflow-y-auto overflow-x-hidden p-2 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600" style={{ scrollbarGutter: 'stable' }}>
           <SidemenuSkeleton />
         </nav>
@@ -311,7 +311,7 @@ export default function Sidemenu({ files, onClose, sidebarOpen, loading, folderN
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
-      <SidemenuHeader folderName={folderName} onClose={onClose} onSearchClick={() => setSearchOpen(true)} />
+      <SidemenuHeader folderName={folderName} onClose={onClose} onSearchClick={() => setSearchOpen(true)} onBookmarkClick={onBookmarkClick} />
       <nav ref={navRef} className="flex-1 overflow-y-auto overflow-x-hidden p-2 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600" style={{ scrollbarGutter: 'stable' }}>
         <ul className="space-y-0.5">
           {tree.map(node => (

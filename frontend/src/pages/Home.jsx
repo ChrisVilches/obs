@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/react';
-import { Bars3Icon } from '@heroicons/react/24/outline';
+import { Bars3Icon, BookmarkIcon } from '@heroicons/react/24/outline';
 import FileViewer from '../components/FileViewer';
-import BookmarksList from '../components/BookmarksList';
 import Sidemenu from '../components/Sidemenu';
+import PageHeader from '../components/PageHeader';
+import Button from '../components/Button';
+import Modal from '../components/Modal';
 
 // TODO: Not sure if the scrollbar should be in the div container or
 // in the body, affecting the whole thing.
@@ -19,9 +21,10 @@ export default function Home() {
   const [files, setFiles] = useState([]);
   const [folderName, setFolderName] = useState('');
   const [filesLoading, setFilesLoading] = useState(true);
-  const [bookmarks, setBookmarks] = useState([]);
-  const [bookmarksLoading, setBookmarksLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [bookmarksModalOpen, setBookmarksModalOpen] = useState(false);
+  const [modalBookmarks, setModalBookmarks] = useState([]);
+  const [modalBookmarksLoading, setModalBookmarksLoading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(() => {
     const saved = localStorage.getItem('sidebarWidth');
@@ -50,21 +53,31 @@ export default function Home() {
       });
   }, []);
 
-  function reloadBookmarks() {
-    setBookmarksLoading(true);
+  function openBookmarksModal() {
+    setBookmarksModalOpen(true);
+    setModalBookmarksLoading(true);
     fetch('/api/bookmarks')
       .then((res) => res.json())
       .then((data) => {
         if (data.error) throw new Error(data.error);
-        setBookmarks(data.items || []);
+        setModalBookmarks(data.items || []);
       })
       .catch((err) => setError(err.message))
-      .finally(() => setBookmarksLoading(false));
+      .finally(() => setModalBookmarksLoading(false));
   }
 
-  useEffect(() => {
-    reloadBookmarks();
-  }, []);
+  function reloadBookmarks() {
+    if (!bookmarksModalOpen) return;
+    setModalBookmarksLoading(true);
+    fetch('/api/bookmarks')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.error) throw new Error(data.error);
+        setModalBookmarks(data.items || []);
+      })
+      .catch((err) => setError(err.message))
+      .finally(() => setModalBookmarksLoading(false));
+  }
 
   useEffect(() => {
     if (!isResizing) return;
@@ -126,7 +139,7 @@ export default function Home() {
               leaveTo="-translate-x-full"
             >
               <DialogPanel className="w-72 h-full bg-gray-900 border-r border-gray-800 flex flex-col">
-                <Sidemenu files={files} loading={filesLoading} onClose={() => setSidebarOpen(false)} sidebarOpen={sidebarOpen} folderName={folderName} />
+                <Sidemenu files={files} loading={filesLoading} onClose={() => setSidebarOpen(false)} sidebarOpen={sidebarOpen} folderName={folderName} onBookmarkClick={openBookmarksModal} />
               </DialogPanel>
             </TransitionChild>
           </div>
@@ -143,17 +156,52 @@ export default function Home() {
           }}
           className="absolute right-0 top-0 bottom-0 w-1.5 cursor-col-resize hover:bg-indigo-500/50 active:bg-indigo-500/70 z-10 shrink-0"
         />
-        <Sidemenu files={files} loading={filesLoading} folderName={folderName} />
+        <Sidemenu files={files} loading={filesLoading} folderName={folderName} onBookmarkClick={openBookmarksModal} />
       </aside>
       <main className="flex-1 flex flex-col bg-gray-950">
         <div className="flex-1 overflow-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600">
           {selectedFile ? (
             <FileViewer file={selectedFile} onBookmarkChange={reloadBookmarks} />
           ) : (
-            <BookmarksList bookmarks={bookmarks} loading={bookmarksLoading} onSelect={() => setSidebarOpen(false)} />
+            <div className="min-h-full flex flex-col">
+              <PageHeader
+                title={<h1 className="text-sm font-semibold text-gray-300">Home</h1>}
+                actions={
+                  <Button variant="secondary" icon={<BookmarkIcon className="w-4 h-4" />} onClick={openBookmarksModal}>
+                    Bookmarks
+                  </Button>
+                }
+              />
+              <div className="flex-1 flex items-center justify-center">
+                <p className="text-gray-500">Select a file from the sidebar to view its contents.</p>
+              </div>
+            </div>
           )}
         </div>
       </main>
+      {/* TODO: clicking a bookmark link should close the mobile sidebar if it's open (setSidebarOpen(false)),
+          but it's tricky to wire up because the sidebar state lives here while the modal is its own layer. */}
+      <Modal open={bookmarksModalOpen} onClose={() => setBookmarksModalOpen(false)} title="Bookmarks" className="h-[70vh] flex flex-col overflow-hidden" childrenClass="flex-1 min-h-0 overflow-y-auto">
+        {modalBookmarksLoading ? (
+          <p className="text-gray-500">Loading...</p>
+        ) : modalBookmarks.length === 0 ? (
+          <p className="text-gray-500">No bookmarks found.</p>
+        ) : (
+          <ul className="space-y-2">
+            {modalBookmarks.map((item, index) => (
+              <li key={index}>
+                <Link
+                  to={`?file=${encodeURIComponent(item.path)}`}
+                  onClick={() => setBookmarksModalOpen(false)}
+                  className="block px-4 py-2 rounded-md text-sm text-indigo-400 hover:bg-gray-800 hover:text-indigo-300 transition-colors"
+                >
+                  {item.path}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Modal>
     </div>
   );
 }
