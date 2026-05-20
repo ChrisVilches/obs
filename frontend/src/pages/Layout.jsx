@@ -156,8 +156,8 @@ export default function Layout() {
         <Sidemenu files={files} loading={filesLoading} folderName={folderName} onBookmarkClick={openBookmarksModal} />
       </aside>
 
-      <main className="flex-1 flex flex-col bg-gray-950">
-        <div className="flex-1 overflow-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600">
+      <main className="flex-1 flex flex-col bg-gray-950 min-w-0">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600">
           <Outlet context={{ openBookmarksModal, reloadBookmarks }} />
         </div>
       </main>
