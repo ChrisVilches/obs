@@ -58,7 +58,6 @@ export default function FileToolbar({
   editMode,
   saving,
   bookmarking,
-  saveMessage,
   showFileNameModal,
   onShowFileNameModal,
   onEdit,
@@ -77,7 +76,6 @@ export default function FileToolbar({
           info={info}
           showFileNameModal={showFileNameModal}
           onShowFileNameModal={onShowFileNameModal}
-          saveMessage={saveMessage}
         />
       }
       actions={

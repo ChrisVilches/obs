@@ -82,7 +82,7 @@ app.put('/api/files/content', async (req, res) => {
     force: z.coerce.boolean().default(false),
   }).parse(req.body);
   const changed = await writeFileContent(ROOT_DIR, file, content, mtime, force)
-  res.json({ success: true, message: changed ? 'Updated' : 'No changes' });
+  res.json({ success: true, modified: changed });
 });
 
 // TODO: maybe some caching. We know the timestamp of the file so maybe use that somehow? lmfao
