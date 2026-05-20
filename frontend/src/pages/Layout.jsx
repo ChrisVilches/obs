@@ -10,6 +10,9 @@ export function useLayoutContext() {
   return useOutletContext();
 }
 
+// TODO: Not sure about the Outlet usage (is it necessary for react routes?
+// or is it to hack my top header?)
+
 // TODO: This looks extremely messy and I need to audit it.
 
 // TODO: I still think it's not necessary to load bookmarks all the time like that.
@@ -108,7 +111,7 @@ export default function Layout() {
     <div className="flex h-screen bg-gray-950">
       <button
         onClick={() => setSidebarOpen(true)}
-        className="fixed top-2 left-2 z-50 md:hidden p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
+        className="fixed top-0 left-0 z-50 md:hidden w-12 h-14 flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
         aria-label="Open sidebar"
       >
         <Bars3Icon className="w-5 h-5" />
