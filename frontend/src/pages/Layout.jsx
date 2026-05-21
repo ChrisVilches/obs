@@ -146,29 +146,31 @@ export default function Layout() {
         <Sidemenu files={files} loading={filesLoading} folderName={folderName} onBookmarkClick={openBookmarksModal} onSearchClick={openSearchModal} />
       </aside>
 
-      <div className="sticky top-0 z-10 flex items-center gap-3 px-4 h-14 border-b border-gray-800 bg-gray-900 shrink-0 pl-12 md:pl-4">
-        <button
-          onClick={() => setSidebarOpen(true)}
-          className="md:hidden top-0 left-0 z-50 w-12 h-14 flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
-          aria-label="Open sidebar"
-        >
-          <Bars3Icon className="w-5 h-5" />
-        </button>
-        <div className="flex-1 flex justify-center md:justify-start min-w-0">
-          {layoutTopContent.title}
-        </div>
-        {layoutTopContent.extra && (
-          <div className="flex items-center flex-shrink-0">
-            {layoutTopContent.extra}
+      <div className="flex flex-col flex-1 min-w-0">
+        <div className="sticky top-0 z-10 flex items-center gap-3 px-4 h-14 border-b border-gray-800 bg-gray-900 shrink-0">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="md:hidden top-0 left-0 z-50 w-12 h-14 flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
+            aria-label="Open sidebar"
+          >
+            <Bars3Icon className="w-5 h-5" />
+          </button>
+          <div className="flex-1 flex justify-center md:justify-start min-w-0">
+            {layoutTopContent.title}
           </div>
-        )}
-      </div>
-
-      <main className="flex-1 flex flex-col bg-gray-950 min-w-0">
-        <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600">
-          <Outlet context={{ setLayoutTopContent }} />
+          {layoutTopContent.extra && (
+            <div className="flex items-center flex-shrink-0">
+              {layoutTopContent.extra}
+            </div>
+          )}
         </div>
-      </main>
+
+        <main className="flex-1 flex flex-col bg-gray-950 min-w-0">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600">
+            <Outlet context={{ setLayoutTopContent }} />
+          </div>
+        </main>
+      </div>
 
       <Modal open={bookmarksModalOpen} onClose={() => setBookmarksModalOpen(false)} title="Bookmarks" className="h-[70vh] flex flex-col overflow-hidden" childrenClass="flex-1 min-h-0 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600">
         <FileList items={modalBookmarks} loading={modalBookmarksLoading} emptyMessage="No bookmarks found." onItemClick={() => setBookmarksModalOpen(false)} />
