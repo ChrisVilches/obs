@@ -1,8 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { ChevronRightIcon, BookmarkIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import SearchBar from './SearchBar';
-import Modal from './Modal';
 
 const GITHUB_URL = 'https://github.com/ChrisVilches/obs';
 
@@ -223,11 +221,10 @@ function SidemenuSkeleton() {
   );
 }
 
-export default function Sidemenu({ files, onClose, sidebarOpen, loading, folderName, onBookmarkClick }) {
+export default function Sidemenu({ files, onClose, sidebarOpen, loading, folderName, onBookmarkClick, onSearchClick }) {
   const navRef = useRef(null);
   const [searchParams] = useSearchParams();
   const selectedFile = searchParams.get('f');
-  const [searchOpen, setSearchOpen] = useState(false);
 
   const tree = useMemo(() => buildTree(files), [files]);
 
@@ -300,24 +297,18 @@ export default function Sidemenu({ files, onClose, sidebarOpen, loading, folderN
   if (loading) {
     return (
       <div className="flex flex-col flex-1 min-h-0">
-        <SidemenuHeader folderName={folderName} onClose={onClose} onSearchClick={() => setSearchOpen(true)} onBookmarkClick={onBookmarkClick} />
+        <SidemenuHeader folderName={folderName} onClose={onClose} onSearchClick={onSearchClick} onBookmarkClick={onBookmarkClick} />
         <nav className="flex-1 overflow-y-auto overflow-x-hidden p-2 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600" style={{ scrollbarGutter: 'stable' }}>
           <SidemenuSkeleton />
         </nav>
         <SidemenuFooter />
-        <Modal open={searchOpen} onClose={() => setSearchOpen(false)} title="Search" className="h-[70vh] flex flex-col overflow-hidden" childrenClass="flex-1 min-h-0">
-          <SearchBar
-            onClose={() => { setSearchOpen(false); onClose?.(); }}
-            selectedFile={selectedFile}
-          />
-        </Modal>
       </div>
     )
   }
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
-      <SidemenuHeader folderName={folderName} onClose={onClose} onSearchClick={() => setSearchOpen(true)} onBookmarkClick={onBookmarkClick} />
+      <SidemenuHeader folderName={folderName} onClose={onClose} onSearchClick={onSearchClick} onBookmarkClick={onBookmarkClick} />
       <nav ref={navRef} className="flex-1 overflow-y-auto overflow-x-hidden p-2 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600" style={{ scrollbarGutter: 'stable' }}>
         <ul className="space-y-0.5">
           {tree.map(node => (
@@ -334,12 +325,6 @@ export default function Sidemenu({ files, onClose, sidebarOpen, loading, folderN
         </ul>
       </nav>
       <SidemenuFooter />
-      <Modal open={searchOpen} onClose={() => setSearchOpen(false)} title="Search" className="h-[70vh] flex flex-col overflow-hidden" childrenClass="flex-1 min-h-0">
-        <SearchBar
-          onClose={() => { setSearchOpen(false); onClose?.(); }}
-          selectedFile={selectedFile}
-        />
-      </Modal>
     </div>
   );
 }

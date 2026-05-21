@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
-import { Outlet, useOutletContext } from 'react-router-dom';
+import { Outlet, useOutletContext, useSearchParams } from 'react-router-dom';
 import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/react';
 import { Bars3Icon } from '@heroicons/react/24/outline';
 import Sidemenu from '../components/Sidemenu';
 import Modal from '../components/Modal';
 import FileList from '../components/FileList';
+import SearchBar from '../components/SearchBar';
 
 export function useLayoutContext() {
   return useOutletContext();
@@ -27,6 +28,7 @@ export default function Layout() {
   const [bookmarksModalOpen, setBookmarksModalOpen] = useState(false);
   const [modalBookmarks, setModalBookmarks] = useState([]);
   const [modalBookmarksLoading, setModalBookmarksLoading] = useState(false);
+  const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(() => {
     const saved = localStorage.getItem('sidebarWidth');
@@ -64,6 +66,13 @@ export default function Layout() {
       })
       .catch((err) => setError(err.message))
       .finally(() => setModalBookmarksLoading(false));
+  }
+
+  const [searchParams] = useSearchParams();
+  const selectedFile = searchParams.get('f');
+
+  function openSearchModal() {
+    setSearchModalOpen(true);
   }
 
   function reloadBookmarks() {
@@ -139,7 +148,7 @@ export default function Layout() {
               leaveTo="-translate-x-full"
             >
               <DialogPanel className="w-72 h-full bg-gray-900 border-r border-gray-800 flex flex-col">
-                <Sidemenu files={files} loading={filesLoading} onClose={() => setSidebarOpen(false)} sidebarOpen={sidebarOpen} folderName={folderName} onBookmarkClick={openBookmarksModal} />
+                <Sidemenu files={files} loading={filesLoading} onClose={() => setSidebarOpen(false)} sidebarOpen={sidebarOpen} folderName={folderName} onBookmarkClick={() => { setSidebarOpen(false); openBookmarksModal(); }} onSearchClick={() => { setSidebarOpen(false); openSearchModal(); }} />
               </DialogPanel>
             </TransitionChild>
           </div>
@@ -156,17 +165,21 @@ export default function Layout() {
           }}
           className="absolute right-0 top-0 bottom-0 w-1.5 cursor-col-resize hover:bg-indigo-500/50 active:bg-indigo-500/70 z-10 shrink-0"
         />
-        <Sidemenu files={files} loading={filesLoading} folderName={folderName} onBookmarkClick={openBookmarksModal} />
+        <Sidemenu files={files} loading={filesLoading} folderName={folderName} onBookmarkClick={openBookmarksModal} onSearchClick={openSearchModal} />
       </aside>
 
       <main className="flex-1 flex flex-col bg-gray-950 min-w-0">
         <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600">
-          <Outlet context={{ openBookmarksModal, reloadBookmarks }} />
+          <Outlet context={{ openBookmarksModal, openSearchModal, reloadBookmarks }} />
         </div>
       </main>
 
       <Modal open={bookmarksModalOpen} onClose={() => setBookmarksModalOpen(false)} title="Bookmarks" className="h-[70vh] flex flex-col overflow-hidden" childrenClass="flex-1 min-h-0 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600">
         <FileList items={modalBookmarks} loading={modalBookmarksLoading} emptyMessage="No bookmarks found." onItemClick={() => setBookmarksModalOpen(false)} />
+      </Modal>
+
+      <Modal open={searchModalOpen} onClose={() => setSearchModalOpen(false)} title="Search" className="h-[70vh] flex flex-col overflow-hidden" childrenClass="flex-1 min-h-0">
+        <SearchBar onClose={() => setSearchModalOpen(false)} selectedFile={selectedFile} />
       </Modal>
     </div>
   );
