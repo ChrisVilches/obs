@@ -13,7 +13,7 @@ import BinaryFileViewer from './viewers/BinaryFileViewer';
 
 // TODO: when and why is "file" null? I want to make it strictly required
 // (and validate the parent).
-export default function FileViewer({ file, onBookmarkChange }) {
+export default function FileViewer({ file }) {
   const [info, setInfo] = useState(null);
   const [error, setError] = useState(null);
   const [editMode, setEditMode] = useState(false);
@@ -86,9 +86,8 @@ export default function FileViewer({ file, onBookmarkChange }) {
         const Icon = modified ? CheckCircleIcon : InformationCircleIcon;
         return (
           <div
-            className={`${
-              t.visible ? 'animate-enter' : 'animate-leave'
-            } max-w-sm w-full bg-gray-800 shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
+            className={`${t.visible ? 'animate-enter' : 'animate-leave'
+              } max-w-sm w-full bg-gray-800 shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
           >
             <div className="flex-1 w-0 p-3">
               <div className="flex items-center">
@@ -124,10 +123,6 @@ export default function FileViewer({ file, onBookmarkChange }) {
       if (data.error) throw new Error(data.error);
 
       setInfo({ ...info, isBookmarked: data.isBookmarked });
-
-      if (onBookmarkChange) {
-        onBookmarkChange();
-      }
     } catch (err) {
       setError(err.message);
     } finally {

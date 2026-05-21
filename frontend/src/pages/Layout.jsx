@@ -1,15 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
-import { Outlet, useOutletContext, useSearchParams } from 'react-router-dom';
+import { Outlet, useSearchParams } from 'react-router-dom';
 import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/react';
 import { Bars3Icon } from '@heroicons/react/24/outline';
 import Sidemenu from '../components/Sidemenu';
 import Modal from '../components/Modal';
 import FileList from '../components/FileList';
 import SearchBar from '../components/SearchBar';
-
-export function useLayoutContext() {
-  return useOutletContext();
-}
 
 // TODO: Not sure about the Outlet usage (is it necessary for react routes?
 // or is it to hack my top header?)
@@ -73,19 +69,6 @@ export default function Layout() {
 
   function openSearchModal() {
     setSearchModalOpen(true);
-  }
-
-  function reloadBookmarks() {
-    if (!bookmarksModalOpen) return;
-    setModalBookmarksLoading(true);
-    fetch('/api/bookmarks')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.error) throw new Error(data.error);
-        setModalBookmarks(data.items || []);
-      })
-      .catch((err) => setError(err.message))
-      .finally(() => setModalBookmarksLoading(false));
   }
 
   useEffect(() => {
@@ -170,7 +153,7 @@ export default function Layout() {
 
       <main className="flex-1 flex flex-col bg-gray-950 min-w-0">
         <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600">
-          <Outlet context={{ openBookmarksModal, openSearchModal, reloadBookmarks }} />
+          <Outlet />
         </div>
       </main>
 
