@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Outlet, useSearchParams } from 'react-router-dom';
-import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/react';
+import { Dialog, DialogPanel } from '@headlessui/react';
 import { Bars3Icon } from '@heroicons/react/24/outline';
 import Sidemenu from '../components/Sidemenu';
 import Modal from '../components/Modal';
