@@ -102,7 +102,7 @@ export default function Layout() {
         </div>
       </Dialog>
 
-      <aside ref={sidebarRef} className="hidden md:flex flex-shrink-0 bg-gray-900 border-r border-gray-800 flex-col relative overflow-hidden" style={{ width: sidebarWidth }}>
+      <aside ref={sidebarRef} className="hidden md:flex flex-shrink-0 bg-gray-900 border-r border-gray-800 flex-col relative" style={{ width: sidebarWidth }}>
         <div
           onMouseDown={(e) => {
             e.preventDefault();
@@ -110,7 +110,7 @@ export default function Layout() {
             document.body.style.cursor = 'col-resize';
             document.body.style.userSelect = 'none';
           }}
-          className="absolute right-0 top-0 bottom-0 w-1.5 cursor-col-resize hover:bg-indigo-500/50 active:bg-indigo-500/70 z-10 shrink-0"
+          className="absolute right-[-4px] top-0 bottom-0 w-1 cursor-col-resize hover:bg-indigo-500/50 active:bg-indigo-500/70 z-10 shrink-0"
         />
         <Sidemenu files={files} loading={filesLoading} folderName={folderName} onBookmarkClick={openBookmarksModal} onSearchClick={() => setSearchModalOpen(true)} />
       </aside>
