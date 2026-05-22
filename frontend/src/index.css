@@ -89,3 +89,9 @@ sizing/alignment behavior.
 *:hover::-webkit-scrollbar-thumb {
   background-color: var(--color-gray-600);
 }
+
+/* When Radix locks the body, lock your main instead */
+body[data-scroll-locked] main {
+  overflow: hidden;
+}
+
