@@ -10,10 +10,13 @@ import FileList from './FileList';
 export default function SearchBar({ onClose, selectedFile, onSearchActive }) {
   const inputRef = useRef(null);
 
+  // NOTE: Unfortunately, this hack is necessary for mobile. It works without
+  // it on desktop but not on mobile.
   useEffect(() => {
+    inputRef.current?.focus();
     const id = setTimeout(() => {
       inputRef.current?.focus();
-    }, 50);
+    }, 200);
     return () => clearTimeout(id);
   }, []);
 
