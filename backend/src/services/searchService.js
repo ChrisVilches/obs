@@ -26,7 +26,7 @@ async function searchFiles(rootDir, query) {
   let contentMatches = [];
   try {
     const escapedQuery = query.replace(/'/g, "'\\''");
-    const cmd = `grep -srilF '${escapedQuery}' '${rootDir}' --exclude-dir='.*' --exclude='.*' | head -n 50`;
+    const cmd = `grep -srilFI '${escapedQuery}' '${rootDir}' --exclude-dir='.*' --exclude='.*' | head -n 50`;
     const { stdout } = await execFileAsync('sh', ['-c', cmd], { encoding: 'utf-8' });
     contentMatches = stdout.trim().split('\n').filter(Boolean).map(f => path.relative(rootDir, f));
   } catch (err) {
