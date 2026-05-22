@@ -1,6 +1,10 @@
 const path = require('path');
 const fs = require('fs');
+const { execFile } = require('child_process');
+const { promisify } = require('util');
 const { emit } = require('../eventChannel');
+
+const execFileAsync = promisify(execFile);
 const { getBookmarks } = require('./bookmarkService');
 
 let _fileTypeFromFile;
@@ -44,30 +48,26 @@ async function listFiles(rootDir) {
 }
 
 async function getRecentFiles(rootDir, n) {
-  const all = [];
+  const { stdout } = await execFileAsync('find', [
+    rootDir,
+    '-type', 'f',
+    '!', '-path', '*/.*',
+    '-printf', '%T@\t%p\n',
+  ], { encoding: 'utf-8', maxBuffer: 10 * 1024 * 1024 });
 
-  async function walk(dir) {
-    const entries = await fs.promises.readdir(dir, { withFileTypes: true });
-    for (const entry of entries) {
-      if (entry.name.startsWith('.')) continue;
-      const fullPath = path.join(dir, entry.name);
-      if (entry.isDirectory()) {
-        await walk(fullPath);
-      } else {
-        const stat = await fs.promises.stat(fullPath);
-        all.push({
-          path: path.relative(rootDir, fullPath),
-          mtime: stat.mtime.toISOString(),
-        });
-      }
-    }
-  }
+  const files = stdout.trim().split('\n')
+    .filter(Boolean)
+    .map(line => {
+      const tabIndex = line.indexOf('\t');
+      return {
+        path: path.relative(rootDir, line.substring(tabIndex + 1)),
+        mtime: new Date(parseFloat(line.substring(0, tabIndex)) * 1000).toISOString(),
+      };
+    })
+    .sort((a, b) => b.mtime.localeCompare(a.mtime))
+    .slice(0, n);
 
-  await walk(rootDir);
-
-  all.sort((a, b) => b.mtime.localeCompare(a.mtime));
-
-  return { recent: all.slice(0, n) };
+  return { recent: files };
 }
 
 function assertPathInsideRoot(rootDir, fullPath) {
