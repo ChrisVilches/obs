@@ -222,6 +222,20 @@ describe("lineHasCheckbox", () => {
     assert.equal(lineHasCheckbox("- [ ] task with [brackets]"), true);
     assert.equal(lineHasCheckbox("- [x] done task"), true);
   });
+
+  it("matches checkbox with multiple spaces after list marker", () => {
+    assert.equal(lineHasCheckbox("-  [ ] buy milk"), true);
+    assert.equal(lineHasCheckbox("-   [ ] buy milk"), true);
+    assert.equal(lineHasCheckbox("*  [ ] buy milk"), true);
+    assert.equal(lineHasCheckbox("*   [x] buy milk"), true);
+    assert.equal(lineHasCheckbox("  -  [ ] buy milk"), true);
+  });
+
+  it("matches numbered checkbox with multiple spaces", () => {
+    assert.equal(lineHasCheckbox("1.  [ ] first task"), true);
+    assert.equal(lineHasCheckbox("1.   [x] first task"), true);
+    assert.equal(lineHasCheckbox("99.  [ ] do stuff"), true);
+  });
 });
 
 describe("toggleCheckboxInLine", () => {
@@ -276,6 +290,22 @@ describe("toggleCheckboxInLine", () => {
       "    * [x] task",
     );
   });
+
+  it("preserves multiple spaces after list marker", () => {
+    assert.equal(
+      toggleCheckboxInLine("-  [ ] buy milk", true),
+      "-  [x] buy milk",
+    );
+    assert.equal(
+      toggleCheckboxInLine("*   [ ] buy milk", false),
+      "*   [ ] buy milk",
+    );
+    assert.equal(
+      toggleCheckboxInLine("-  [x] buy milk", false),
+      "-  [ ] buy milk",
+    );
+    assert.equal(toggleCheckboxInLine("1.  [ ] first", true), "1.  [x] first");
+  });
 });
 
 describe("toggleCheckboxInContent", () => {
@@ -322,6 +352,15 @@ describe("toggleCheckboxInContent", () => {
     const content = "some text\n- [ ] last task";
     const result = toggleCheckboxInContent(content, 2, true);
     assert.equal(result.content, "some text\n- [x] last task\n");
+  });
+
+  it("toggles checkbox with multiple spaces after list marker", () => {
+    const content = "-  [ ] first\n*  [x] second\n*   [ ] third\n";
+    const result = toggleCheckboxInContent(content, 1, true);
+    assert.equal(result.error, null);
+    assert.ok(result.content.includes("-  [x] first"));
+    assert.ok(result.content.includes("*  [x] second"));
+    assert.ok(result.content.includes("*   [ ] third"));
   });
 });
 

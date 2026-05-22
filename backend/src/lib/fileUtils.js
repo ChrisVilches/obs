@@ -2,7 +2,7 @@ const path = require("node:path");
 
 class FileAccessDeniedError extends Error {}
 
-const checkboxRegex = /^\s*([-*]\s|(\d+\.\s))\[[ x]\]/;
+const checkboxRegex = /^\s*([-*]\s+|(\d+\.\s+))\[[ x]\]/;
 
 function shouldIgnoreFile(entryName) {
   return entryName.startsWith(".");
