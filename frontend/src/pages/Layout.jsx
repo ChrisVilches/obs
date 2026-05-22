@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { Outlet, useSearchParams } from 'react-router-dom';
 import { Dialog, DialogPanel } from '@headlessui/react';
 import { Bars3Icon } from '@heroicons/react/24/outline';
@@ -6,44 +6,22 @@ import Sidemenu from '../components/Sidemenu';
 import Modal from '../components/Modal';
 import FileList from '../components/FileList';
 import SearchBar from '../components/SearchBar';
-
-// TODO: This looks extremely messy and I need to audit it.
+import useFetch from '../hooks/useFetch';
+import useSidebarResize from '../hooks/useSidebarResize';
 
 export default function Layout() {
-  const [files, setFiles] = useState([]);
-  const [folderName, setFolderName] = useState('');
-  const [filesLoading, setFilesLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [generalError, setGeneralError] = useState(null);
+  const { data: filesData, loading: filesLoading, error: filesError } = useFetch('/api/files');
+  const files = filesData?.files ?? [];
+  const folderName = filesData?.folderName ?? '';
+
   const [bookmarksModalOpen, setBookmarksModalOpen] = useState(false);
   const [modalBookmarks, setModalBookmarks] = useState([]);
   const [modalBookmarksLoading, setModalBookmarksLoading] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarWidth, setSidebarWidth] = useState(() => {
-    const saved = localStorage.getItem('sidebarWidth');
-    return saved ? parseInt(saved, 10) : 288;
-  });
-  const sidebarRef = useRef(null);
-  const [isResizing, setIsResizing] = useState(false);
+  const { sidebarWidth, sidebarRef, onResizeHandleMouseDown } = useSidebarResize();
   const [layoutTopContent, setLayoutTopContent] = useState({ title: '', extra: null });
-
-  const MIN_SIDEBAR = 180;
-  const MAX_SIDEBAR = 600;
-
-  useEffect(() => {
-    fetch('/api/files')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.error) throw new Error(data.error);
-        setFiles(data.files);
-        setFolderName(data.folderName);
-        setFilesLoading(false);
-      })
-      .catch((err) => {
-        setError(err.message);
-        setFilesLoading(false);
-      });
-  }, []);
 
   function openBookmarksModal() {
     setBookmarksModalOpen(true);
@@ -54,42 +32,14 @@ export default function Layout() {
         if (data.error) throw new Error(data.error);
         setModalBookmarks(data.items || []);
       })
-      .catch((err) => setError(err.message))
+      .catch((err) => setGeneralError(err.message))
       .finally(() => setModalBookmarksLoading(false));
   }
 
   const [searchParams] = useSearchParams();
   const selectedFile = searchParams.get('f');
 
-  // TODO: Maybe extract into a hook file.
-  // (same for other big hooks that are generic enough to be extracted).
-  useEffect(() => {
-    if (!isResizing) return;
-    function onMouseMove(e) {
-      if (!sidebarRef.current) return;
-      const newWidth = Math.max(MIN_SIDEBAR, Math.min(MAX_SIDEBAR, e.clientX));
-      sidebarRef.current.style.width = `${newWidth}px`;
-    }
-    function onMouseUp(e) {
-      if (!sidebarRef.current) return;
-      const finalWidth = Math.max(MIN_SIDEBAR, Math.min(MAX_SIDEBAR, e.clientX));
-      setSidebarWidth(finalWidth);
-      localStorage.setItem('sidebarWidth', finalWidth);
-      setIsResizing(false);
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
-      document.body.style.cursor = '';
-      document.body.style.userSelect = '';
-    }
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);
-    return () => {
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
-    };
-  }, [isResizing]);
-
-  if (error) return <div className="p-4 text-red-400">Error: {error}</div>;
+  if (generalError || filesError) return <div className="p-4 text-red-400">Error: {generalError || filesError}</div>;
 
   return (
     <div className="flex h-screen bg-gray-950">
@@ -104,12 +54,7 @@ export default function Layout() {
 
       <aside ref={sidebarRef} className="hidden md:flex flex-shrink-0 bg-gray-900 border-r border-gray-800 flex-col relative" style={{ width: sidebarWidth }}>
         <div
-          onMouseDown={(e) => {
-            e.preventDefault();
-            setIsResizing(true);
-            document.body.style.cursor = 'col-resize';
-            document.body.style.userSelect = 'none';
-          }}
+          onMouseDown={onResizeHandleMouseDown}
           className="absolute right-[-4px] top-0 bottom-0 w-1 cursor-col-resize hover:bg-indigo-500/50 active:bg-indigo-500/70 z-10 shrink-0"
         />
         <Sidemenu files={files} loading={filesLoading} folderName={folderName} onBookmarkClick={openBookmarksModal} onSearchClick={() => setSearchModalOpen(true)} />

@@ -1,12 +1,11 @@
 import { useEffect, useState, useRef } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import FileList from '../components/FileList';
+import useFetch from '../hooks/useFetch';
 
 export default function Dashboard() {
-  const [recent, setRecent] = useState([]);
-  const [recentLoading, setRecentLoading] = useState(true);
-  const [bookmarks, setBookmarks] = useState([]);
-  const [bookmarksLoading, setBookmarksLoading] = useState(true);
+  const { data: recentData, loading: recentLoading } = useFetch('/api/files/recent?n=10');
+  const { data: bookmarksData, loading: bookmarksLoading } = useFetch('/api/bookmarks');
   const { setLayoutTopContent } = useOutletContext();
 
   const [, setTick] = useState(0);
@@ -19,30 +18,12 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
-    fetch('/api/files/recent?n=10')
-      .then(res => res.json())
-      .then(data => {
-        setRecent(data.recent);
-        setRecentLoading(false);
-      })
-      .catch(() => setRecentLoading(false));
-  }, []);
-
-  // TODO: doesn't handle 4xx errors, etc.
-  useEffect(() => {
-    fetch('/api/bookmarks')
-      .then(res => res.json())
-      .then(data => {
-        setBookmarks(data.items || []);
-        setBookmarksLoading(false);
-      })
-      .catch(() => setBookmarksLoading(false));
-  }, []);
-
-  useEffect(() => {
     intervalRef.current = setInterval(() => setTick(t => t + 1), 60000);
     return () => clearInterval(intervalRef.current);
   }, []);
+
+  const recent = recentData?.recent ?? [];
+  const bookmarks = bookmarksData?.items ?? [];
 
   return (
     <div className="min-h-full flex flex-col">

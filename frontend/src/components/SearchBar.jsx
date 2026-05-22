@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { EllipsisHorizontalIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import FileList from './FileList';
+import useDebouncedValue from '../hooks/useDebouncedValue';
 
 export default function SearchBar({ onClose, onSearchActive }) {
   const inputRef = useRef(null);
@@ -16,20 +17,9 @@ export default function SearchBar({ onClose, onSearchActive }) {
   }, []);
 
   const [query, setQuery] = useState('');
-  const [debouncedQuery, setDebouncedQuery] = useState('');
+  const debouncedQuery = useDebouncedValue(query, 150);
   const [results, setResults] = useState({ files: [], contentMatches: [] });
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (query === '') {
-      setDebouncedQuery('');
-    } else {
-      const timer = setTimeout(() => {
-        setDebouncedQuery(query);
-      }, 150);
-      return () => clearTimeout(timer);
-    }
-  }, [query]);
 
   useEffect(() => {
     onSearchActive?.(debouncedQuery.length > 0);
@@ -60,7 +50,6 @@ export default function SearchBar({ onClose, onSearchActive }) {
 
   function handleClear() {
     setQuery('');
-    setDebouncedQuery('');
     setResults({ files: [], contentMatches: [] });
   }
 
