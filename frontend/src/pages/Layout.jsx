@@ -133,7 +133,7 @@ export default function Layout() {
         </Dialog>
       </Transition>
 
-      <aside ref={sidebarRef} className="hidden md:flex flex-shrink-0 bg-gray-900 border-r border-gray-800 flex-col relative" style={{ width: sidebarWidth }}>
+      <aside ref={sidebarRef} className="hidden md:flex flex-shrink-0 bg-gray-900 border-r border-gray-800 flex-col relative overflow-hidden" style={{ width: sidebarWidth }}>
         <div
           onMouseDown={(e) => {
             e.preventDefault();
@@ -165,10 +165,8 @@ export default function Layout() {
           )}
         </div>
 
-        <main className="flex-1 flex flex-col bg-gray-950 min-w-0">
-          <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600">
-            <Outlet context={{ setLayoutTopContent }} />
-          </div>
+        <main className="flex-1 overflow-y-auto overflow-x-hidden bg-gray-950 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600">
+          <Outlet context={{ setLayoutTopContent }} />
         </main>
       </div>
 
