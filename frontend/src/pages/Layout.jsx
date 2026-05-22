@@ -124,7 +124,7 @@ export default function Layout() {
           >
             <Bars3Icon className="w-5 h-5" />
           </button>
-          <div className="flex-1 flex justify-center md:justify-start min-w-0">
+          <div className="flex-1 flex justify-start min-w-0">
             {layoutTopContent.title}
           </div>
           {layoutTopContent.extra && (
