@@ -35,7 +35,7 @@ function SidemenuHeader({ folderName, onClose, onSearchClick, onBookmarkClick })
             <XMarkIcon className="w-5 h-5" />
           </button>
         )}
-        <Link to="/" className="text-sm font-semibold text-gray-400 uppercase tracking-wider hover:text-indigo-400 transition-colors">{folderName}</Link>
+        <Link to="/" onClick={onClose} className="text-sm font-semibold text-gray-400 uppercase tracking-wider hover:text-indigo-400 transition-colors">{folderName}</Link>
       </div>
       <div className="flex items-center gap-1">
         <button
