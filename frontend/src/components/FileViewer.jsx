@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { CheckCircleIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
 import ErrorDisplay from './ErrorDisplay';
-import useFileToolbar from './FileToolbar';
+import useFileToolbar from '../hooks/useFileToolbar';
 import Modal from './Modal';
 import Button from './Button';
 import TextViewer from './viewers/TextViewer';
