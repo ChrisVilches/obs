@@ -7,15 +7,8 @@ import Modal from '../components/Modal';
 import FileList from '../components/FileList';
 import SearchBar from '../components/SearchBar';
 
-// TODO: Not sure about the Outlet usage (is it necessary for react routes?
-// or is it to hack my top header?)
-
 // TODO: This looks extremely messy and I need to audit it.
 
-// TODO: I still think it's not necessary to load bookmarks all the time like that.
-
-// TODO: If I remove the need for reloading bookmarks like this, then the context
-//       also becomes unnecessary! I'd need to cleanup a lot of things.
 export default function Layout() {
   const [files, setFiles] = useState([]);
   const [folderName, setFolderName] = useState('');
@@ -32,7 +25,7 @@ export default function Layout() {
   });
   const sidebarRef = useRef(null);
   const [isResizing, setIsResizing] = useState(false);
-  const [layoutTopContent, setLayoutTopContent] = useState({ title: 'Default', extra: null });
+  const [layoutTopContent, setLayoutTopContent] = useState({ title: '', extra: null });
 
   const MIN_SIDEBAR = 180;
   const MAX_SIDEBAR = 600;

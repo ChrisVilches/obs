@@ -65,14 +65,6 @@ function SidemenuHeader({ folderName, onClose, onSearchClick, onBookmarkClick })
 
 // TODO: scrollbar is hard to grab because of the resize functionality
 
-// TODO: The API returns only files (flat paths), so folders are derived by
-// splitting file paths. Empty folders (with no files) never appear in the
-// tree. If empty folders need to be visible, the backend would need to return
-// directory entries as well.
-
-// TODO: Don't use [data-selected]. Instead do it the React way, by using refs
-// or whatever is suitable.
-
 // TODO: There are two effects to scroll, however I'm under the impression that they both
 // execute for both sidebars (desktop and mobile), since there's no way to distinguish.
 // I should audit this code more and improve it.
@@ -292,39 +284,29 @@ export default function Sidemenu({ files, onClose, sidebarOpen, loading, folderN
     return () => clearTimeout(id);
   }, [sidebarOpen, selectedFile]);
 
-  // TODO: This is weird. If it's loading, then just replace the filesystem tree. This may
-  // be rendering two different search bars. (and the code is duplicated)
-  if (loading) {
-    return (
-      <div className="flex flex-col flex-1 min-h-0">
-        <SidemenuHeader folderName={folderName} onClose={onClose} onSearchClick={onSearchClick} onBookmarkClick={onBookmarkClick} />
-        <nav className="flex-1 overflow-y-auto overflow-x-hidden p-2 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600" style={{ scrollbarGutter: 'stable' }}>
-          <SidemenuSkeleton />
-        </nav>
-        <SidemenuFooter />
-      </div>
-    )
-  }
-
   return (
     <div className="flex flex-col flex-1 min-h-0">
       <SidemenuHeader folderName={folderName} onClose={onClose} onSearchClick={onSearchClick} onBookmarkClick={onBookmarkClick} />
       <nav ref={navRef} className="flex-1 overflow-y-auto overflow-x-hidden p-2 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600" style={{ scrollbarGutter: 'stable' }}>
-        <ul className="space-y-0.5">
-          {tree.map(node => (
-            <TreeNode
-              key={node.path || node.name}
-              node={node}
-              depth={0}
-              selectedFile={selectedFile}
-              onClose={onClose}
-              expandedSet={expandedSet}
-              onToggle={handleToggle}
-            />
-          ))}
-        </ul>
+        {loading ? (
+          <SidemenuSkeleton />
+        ) : (
+          <ul className="space-y-0.5">
+            {tree.map(node => (
+              <TreeNode
+                key={node.path || node.name}
+                node={node}
+                depth={0}
+                selectedFile={selectedFile}
+                onClose={onClose}
+                expandedSet={expandedSet}
+                onToggle={handleToggle}
+              />
+            ))}
+          </ul>
+        )}
       </nav>
       <SidemenuFooter />
-    </div>
+    </div >
   );
 }

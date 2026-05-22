@@ -1,13 +1,6 @@
 const fs = require('fs');
 const path = require('path');
 
-// TODO: Not sure at what moment are the checks/validations executed here (to
-// open the stream and/or check whether it's valid). It should be clear that
-// this is executed at app boot time.
-
-// TODO: Should crash (fatal error) if the specified event bus cannot be opened
-// (e.g. file has no sufficient permissions, no Redis connection, etc)
-
 const channelConfig = process.env.EVENT_CHANNEL;
 
 let writeFn = null;
