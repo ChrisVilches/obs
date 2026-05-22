@@ -14,7 +14,7 @@ import {
   rehypeDebugLists,
   rehypeListMetadata,
 } from "./markdown/List";
-import { rehypeFixImgURL } from "./markdown/rehypeFixImgURL";
+import { rehypeStandaloneImages,  rehypeFixImgURL } from "./markdown/rehypeFixImgURL";
 import rehypeUnwrapSingleParagraphListItems from "./markdown/rehypeUnwrapSingleParagraphListItems";
 import Table from "./markdown/Table";
 
@@ -36,6 +36,7 @@ export default function MarkdownViewer({ file, content, mtime }) {
           ].filter((x) => x)}
           rehypePlugins={[
             rehypeUnwrapSingleParagraphListItems,
+            rehypeStandaloneImages,
             [rehypeFixImgURL, file],
             rehypeKatex,
             rehypeListMetadata,

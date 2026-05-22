@@ -45,6 +45,10 @@ button:disabled, [role="button"][aria-disabled="true"] {
   cursor: default;
 }
 
+.markdown-container > .standalone-image {
+  @apply flex flex-col items-center text-center;
+}
+
 .markdown-container .katex-display {
   @apply overflow-x-auto;
   @apply overflow-y-hidden;
