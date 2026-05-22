@@ -53,7 +53,7 @@ function ButtonsWhenFileExists({ onToggleBookmark, canBeEdited, isBookmarked, on
   )
 }
 
-export default function FileToolbar({
+export default function useFileToolbar({
   file,
   info,
   editMode,
@@ -102,47 +102,20 @@ export default function FileToolbar({
         </div>
       )
     });
-
-    // return () => setHeaderContent({ title: 'Default', extra: null });
-    // TODO: and maybe other dependencies too
-  }, [file, canBeEdited, loading, editMode, saving, bookmarking, info]);
-
-
-  // TODO: Instead of rendering null, we can put all this logic in the component that USES this component,
-  // therefore it becomes part of the logic of that component.
-  return null
-
-  // return (
-  //   <PageHeader
-  //     title={
-  //       <FileNameDisplay
-  //         file={file}
-  //         info={info}
-  //         showFileNameModal={showFileNameModal}
-  //         onShowFileNameModal={onShowFileNameModal}
-  //       />
-  //     }
-  //     actions={
-  //       <div className="flex items-center space-x-2">
-  //         {loading ? (
-  //           <div className="w-5 h-5 border-2 border-gray-600 border-t-transparent rounded-full animate-spin" />
-  //         ) : (
-  //           editMode ? (
-  //             <EditModeButtons onCancel={onCancel} onSave={onSave} saving={saving} />
-  //           ) : (
-  //             info && (
-  //               <ButtonsWhenFileExists
-  //                 canBeEdited={canBeEdited}
-  //                 isBookmarked={info.isBookmarked}
-  //                 onEdit={onEdit}
-  //                 onToggleBookmark={onToggleBookmark}
-  //                 bookmarking={bookmarking}
-  //               />
-  //             )
-  //           )
-  //         )}
-  //       </div>
-  //     }
-  //   />
-  // );
+  }, [
+    file,
+    canBeEdited,
+    loading,
+    editMode,
+    saving,
+    bookmarking,
+    info,
+    showFileNameModal,
+    onShowFileNameModal,
+    onCancel,
+    onSave,
+    onEdit,
+    onToggleBookmark,
+    setLayoutTopContent,
+  ]);
 }

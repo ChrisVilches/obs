@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { CheckCircleIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
 import ErrorDisplay from './ErrorDisplay';
-import FileToolbar from './FileToolbar';
+import useFileToolbar from './FileToolbar';
 import Modal from './Modal';
 import Button from './Button';
 import TextViewer from './viewers/TextViewer';
@@ -47,9 +47,8 @@ export default function FileViewer({ file }) {
     loadFile();
   }, [file]);
 
-  function handleEdit() {
-    setEditMode(true);
-  }
+  const handleEdit = useCallback(() => setEditMode(true), [setEditMode])
+  const handleCancel = useCallback(() => setEditMode(false), [setEditMode])
 
   useEffect(() => {
     if (!fileContentRef.current || !editMode) return
@@ -62,14 +61,11 @@ export default function FileViewer({ file }) {
 
   }, [editMode]);
 
-  function handleCancel() {
-    setEditMode(false);
-  }
-
-  async function handleSave(force = false) {
+  const saveFile = useCallback(async (force) => {
     setSaving(true);
     if (force) setShowConflictModal(false);
     try {
+      console.log({ file, content: fileContentRef.current.value, mtime: info.mtime, force })
       const saveRes = await fetch('/api/files/content', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -115,9 +111,12 @@ export default function FileViewer({ file }) {
     } finally {
       setSaving(false);
     }
-  }
+  }, [file, info]);
 
-  async function handleToggleBookmark() {
+  const handleTrySave = useCallback(() => saveFile(false), [saveFile]);
+  const handleSaveForce = useCallback(() => saveFile(true), [saveFile]);
+
+  const handleToggleBookmark = useCallback(async () => {
     setBookmarking(true);
 
     try {
@@ -139,32 +138,47 @@ export default function FileViewer({ file }) {
     } finally {
       setBookmarking(false);
     }
-  }
+  }, [file, info]);
+
+  // TODO: This code is trash. Should be more compact.
+  let toolbarConfig = {}
 
   if (error) {
-    return (
-      <div className="min-h-full flex flex-col">
-        <FileToolbar
-          file={file}
-          showFileNameModal={showFileNameModal}
-          onShowFileNameModal={setShowFileNameModal}
-        />
-        <div className="flex-1 flex items-center justify-center p-4">
-          <ErrorDisplay message={error} file={file} />
-        </div>
-      </div>
-    );
+    toolbarConfig = {
+      file,
+      showFileNameModal,
+      onShowFileNameModal: setShowFileNameModal
+    }
+  } else if (!info) {
+    toolbarConfig = {
+      file,
+      loading: true,
+      showFileNameModal,
+      onShowFileNameModal: setShowFileNameModal
+    }
+  } else {
+    toolbarConfig = {
+      file,
+      info,
+      editMode,
+      saving,
+      bookmarking,
+      showFileNameModal,
+      onShowFileNameModal: setShowFileNameModal,
+      onEdit: handleEdit,
+      onCancel: handleCancel,
+      onSave: handleTrySave,
+      onToggleBookmark: handleToggleBookmark
+    }
   }
 
+
+  useFileToolbar(toolbarConfig)
+
+  if (error) return <ErrorDisplay message={error} file={file} />;
   if (!info) {
     return (
       <div className="min-h-full flex flex-col">
-        <FileToolbar
-          file={file}
-          loading
-          showFileNameModal={showFileNameModal}
-          onShowFileNameModal={setShowFileNameModal}
-        />
         <div className="flex-1 flex items-center justify-center">
           <div className="flex flex-col items-center gap-3">
             <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
@@ -179,26 +193,13 @@ export default function FileViewer({ file }) {
 
   return (
     <div className="min-h-full flex flex-col">
-      <FileToolbar
-        file={file}
-        info={info}
-        editMode={editMode}
-        saving={saving}
-        bookmarking={bookmarking}
-        showFileNameModal={showFileNameModal}
-        onShowFileNameModal={setShowFileNameModal}
-        onEdit={handleEdit}
-        onCancel={handleCancel}
-        onSave={() => handleSave(false)}
-        onToggleBookmark={handleToggleBookmark}
-      />
       {editMode ? (
         <textarea
           ref={fileContentRef}
           onKeyDown={(e) => {
             if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
               e.preventDefault();
-              handleSave(false);
+              handleTrySave(false);
             }
           }}
           disabled={saving}
@@ -222,7 +223,7 @@ export default function FileViewer({ file }) {
           <p className="mt-2">You can force save to overwrite their changes, or cancel and reload the file to see the latest version.</p>
           <div className="mt-4 flex justify-end gap-2">
             <Button variant="secondary" onClick={() => setShowConflictModal(false)} disabled={saving}>Cancel</Button>
-            <Button variant="danger" onClick={() => handleSave(true)} disabled={saving}>Force Save</Button>
+            <Button variant="danger" onClick={handleSaveForce} disabled={saving}>Force Save</Button>
           </div>
         </Modal>
       )}
