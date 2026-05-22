@@ -18,7 +18,15 @@ export default function Modal({
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-dialog-overlay-show data-[state=closed]:animate-dialog-overlay-hide" />
         <Dialog.Content
-          className={`fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 bg-gray-900 border border-gray-800 rounded-xl shadow-xl outline-none data-[state=open]:animate-dialog-content-show data-[state=closed]:animate-dialog-content-hide ${className}`}
+          className={`
+            fixed left-1/2 top-1/2 z-50
+            w-[calc(100vw-2rem)] max-w-md
+            -translate-x-1/2 -translate-y-1/2
+            bg-gray-900 border border-gray-800 rounded-xl shadow-xl outline-none
+            data-[state=open]:animate-dialog-content-show
+            data-[state=closed]:animate-dialog-content-hide
+            ${className}
+          `}
         >
           <div className="flex items-center justify-between px-5 py-4 border-b border-gray-800 shrink-0">
             <Dialog.Title className="text-sm font-semibold text-gray-300">
