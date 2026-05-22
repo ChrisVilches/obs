@@ -11,7 +11,10 @@ export default function SearchBar({ onClose, selectedFile, onSearchActive }) {
   const inputRef = useRef(null);
 
   useEffect(() => {
-    inputRef.current?.focus();
+    const id = setTimeout(() => {
+      inputRef.current?.focus();
+    }, 50);
+    return () => clearTimeout(id);
   }, []);
 
   const [query, setQuery] = useState('');
