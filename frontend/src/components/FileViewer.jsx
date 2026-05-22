@@ -3,7 +3,8 @@ import toast from 'react-hot-toast';
 import { CheckCircleIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
 import ErrorDisplay from './ErrorDisplay';
 import useFileToolbar from '../hooks/useFileToolbar';
-import useFetch from '../hooks/useFetch';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { apiFetch, queryClient } from '../api';
 import Modal from './Modal';
 import Button from './Button';
 import TextViewer from './viewers/TextViewer';
@@ -14,8 +15,6 @@ import BinaryFileViewer from './viewers/BinaryFileViewer';
 
 export default function FileViewer({ file }) {
   const [editMode, setEditMode] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [bookmarking, setBookmarking] = useState(false);
   const [operationalError, setOperationalError] = useState(null);
   const fileContentRef = useRef(null)
   const [showFileNameModal, setShowFileNameModal] = useState(false);
@@ -23,7 +22,39 @@ export default function FileViewer({ file }) {
 
   if (!file) throw new Error("fatal. File is null")
 
-  const { data: info, loading, error: fetchError, refetch } = useFetch(`/api/files/info?file=${encodeURIComponent(file)}`);
+  const { data: info, error: fetchError, refetch } = useQuery({
+    queryKey: ['files', 'info', file],
+    queryFn: () => apiFetch(`/api/files/info?file=${encodeURIComponent(file)}`),
+  });
+
+  const saveMutation = useMutation({
+    mutationFn: async ({ file: f, content, mtime, force }) => {
+      const res = await fetch('/api/files/content', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ file: f, content, mtime, force }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        if (data.code === 'VERSION_CONFLICT') throw { _code: 'VERSION_CONFLICT' };
+        throw new Error(data.error || 'Save failed');
+      }
+      return data;
+    },
+  });
+
+  const bookmarkMutation = useMutation({
+    mutationFn: async ({ path, method }) => {
+      const res = await fetch('/api/bookmarks', {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      return data;
+    },
+  });
 
   const error = fetchError || operationalError;
 
@@ -45,81 +76,68 @@ export default function FileViewer({ file }) {
 
   }, [editMode]);
 
-  const saveFile = useCallback(async (force) => {
-    setSaving(true);
-    if (force) setShowConflictModal(false);
-    try {
-      const saveRes = await fetch('/api/files/content', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ file, content: fileContentRef.current.value, mtime: info?.mtime, force }),
-      });
-
-      const saveData = await saveRes.json();
-
-      if (!saveRes.ok) {
-        if (saveData.code === 'VERSION_CONFLICT') {
-          setShowConflictModal(true);
-          return;
-        }
-
-        if (saveData.error) throw new Error(saveData.error);
-      }
-
-      const result = await refetch();
-      if (!result) return;
-
-      const modified = saveData.modified;
-      toast.custom((t) => {
-        const Icon = modified ? CheckCircleIcon : InformationCircleIcon;
-        return (
-          <div
-            className={`${t.visible ? 'animate-enter' : 'animate-leave'
-              } max-w-sm w-full bg-gray-800 shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
-          >
-            <div className="flex-1 w-0 p-3">
-              <div className="flex items-center">
-                <Icon className={`h-5 w-5 ${modified ? 'text-green-400' : 'text-gray-400'}`} />
-                <p className="ml-2 text-sm font-medium text-gray-200">{modified ? 'Updated' : 'No changes'}</p>
-              </div>
+  const onSaveSuccess = useCallback(async (saveData) => {
+    const result = await refetch();
+    if (result.error) return;
+    const modified = saveData.modified;
+    toast.custom((t) => {
+      const Icon = modified ? CheckCircleIcon : InformationCircleIcon;
+      return (
+        <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} max-w-sm w-full bg-gray-800 shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}>
+          <div className="flex-1 w-0 p-3">
+            <div className="flex items-center">
+              <Icon className={`h-5 w-5 ${modified ? 'text-green-400' : 'text-gray-400'}`} />
+              <p className="ml-2 text-sm font-medium text-gray-200">{modified ? 'Updated' : 'No changes'}</p>
             </div>
           </div>
-        );
-      });
-      setEditMode(false)
-    } catch (err) {
-      setOperationalError(err.message);
-    } finally {
-      setSaving(false);
+        </div>
+      );
+    });
+    setEditMode(false);
+  }, [refetch]);
+
+  const onSaveError = useCallback((err) => {
+    if (err._code === 'VERSION_CONFLICT') {
+      setShowConflictModal(true);
+      return;
     }
-  }, [file, info, refetch]);
+    setOperationalError(err.message);
+  }, []);
 
-  const handleTrySave = useCallback(() => saveFile(false), [saveFile]);
-  const handleSaveForce = useCallback(() => saveFile(true), [saveFile]);
+  const handleTrySave = useCallback(() => {
+    setOperationalError(null);
+    saveMutation.mutate(
+      { file, content: fileContentRef.current.value, mtime: info?.mtime, force: false },
+      { onSuccess: onSaveSuccess, onError: onSaveError },
+    );
+  }, [file, info, saveMutation, onSaveSuccess, onSaveError]);
 
-  const handleToggleBookmark = useCallback(async () => {
-    setBookmarking(true);
+  const handleSaveForce = useCallback(() => {
+    setShowConflictModal(false);
+    setOperationalError(null);
+    saveMutation.mutate(
+      { file, content: fileContentRef.current.value, mtime: info?.mtime, force: true },
+      { onSuccess: onSaveSuccess, onError: onSaveError },
+    );
+  }, [file, info, saveMutation, onSaveSuccess, onSaveError]);
 
-    try {
-      const isRemoving = info.isBookmarked;
+  const onBookmarkError = useCallback((err) => {
+    setOperationalError(err.message);
+  }, []);
 
-      const res = await fetch('/api/bookmarks', {
-        method: isRemoving ? 'DELETE' : 'POST',
-        headers: { 'Content-Type': 'application/json', },
-        body: JSON.stringify({ path: file }),
-      });
-
-      const data = await res.json();
-
-      if (data.error) throw new Error(data.error);
-
-      await refetch();
-    } catch (err) {
-      setOperationalError(err.message);
-    } finally {
-      setBookmarking(false);
-    }
-  }, [file, info, refetch]);
+  const handleToggleBookmark = useCallback(() => {
+    setOperationalError(null);
+    bookmarkMutation.mutate(
+      { path: file, method: info.isBookmarked ? 'DELETE' : 'POST' },
+      {
+        onSuccess: () => {
+          refetch();
+          queryClient.invalidateQueries({ queryKey: ['bookmarks'] });
+        },
+        onError: onBookmarkError,
+      },
+    );
+  }, [file, info, refetch, bookmarkMutation, onBookmarkError]);
 
   const isLoading = !info && !error;
 
@@ -128,8 +146,8 @@ export default function FileViewer({ file }) {
     loading: isLoading,
     info,
     editMode,
-    saving,
-    bookmarking,
+    saving: saveMutation.isPending,
+    bookmarking: bookmarkMutation.isPending,
     showFileNameModal,
     onShowFileNameModal: setShowFileNameModal,
     onEdit: handleEdit,

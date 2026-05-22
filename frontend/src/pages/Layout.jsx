@@ -6,18 +6,25 @@ import Sidemenu from '../components/Sidemenu';
 import Modal from '../components/Modal';
 import FileList from '../components/FileList';
 import SearchBar from '../components/SearchBar';
-import useFetch from '../hooks/useFetch';
+import { useQuery } from '@tanstack/react-query';
+import { apiFetch } from '../api';
 import useSidebarResize from '../hooks/useSidebarResize';
 
 export default function Layout() {
   const [generalError, setGeneralError] = useState(null);
-  const { data: filesData, loading: filesLoading, error: filesError } = useFetch('/api/files');
+  const { data: filesData, isLoading: filesLoading, error: filesError } = useQuery({
+    queryKey: ['files'],
+    queryFn: () => apiFetch('/api/files'),
+  });
   const files = filesData?.files ?? [];
   const folderName = filesData?.folderName ?? '';
 
   const [bookmarksModalOpen, setBookmarksModalOpen] = useState(false);
-  const [modalBookmarks, setModalBookmarks] = useState([]);
-  const [modalBookmarksLoading, setModalBookmarksLoading] = useState(false);
+  const { data: modalBookmarksData, isLoading: modalBookmarksLoading } = useQuery({
+    queryKey: ['bookmarks'],
+    queryFn: () => apiFetch('/api/bookmarks'),
+    enabled: bookmarksModalOpen,
+  });
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { sidebarWidth, sidebarRef, onResizeHandleMouseDown } = useSidebarResize();
@@ -25,15 +32,6 @@ export default function Layout() {
 
   function openBookmarksModal() {
     setBookmarksModalOpen(true);
-    setModalBookmarksLoading(true);
-    fetch('/api/bookmarks')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.error) throw new Error(data.error);
-        setModalBookmarks(data.items || []);
-      })
-      .catch((err) => setGeneralError(err.message))
-      .finally(() => setModalBookmarksLoading(false));
   }
 
   const [searchParams] = useSearchParams();
@@ -85,7 +83,7 @@ export default function Layout() {
       </div>
 
       <Modal open={bookmarksModalOpen} onClose={() => setBookmarksModalOpen(false)} title="Bookmarks" className="h-[70vh] flex flex-col overflow-hidden" childrenClass="flex-1 min-h-0 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600">
-        <FileList items={modalBookmarks} loading={modalBookmarksLoading} emptyMessage="No bookmarks found." onItemClick={() => setBookmarksModalOpen(false)} />
+        <FileList items={modalBookmarksData?.items ?? []} loading={modalBookmarksLoading} emptyMessage="No bookmarks found." onItemClick={() => setBookmarksModalOpen(false)} />
       </Modal>
 
       <Modal open={searchModalOpen} onClose={() => setSearchModalOpen(false)} title="Search" className="h-[70vh] flex flex-col overflow-hidden" childrenClass="flex-1 min-h-0">

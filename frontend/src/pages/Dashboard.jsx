@@ -1,25 +1,25 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { apiFetch } from '../api';
 import FileList from '../components/FileList';
-import useFetch from '../hooks/useFetch';
 
 export default function Dashboard() {
-  const { data: recentData, loading: recentLoading } = useFetch('/api/files/recent?n=10');
-  const { data: bookmarksData, loading: bookmarksLoading } = useFetch('/api/bookmarks');
+  const { data: recentData, isLoading: recentLoading } = useQuery({
+    queryKey: ['files', 'recent', 10],
+    queryFn: () => apiFetch('/api/files/recent?n=10'),
+    refetchInterval: 60000,
+  });
+  const { data: bookmarksData, isLoading: bookmarksLoading } = useQuery({
+    queryKey: ['bookmarks'],
+    queryFn: () => apiFetch('/api/bookmarks'),
+  });
   const { setLayoutTopContent } = useOutletContext();
-
-  const [, setTick] = useState(0);
-  const intervalRef = useRef(null);
 
   useEffect(() => {
     setLayoutTopContent({
       title: <h1 className="text-sm font-semibold text-gray-300">Dashboard</h1>
     });
-  }, []);
-
-  useEffect(() => {
-    intervalRef.current = setInterval(() => setTick(t => t + 1), 60000);
-    return () => clearInterval(intervalRef.current);
   }, []);
 
   const recent = recentData?.recent ?? [];

@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { EllipsisHorizontalIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
+import { apiFetch } from '../api';
 import FileList from './FileList';
 import useDebouncedValue from '../hooks/useDebouncedValue';
 
@@ -18,39 +20,28 @@ export default function SearchBar({ onClose, onSearchActive }) {
 
   const [query, setQuery] = useState('');
   const debouncedQuery = useDebouncedValue(query, 150);
-  const [results, setResults] = useState({ files: [], contentMatches: [] });
-  const [loading, setLoading] = useState(false);
+
+  const { data: searchData, isFetching } = useQuery({
+    queryKey: ['search', debouncedQuery],
+    queryFn: async () => {
+      const res = await fetch(`/api/files/search?q=${encodeURIComponent(debouncedQuery)}`);
+      const json = await res.json();
+      if (json.error) return { files: [], contentMatches: [] };
+      return { files: json.files || [], contentMatches: json.contentMatches || [] };
+    },
+    enabled: !!debouncedQuery,
+    placeholderData: keepPreviousData,
+  });
+
+  const results = searchData ?? { files: [], contentMatches: [] };
+  const loading = isFetching;
 
   useEffect(() => {
     onSearchActive?.(debouncedQuery.length > 0);
   }, [debouncedQuery, onSearchActive]);
 
-  useEffect(() => {
-    if (!debouncedQuery) {
-      setResults({ files: [], contentMatches: [] });
-      return;
-    }
-    let cancelled = false;
-    setLoading(true);
-    fetch(`/api/files/search?q=${encodeURIComponent(debouncedQuery)}`)
-      .then(res => res.json())
-      .then(data => {
-        if (!cancelled) {
-          setResults({ files: data.files || [], contentMatches: data.contentMatches || [] });
-        }
-      })
-      .catch(() => {
-        if (!cancelled) setResults({ files: [], contentMatches: [] });
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => { cancelled = true; };
-  }, [debouncedQuery]);
-
   function handleClear() {
     setQuery('');
-    setResults({ files: [], contentMatches: [] });
   }
 
   const [tab, setTab] = useState('all');
