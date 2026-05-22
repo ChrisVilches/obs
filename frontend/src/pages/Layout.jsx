@@ -150,7 +150,7 @@ export default function Layout() {
         <div className="sticky top-0 z-10 flex items-center gap-3 px-4 h-14 border-b border-gray-800 bg-gray-900 shrink-0">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="md:hidden top-0 left-0 z-50 w-12 h-14 flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
+            className="md:hidden p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
             aria-label="Open sidebar"
           >
             <Bars3Icon className="w-5 h-5" />
