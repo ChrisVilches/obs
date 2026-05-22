@@ -1,10 +1,6 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 
-// TODO: add horizontal spacing
-// TODO: not related to just this file, but remove all headless ui workarounds
-// (delays, flattening the dialogs, bottom button toolbar, etc)
-
 export default function Modal({
   open,
   onClose,
