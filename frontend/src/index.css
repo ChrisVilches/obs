@@ -50,6 +50,11 @@ button:disabled, [role="button"][aria-disabled="true"] {
   @apply overflow-y-hidden;
 }
 
+/* Break very long strings without spaces to prevent layout deformation. */
+.markdown-container {
+  @apply [overflow-wrap:anywhere];
+}
+
 /*
 Inline markdown images can inherit block display styles from global img rules,
 which causes them to break onto separate lines inside paragraphs.
