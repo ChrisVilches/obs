@@ -8,6 +8,7 @@ COPY . .
 RUN npm run build
 
 FROM node:22-alpine
+RUN apk add --no-cache grep
 WORKDIR /app
 COPY --from=builder /app/backend /app/backend
 COPY --from=builder /app/frontend/dist /app/frontend/dist

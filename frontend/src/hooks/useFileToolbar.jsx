@@ -71,7 +71,6 @@ export default function useFileToolbar({
   const { setLayoutTopContent } = useOutletContext();
 
   useEffect(() => {
-    console.log("file changed (from toolbar)", file)
     setLayoutTopContent({
       title: (
         <FileNameDisplay file={file}

@@ -20,7 +20,6 @@ const pathSchema = z.string().min(1)
 
 if (process.env.NODE_ENV !== 'production') {
   app.use((_req, _res, next) => {
-    // TODO: Try this random time
     const time = (Math.random() * 400) + 600
     setTimeout(next, time);
   });

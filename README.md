@@ -1,3 +1,15 @@
+## Dependencies
+
+### Backend (Node.js server)
+
+- **Node.js** v24.16.0 — runtime
+- **GNU grep** — required for certain backend operations (e.g., searching file contents)
+- Packages installed via `npm` (see `backend/package.json`)
+
+### Frontend (Vite / React SPA)
+
+No runtime dependencies. The frontend is compiled to static files and served by the backend.
+
 ## Deployment
 
 ### Build the Docker image
