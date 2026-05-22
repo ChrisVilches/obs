@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import { CheckCircleIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
 import ErrorDisplay from './ErrorDisplay';
 import useFileToolbar from '../hooks/useFileToolbar';
+import useFetch from '../hooks/useFetch';
 import Modal from './Modal';
 import Button from './Button';
 import TextViewer from './viewers/TextViewer';
@@ -11,50 +12,33 @@ import MarkdownViewer from './viewers/MarkdownViewer';
 import MediaViewer from './viewers/MediaViewer';
 import BinaryFileViewer from './viewers/BinaryFileViewer';
 
-// TODO: when and why is "file" null? I want to make it strictly required
-// (and validate the parent).
 export default function FileViewer({ file }) {
-  const [info, setInfo] = useState(null);
-  const [error, setError] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [saving, setSaving] = useState(false);
   const [bookmarking, setBookmarking] = useState(false);
-  // const [editContent, setEditContent] = useState('');
+  const [operationalError, setOperationalError] = useState(null);
   const fileContentRef = useRef(null)
   const [showFileNameModal, setShowFileNameModal] = useState(false);
   const [showConflictModal, setShowConflictModal] = useState(false);
 
-  // TODO: remove this later
   if (!file) throw new Error("fatal. File is null")
 
-  async function loadFile() {
-    setInfo(null);
-    setError(null);
-    setEditMode(false);
+  const { data: info, loading, error: fetchError, refetch } = useFetch(`/api/files/info?file=${encodeURIComponent(file)}`);
 
-    try {
-      const res = await fetch(`/api/files/info?file=${encodeURIComponent(file)}`);
-      const data = await res.json();
-
-      if (data.error) throw new Error(data.error);
-      setInfo(data);
-    } catch (err) {
-      setError(err.message);
-    }
-  }
+  const error = fetchError || operationalError;
 
   useEffect(() => {
-    loadFile();
+    setEditMode(false);
+    setOperationalError(null);
   }, [file]);
 
-  const handleEdit = useCallback(() => setEditMode(true), [setEditMode])
-  const handleCancel = useCallback(() => setEditMode(false), [setEditMode])
+  const handleEdit = useCallback(() => setEditMode(true), [])
+  const handleCancel = useCallback(() => setEditMode(false), [])
 
   useEffect(() => {
     if (!fileContentRef.current || !editMode) return
-    fileContentRef.current.value = info.content;
+    fileContentRef.current.value = info?.content ?? '';
 
-    // Automatically focus on the first character.
     fileContentRef.current.focus();
     fileContentRef.current.setSelectionRange(0, 0);
     fileContentRef.current.scrollTop = 0;
@@ -68,7 +52,7 @@ export default function FileViewer({ file }) {
       const saveRes = await fetch('/api/files/content', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ file, content: fileContentRef.current.value, mtime: info.mtime, force }),
+        body: JSON.stringify({ file, content: fileContentRef.current.value, mtime: info?.mtime, force }),
       });
 
       const saveData = await saveRes.json();
@@ -82,10 +66,8 @@ export default function FileViewer({ file }) {
         if (saveData.error) throw new Error(saveData.error);
       }
 
-      const res = await fetch(`/api/files/info?file=${encodeURIComponent(file)}`);
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-      setInfo(data);
+      const result = await refetch();
+      if (!result) return;
 
       const modified = saveData.modified;
       toast.custom((t) => {
@@ -106,11 +88,11 @@ export default function FileViewer({ file }) {
       });
       setEditMode(false)
     } catch (err) {
-      setError(err.message);
+      setOperationalError(err.message);
     } finally {
       setSaving(false);
     }
-  }, [file, info]);
+  }, [file, info, refetch]);
 
   const handleTrySave = useCallback(() => saveFile(false), [saveFile]);
   const handleSaveForce = useCallback(() => saveFile(true), [saveFile]);
@@ -131,15 +113,15 @@ export default function FileViewer({ file }) {
 
       if (data.error) throw new Error(data.error);
 
-      setInfo({ ...info, isBookmarked: data.isBookmarked });
+      await refetch();
     } catch (err) {
-      setError(err.message);
+      setOperationalError(err.message);
     } finally {
       setBookmarking(false);
     }
-  }, [file, info]);
+  }, [file, info, refetch]);
 
-  const isLoading = !info && !error;
+  const isLoading = loading;
 
   useFileToolbar({
     file,
