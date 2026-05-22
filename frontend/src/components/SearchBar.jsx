@@ -2,12 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { EllipsisHorizontalIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import FileList from './FileList';
 
-// TODO: Search results need to be deduplicated for the "All" tab.
-
-// TODO: I just tried searching for test_db after putting that text inside a
-// file with the same name (test_db_dump) and it didn't find it (by content).
-
-export default function SearchBar({ onClose, selectedFile, onSearchActive }) {
+export default function SearchBar({ onClose, onSearchActive }) {
   const inputRef = useRef(null);
 
   // NOTE: Unfortunately, this hack is necessary for mobile. It works without
@@ -71,7 +66,6 @@ export default function SearchBar({ onClose, selectedFile, onSearchActive }) {
 
   const [tab, setTab] = useState('all');
 
-  const totalCount = results.files.length + results.contentMatches.length;
   const hasAnyResults = results.files.length > 0 || results.contentMatches.length > 0;
 
   const allItems = [...new Set([...results.files, ...results.contentMatches])].map(p => ({ path: p }));
@@ -79,7 +73,7 @@ export default function SearchBar({ onClose, selectedFile, onSearchActive }) {
   const contentItems = results.contentMatches.map(p => ({ path: p }));
 
   const tabs = [
-    { key: 'all', label: 'All', count: totalCount },
+    { key: 'all', label: 'All', count: allItems.length },
     { key: 'files', label: 'File names', count: results.files.length },
     { key: 'content', label: 'Content', count: results.contentMatches.length },
   ];

@@ -30,9 +30,6 @@ async function searchFiles(rootDir, query) {
     contentMatches = (err.stdout || '').trim().split('\n').filter(Boolean).map(f => path.relative(rootDir, f));
   }
 
-  const fileSet = new Set(files);
-  contentMatches = contentMatches.filter(f => !fileSet.has(f));
-
   return { files, contentMatches };
 }
 
