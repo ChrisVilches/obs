@@ -121,7 +121,7 @@ export default function FileViewer({ file }) {
     }
   }, [file, info, refetch]);
 
-  const isLoading = loading;
+  const isLoading = !info && !error;
 
   useFileToolbar({
     file,
