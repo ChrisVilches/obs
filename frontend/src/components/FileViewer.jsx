@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import useSWR, { useSWRConfig } from "swr";
 import { UnsavedChangesModal, useEditBlocker } from "../hooks/useEditBlocker";
 import useFileToolbar from "../hooks/useFileToolbar";
@@ -13,9 +20,45 @@ import ErrorDisplay from "./ErrorDisplay";
 import Modal from "./Modal";
 import BinaryFileViewer from "./viewers/BinaryFileViewer";
 import ImageViewer from "./viewers/ImageViewer";
-import MarkdownViewer from "./viewers/MarkdownViewer";
 import MediaViewer from "./viewers/MediaViewer";
 import TextViewer from "./viewers/TextViewer";
+
+// MarkdownViewer is code-split because react-markdown + katex + remark/rehype
+// plugins are too large to bundle eagerly. While the lazy chunk loads, we
+// show a skeleton of text lines instead of a spinner to avoid an
+// identical-looking spinner in the preceding useSWR-loading phase — two
+// back-to-back spinners would cause a visual glitch where the animation
+// resets when React swaps the DOM nodes.
+const MarkdownViewer = lazy(() => import("./viewers/MarkdownViewer"));
+
+function MarkdownSkeleton() {
+  const lines = [
+    "w-3/4",
+    "w-full",
+    "w-1/2",
+    "w-5/6",
+    "w-2/3",
+    "w-full",
+    "w-1/3",
+    "w-4/5",
+    "w-3/5",
+    "w-full",
+    "w-1/4",
+    "w-2/3",
+    "w-5/6",
+    "w-1/2",
+    "w-3/4",
+  ];
+  return (
+    <div className="flex-1 p-6 animate-pulse">
+      <div className="max-w-full space-y-3">
+        {lines.map((w, i) => (
+          <div key={i} className={`h-4 bg-gray-800 rounded ${w}`} />
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function FileViewer({ file }) {
   const { mutate } = useSWRConfig();
@@ -176,7 +219,13 @@ export default function FileViewer({ file }) {
       ) : type === "image" ? (
         <ImageViewer file={file} />
       ) : type === "markdown" ? (
-        <MarkdownViewer mtime={info.mtime} file={file} content={info.content} />
+        <Suspense fallback={<MarkdownSkeleton />}>
+          <MarkdownViewer
+            mtime={info.mtime}
+            file={file}
+            content={info.content}
+          />
+        </Suspense>
       ) : type === "audio" || type === "video" ? (
         <MediaViewer file={file} type={type} />
       ) : type === "binary" ? (
