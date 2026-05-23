@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   rehypeFixImgURL,
   rehypeStandaloneImages,
-} from "../components/viewers/markdown/rehypeFixImgURL";
+} from "../components/viewers/markdown/rehypeImgPlugins";
 
 function applyPlugin(pluginFn) {
   const tree = { type: "root", children: [] };

@@ -14,7 +14,10 @@ import {
   rehypeDebugLists,
   rehypeListMetadata,
 } from "./markdown/List";
-import { rehypeStandaloneImages,  rehypeFixImgURL } from "./markdown/rehypeFixImgURL";
+import {
+  rehypeStandaloneImages,
+  rehypeFixImgURL,
+} from "./markdown/rehypeImgPlugins";
 import rehypeUnwrapSingleParagraphListItems from "./markdown/rehypeUnwrapSingleParagraphListItems";
 import Table from "./markdown/Table";
 
