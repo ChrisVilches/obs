@@ -45,8 +45,15 @@ button:disabled, [role="button"][aria-disabled="true"] {
   cursor: default;
 }
 
-.markdown-container > .standalone-image {
+/* Center standalone images */
+.markdown-container > figure.standalone-image {
   @apply flex flex-col items-center text-center;
+}
+
+/* Standalone images inside an <a> have some extra vertical space. */
+/* Make it the same as images without <a> */
+.markdown-container > figure.standalone-image > a > img { 
+  @apply my-0;
 }
 
 .markdown-container .katex-display {
