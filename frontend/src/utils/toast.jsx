@@ -9,9 +9,12 @@ function showToast(msg, { Icon, iconColor, bgColor, ringColor, textColor }) {
   return toast.custom((t) => (
     <button
       type="button"
-      className={`${
-        t.visible ? "animate-enter" : "animate-leave"
-      } max-w-sm w-full ${bgColor} shadow-lg rounded-lg pointer-events-auto flex ring-1 ${ringColor} cursor-pointer`}
+      style={{
+        animation: t.visible
+          ? 'toast-enter 0.2s ease-out'
+          : 'toast-leave 0.15s ease-in forwards',
+      }}
+      className={`max-w-sm w-full ${bgColor} shadow-lg rounded-lg pointer-events-auto flex ring-1 ${ringColor} cursor-pointer`}
       onClick={() => toast.dismiss(t.id)}
     >
       <div className="flex-1 w-0 p-3">
