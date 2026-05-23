@@ -1,15 +1,20 @@
-const { execSync } = require("node:child_process");
+const { exec } = require("node:child_process");
+const { promisify } = require("node:util");
+const execAsync = promisify(exec);
+
 const { getRecentEvents } = require("../eventChannel");
 const env = require("../env");
 
-function getStatus() {
+async function getStatus() {
   let rgOk = false,
     findOk = false;
   try {
-    rgOk = execSync("rg --version", { encoding: "utf8" }).includes("ripgrep");
+    const { stdout } = await execAsync("rg --version", { encoding: "utf8" });
+    rgOk = stdout.includes("ripgrep");
   } catch {}
   try {
-    findOk = execSync("find --version", { encoding: "utf8" }).includes("GNU");
+    const { stdout } = await execAsync("find --version", { encoding: "utf8" });
+    findOk = stdout.includes("GNU");
   } catch {}
 
   return {

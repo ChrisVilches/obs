@@ -151,8 +151,8 @@ app.patch("/api/config", async (req, res) => {
   res.json(await updateAppConfig(APP_CONFIG_FILE, updates));
 });
 
-app.get("/api", (_req, res) => {
-  res.json(getStatus());
+app.get("/api", async (_req, res) => {
+  res.json(await getStatus());
 });
 
 app.use(express.static(path.join(__dirname, "..", "..", "frontend", "dist")));
