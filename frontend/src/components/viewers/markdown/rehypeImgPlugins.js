@@ -12,10 +12,9 @@ export function rehypeFixImgURL(file) {
       const src = node.properties?.src;
       if (!src) return;
 
-      // TODO: Maybe needs to encode URI components or something like that.
       node.properties.src = isExternalURL(src)
         ? src
-        : `/api/files/raw?file=${src}&current=${file ?? ""}`;
+        : `/api/files/raw?file=${encodeURIComponent(src)}&current=${encodeURIComponent(file ?? "")}`;
     });
   };
 }

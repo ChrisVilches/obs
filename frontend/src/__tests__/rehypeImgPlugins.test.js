@@ -38,7 +38,7 @@ describe("rehypeFixImgURL", () => {
     plugin(tree);
 
     expect(img.properties.src).toBe(
-      "/api/files/raw?file=images/photo.png&current=notes/my-note.md",
+      "/api/files/raw?file=images%2Fphoto.png&current=notes%2Fmy-note.md",
     );
   });
 
@@ -90,7 +90,7 @@ describe("rehypeFixImgURL", () => {
     plugin(tree);
 
     expect(img.properties.src).toBe(
-      "/api/files/raw?file=images/photo.png&current=",
+      "/api/files/raw?file=images%2Fphoto.png&current=",
     );
   });
 
