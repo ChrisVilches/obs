@@ -65,6 +65,10 @@ async function classifyFile(fullPath) {
   return classifyByMimeAndExt(null, ext);
 }
 
+// Only matches todos at the start of a line (no leading whitespace). Nested (indented)
+// todos are not found because it's ambiguous whether leading whitespace denotes a
+// properly nested markdown list or just accidental indentation. A full markdown parser
+// would be needed to decide.
 async function getTodoFiles(rootDir, n) {
   const { stdout } = await execFileAsync(
     "sh",
