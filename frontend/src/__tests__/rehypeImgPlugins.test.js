@@ -4,14 +4,6 @@ import {
   rehypeStandaloneImages,
 } from "../components/viewers/markdown/rehypeImgPlugins";
 
-function applyPlugin(pluginFn) {
-  const tree = { type: "root", children: [] };
-  // Some plugins return a function, others are direct transformers
-  const fn = typeof pluginFn === "function" ? pluginFn : pluginFn();
-  fn(tree);
-  return tree;
-}
-
 function makeImg(src) {
   return { type: "element", tagName: "img", properties: { src }, children: [] };
 }
@@ -91,6 +83,50 @@ describe("rehypeFixImgURL", () => {
 
     expect(img.properties.src).toBe(
       "/api/files/raw?file=images/photo.png&current=",
+    );
+  });
+
+  it("produces a malformed URL when src contains a query string", () => {
+    const img = makeImg("images/photo.png?w=200&h=100");
+    const tree = { type: "root", children: [makeP([img])] };
+    const plugin = rehypeFixImgURL("notes/my-note.md");
+    plugin(tree);
+
+    // BUG: the "?w=200&h=100" leaks into the top-level query string.
+    // The backend sees "file=images/photo.png" and treats "w=200&h=100"
+    // as additional query params on /api/files/raw rather than part of "file".
+    const result = img.properties.src;
+    expect(result).toBe(
+      "/api/files/raw?file=images/photo.png?w=200&h=100&current=notes/my-note.md",
+    );
+  });
+
+  it("produces a malformed URL when src contains an ampersand", () => {
+    const img = makeImg("notes/foo & bar.png");
+    const tree = { type: "root", children: [makeP([img])] };
+    const plugin = rehypeFixImgURL("notes/my-note.md");
+    plugin(tree);
+
+    // BUG: the "& bar.png" creates a spurious " bar.png" query parameter.
+    // The backend only receives "file=notes/foo " (trailing space).
+    const result = img.properties.src;
+    expect(result).toBe(
+      "/api/files/raw?file=notes/foo & bar.png&current=notes/my-note.md",
+    );
+  });
+
+  it("produces a malformed URL when the file parameter contains a hash", () => {
+    const img = makeImg("diagram.svg");
+    const tree = { type: "root", children: [makeP([img])] };
+    const plugin = rehypeFixImgURL("notes/guide.md#section-3");
+    plugin(tree);
+
+    // BUG: "#section-3" is treated as a URL fragment on the outer URL.
+    // The "current" param only contains "notes/guide.md" and the hash
+    // is a client-side-only fragment that the server never sees.
+    const result = img.properties.src;
+    expect(result).toBe(
+      "/api/files/raw?file=diagram.svg&current=notes/guide.md#section-3",
     );
   });
 

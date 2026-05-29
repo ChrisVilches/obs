@@ -12,6 +12,12 @@ export function rehypeFixImgURL(file) {
       const src = node.properties?.src;
       if (!src) return;
 
+      // The src and file variables are expected to be already URL-encoded before
+      // reaching this plugin (e.g. at parse time). They are interpolated directly
+      // into a query string with no additional escaping. If either value contains
+      // reserved characters like "?", "&", or "#", the resulting URL can become
+      // malformed — the fragment or additional query params will leak into the
+      // top-level URL structure rather than staying inside the intended parameter.
       node.properties.src = isExternalURL(src)
         ? src
         : `/api/files/raw?file=${src}&current=${file ?? ""}`;
