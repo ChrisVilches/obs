@@ -119,45 +119,102 @@ describe("rehypeFixImgURL", () => {
     );
   });
 
-  it("produces a malformed URL when caller passes unencoded query params in src", () => {
-    const img = makeImg("images/photo.png?w=200&h=100");
+  it("strips query params from relative image src", () => {
+    const img = makeImg("images/my%20photo.png?w=200&h=100");
     const tree = { type: "root", children: [makeP([img])] };
     const plugin = rehypeFixImgURL("notes/my-note.md");
     plugin(tree);
 
-    // Values are interpolated as-is. If src contains "?" or "&" these
-    // become part of the outer query string rather than the "file" param.
-    // The caller is expected to have pre-encoded the values; when that
-    // contract is violated the URL structure is affected as shown below.
-    const result = img.properties.src;
-    expect(result).toBe(
-      "/api/files/raw?file=images/photo.png?w=200&h=100&current=notes/my-note.md",
+    expect(img.properties.src).toBe(
+      "/api/files/raw?file=images/my%20photo.png&current=notes/my-note.md",
     );
   });
 
-  it("produces a malformed URL when caller passes unencoded ampersand in src", () => {
-    const img = makeImg("notes/foo & bar.png");
+  it("preserves already-encoded src as-is", () => {
+    const img = makeImg("notes/foo%20%26%20bar.png");
     const tree = { type: "root", children: [makeP([img])] };
     const plugin = rehypeFixImgURL("notes/my-note.md");
     plugin(tree);
 
-    const result = img.properties.src;
-    expect(result).toBe(
-      "/api/files/raw?file=notes/foo & bar.png&current=notes/my-note.md",
+    expect(img.properties.src).toBe(
+      "/api/files/raw?file=notes/foo%20%26%20bar.png&current=notes/my-note.md",
     );
   });
 
-  it("produces a malformed URL when caller passes unencoded hash in file param", () => {
+  it("handles undefined file parameter gracefully", () => {
+    const img = makeImg("images/photo.png");
+    const tree = { type: "root", children: [makeP([img])] };
+    const plugin = rehypeFixImgURL(undefined);
+    plugin(tree);
+
+    expect(img.properties.src).toBe(
+      "/api/files/raw?file=images/photo.png&current=",
+    );
+  });
+
+  it("strips fragment identifier from the current file param", () => {
     const img = makeImg("diagram.svg");
     const tree = { type: "root", children: [makeP([img])] };
     const plugin = rehypeFixImgURL("notes/guide.md#section-3");
     plugin(tree);
 
-    // The "#" becomes a URL fragment on the outer URL rather than part
-    // of the "current" query parameter value.
-    const result = img.properties.src;
-    expect(result).toBe(
-      "/api/files/raw?file=diagram.svg&current=notes/guide.md#section-3",
+    expect(img.properties.src).toBe(
+      "/api/files/raw?file=diagram.svg&current=notes/guide.md",
+    );
+  });
+
+  it("preserves SVG fragment identifier at end of URL", () => {
+    const img = makeImg("diagram.svg#layer-3");
+    const tree = { type: "root", children: [makeP([img])] };
+    const plugin = rehypeFixImgURL("notes/my-note.md");
+    plugin(tree);
+
+    expect(img.properties.src).toBe(
+      "/api/files/raw?file=diagram.svg&current=notes/my-note.md#layer-3",
+    );
+  });
+
+  it("strips query params but preserves fragment on src", () => {
+    const img = makeImg("diagram.svg?w=200&h=100#layer-3");
+    const tree = { type: "root", children: [makeP([img])] };
+    const plugin = rehypeFixImgURL("notes/my-note.md");
+    plugin(tree);
+
+    expect(img.properties.src).toBe(
+      "/api/files/raw?file=diagram.svg&current=notes/my-note.md#layer-3",
+    );
+  });
+
+  it("preserves ../ prefix on relative src", () => {
+    const img = makeImg("../images/photo.png");
+    const tree = { type: "root", children: [makeP([img])] };
+    const plugin = rehypeFixImgURL("notes/my-note.md");
+    plugin(tree);
+
+    expect(img.properties.src).toBe(
+      "/api/files/raw?file=../images/photo.png&current=notes/my-note.md",
+    );
+  });
+
+  it("only the src fragment survives in the final URL", () => {
+    const img = makeImg("diagram.svg?w=200#layer-3");
+    const tree = { type: "root", children: [makeP([img])] };
+    const plugin = rehypeFixImgURL("notes/guide.md?v=1#section-3");
+    plugin(tree);
+
+    expect(img.properties.src).toBe(
+      "/api/files/raw?file=diagram.svg&current=notes/guide.md#layer-3",
+    );
+  });
+
+  it("preserves ../../ prefix on relative src", () => {
+    const img = makeImg("../../images/photo.png");
+    const tree = { type: "root", children: [makeP([img])] };
+    const plugin = rehypeFixImgURL("notes/my-note.md");
+    plugin(tree);
+
+    expect(img.properties.src).toBe(
+      "/api/files/raw?file=../../images/photo.png&current=notes/my-note.md",
     );
   });
 

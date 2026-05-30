@@ -4,6 +4,13 @@ function isExternalURL(url) {
   return url && (url.startsWith("http://") || url.startsWith("https://"));
 }
 
+const cleanPath = (s) => s.replace(/\?.*$/, "").replace(/#.*$/, "");
+const extractFragment = (s) => {
+  const m = s.match(/#.*$/);
+  return m ? m[0] : "";
+};
+
+// TODO: test the app with a real svg image with layers.
 export function rehypeFixImgURL(file) {
   return (tree) => {
     visit(tree, "element", (node) => {
@@ -12,15 +19,9 @@ export function rehypeFixImgURL(file) {
       const src = node.properties?.src;
       if (!src) return;
 
-      // The src and file variables are expected to be already URL-encoded before
-      // reaching this plugin (e.g. at parse time). They are interpolated directly
-      // into a query string with no additional escaping. If either value contains
-      // reserved characters like "?", "&", or "#", the resulting URL can become
-      // malformed — the fragment or additional query params will leak into the
-      // top-level URL structure rather than staying inside the intended parameter.
       node.properties.src = isExternalURL(src)
         ? src
-        : `/api/files/raw?file=${src}&current=${file ?? ""}`;
+        : `/api/files/raw?file=${cleanPath(src)}&current=${cleanPath(file ?? "")}${extractFragment(src)}`;
     });
   };
 }
