@@ -118,5 +118,5 @@ server {
 - Add, delete, and move files
 - Light theme
 - More Markdown components (e.g. Mermaid diagrams, video embeds)
-- **Idea:** webhooks as an alternative to event streaming for inter-process communication
+- **Idea:** webhooks as an HTTP-based alternative to event streaming for external integrations
 
