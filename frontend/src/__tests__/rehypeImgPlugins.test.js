@@ -52,6 +52,39 @@ describe("rehypeFixImgURL", () => {
     expect(img.properties.src).toBe("https://example.com/photo.png");
   });
 
+  it("preserves query params on external http URLs", () => {
+    const img = makeImg("http://example.com/photo.png?w=200&h=100");
+    const tree = { type: "root", children: [makeP([img])] };
+    const plugin = rehypeFixImgURL("notes/my-note.md");
+    plugin(tree);
+
+    expect(img.properties.src).toBe(
+      "http://example.com/photo.png?w=200&h=100",
+    );
+  });
+
+  it("preserves query params on external https URLs", () => {
+    const img = makeImg("https://cdn.example.com/img.svg?token=abc&v=2");
+    const tree = { type: "root", children: [makeP([img])] };
+    const plugin = rehypeFixImgURL("notes/my-note.md");
+    plugin(tree);
+
+    expect(img.properties.src).toBe(
+      "https://cdn.example.com/img.svg?token=abc&v=2",
+    );
+  });
+
+  it("preserves fragments on external https URLs", () => {
+    const img = makeImg("https://example.com/diagram.svg#layer-3");
+    const tree = { type: "root", children: [makeP([img])] };
+    const plugin = rehypeFixImgURL("notes/my-note.md");
+    plugin(tree);
+
+    expect(img.properties.src).toBe(
+      "https://example.com/diagram.svg#layer-3",
+    );
+  });
+
   it("skips non-img elements", () => {
     const anchor = makeA("page.md", [makeText("link")]);
     const tree = { type: "root", children: [makeP([anchor])] };
