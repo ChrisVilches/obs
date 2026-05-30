@@ -86,44 +86,42 @@ describe("rehypeFixImgURL", () => {
     );
   });
 
-  it("produces a malformed URL when src contains a query string", () => {
+  it("produces a malformed URL when caller passes unencoded query params in src", () => {
     const img = makeImg("images/photo.png?w=200&h=100");
     const tree = { type: "root", children: [makeP([img])] };
     const plugin = rehypeFixImgURL("notes/my-note.md");
     plugin(tree);
 
-    // BUG: the "?w=200&h=100" leaks into the top-level query string.
-    // The backend sees "file=images/photo.png" and treats "w=200&h=100"
-    // as additional query params on /api/files/raw rather than part of "file".
+    // Values are interpolated as-is. If src contains "?" or "&" these
+    // become part of the outer query string rather than the "file" param.
+    // The caller is expected to have pre-encoded the values; when that
+    // contract is violated the URL structure is affected as shown below.
     const result = img.properties.src;
     expect(result).toBe(
       "/api/files/raw?file=images/photo.png?w=200&h=100&current=notes/my-note.md",
     );
   });
 
-  it("produces a malformed URL when src contains an ampersand", () => {
+  it("produces a malformed URL when caller passes unencoded ampersand in src", () => {
     const img = makeImg("notes/foo & bar.png");
     const tree = { type: "root", children: [makeP([img])] };
     const plugin = rehypeFixImgURL("notes/my-note.md");
     plugin(tree);
 
-    // BUG: the "& bar.png" creates a spurious " bar.png" query parameter.
-    // The backend only receives "file=notes/foo " (trailing space).
     const result = img.properties.src;
     expect(result).toBe(
       "/api/files/raw?file=notes/foo & bar.png&current=notes/my-note.md",
     );
   });
 
-  it("produces a malformed URL when the file parameter contains a hash", () => {
+  it("produces a malformed URL when caller passes unencoded hash in file param", () => {
     const img = makeImg("diagram.svg");
     const tree = { type: "root", children: [makeP([img])] };
     const plugin = rehypeFixImgURL("notes/guide.md#section-3");
     plugin(tree);
 
-    // BUG: "#section-3" is treated as a URL fragment on the outer URL.
-    // The "current" param only contains "notes/guide.md" and the hash
-    // is a client-side-only fragment that the server never sees.
+    // The "#" becomes a URL fragment on the outer URL rather than part
+    // of the "current" query parameter value.
     const result = img.properties.src;
     expect(result).toBe(
       "/api/files/raw?file=diagram.svg&current=notes/guide.md#section-3",
