@@ -120,4 +120,5 @@ server {
 - More Markdown components (e.g. Mermaid diagrams, video embeds)
 - Syntax highlighting for source files and code blocks
 - **Idea:** webhooks as an HTTP-based alternative to event streaming for external integrations
+- Multi-vault support
 
