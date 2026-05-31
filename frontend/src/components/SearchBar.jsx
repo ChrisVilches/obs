@@ -1,5 +1,5 @@
 import { EllipsisHorizontalIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useSWR from "swr";
 import useDebounce from "../hooks/useDebounce";
@@ -92,28 +92,25 @@ export default function SearchBar({ onClose }) {
   const debouncedQuery = useDebounce(query, 150);
   const [tab, setTab] = useState("all");
 
-  const [results, setResults] = useState(EMPTY_RESULTS);
-
   const { data, isValidating } = useSWR(
     debouncedQuery
       ? `/api/files/search?q=${encodeURIComponent(debouncedQuery)}`
       : null,
+    { keepPreviousData: true },
   );
 
-  useEffect(() => {
+  const results = useMemo(() => {
+    if (!debouncedQuery || !data) return EMPTY_RESULTS
+
     const intoPath = (path) => ({ path });
-    if (data)
-      setResults({
-        all: [...new Set([...data.files, ...data.contentMatches])].map(
-          intoPath,
-        ),
-        files: data.files.map(intoPath),
-        content: data.contentMatches.map(intoPath),
-      });
-  }, [data]);
-  useEffect(() => {
-    if (!debouncedQuery) setResults(EMPTY_RESULTS);
-  }, [debouncedQuery]);
+    return {
+      all: [...new Set([...data.files, ...data.contentMatches])].map(
+        intoPath,
+      ),
+      files: data.files.map(intoPath),
+      content: data.contentMatches.map(intoPath),
+    };
+  }, [debouncedQuery, data])
 
   const { selectedIndex, handleKeyDown } = useListKeyboardNav(
     {
