@@ -42,6 +42,7 @@ export function AppConfigProvider({ children }) {
         saveToLocalStorage(serverConfig);
       } catch (err) {
         console.error("Failed to sync config from server:", err.message);
+        showErrorToast(err.message);
       }
     })();
   }, []);
