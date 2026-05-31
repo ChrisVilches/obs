@@ -52,7 +52,7 @@ button:disabled, [role="button"][aria-disabled="true"] {
 
 /* Standalone images inside an <a> have some extra vertical space. */
 /* Make it the same as images without <a> */
-.markdown-container > figure.standalone-image > a > img { 
+.markdown-container > figure.standalone-image > a > img {
   @apply my-0;
 }
 
@@ -63,7 +63,12 @@ button:disabled, [role="button"][aria-disabled="true"] {
 
 /* Break very long strings without spaces to prevent layout deformation. */
 .markdown-container {
-  @apply [overflow-wrap:anywhere];
+  @apply wrap-anywhere;
+}
+
+.markdown-container td,
+.markdown-container th {
+  overflow-wrap: normal;
 }
 
 /*
