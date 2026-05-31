@@ -1,5 +1,5 @@
 import { EllipsisHorizontalIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useSWR from "swr";
 import useDebounce from "../hooks/useDebounce";
@@ -115,7 +115,7 @@ export default function SearchBar({ onClose }) {
     if (!debouncedQuery) setResults(EMPTY_RESULTS);
   }, [debouncedQuery]);
 
-  const { selectedIndex, handleKeyDown, setSelectedIndex } = useListKeyboardNav(
+  const { selectedIndex, handleKeyDown } = useListKeyboardNav(
     {
       items: results[tab],
       onSelect: (item) => {
@@ -124,10 +124,6 @@ export default function SearchBar({ onClose }) {
       },
     },
   );
-
-  useEffect(() => {
-    setSelectedIndex(results[tab].length > 0 ? 0 : -1);
-  }, [tab]);
 
   return (
     <div className="flex flex-col h-full">

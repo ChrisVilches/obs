@@ -40,5 +40,5 @@ export default function useListKeyboardNav({
     }
   };
 
-  return { selectedIndex, handleKeyDown, setSelectedIndex };
+  return { selectedIndex, handleKeyDown };
 }
