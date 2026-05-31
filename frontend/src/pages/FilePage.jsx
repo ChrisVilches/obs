@@ -18,7 +18,7 @@ export default function FilePage() {
   return (
     <>
       <title>{file}</title>
-      <FileViewer file={file} />
+      <FileViewer key={file} file={file} />
     </>
   );
 }

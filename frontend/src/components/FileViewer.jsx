@@ -67,16 +67,10 @@ export default function FileViewer({ file }) {
   const [editMode, setEditMode] = useState(false);
   const [saving, setSaving] = useState(false);
   const [bookmarking, setBookmarking] = useState(false);
-  const [errorMessage, setErrorMessage] = useState(null);
   const fileContentRef = useRef(null);
   const originalContentRef = useRef("");
   const [showFileNameModal, setShowFileNameModal] = useState(false);
   const [showConflictModal, setShowConflictModal] = useState(false);
-
-  useEffect(() => {
-    setEditMode(false);
-    setErrorMessage(null);
-  }, [file]);
 
   const handleEdit = useCallback(() => setEditMode(true), [setEditMode]);
   const handleCancel = useCallback(() => setEditMode(false), [setEditMode]);
@@ -155,13 +149,11 @@ export default function FileViewer({ file }) {
         { revalidate: false },
       );
     } catch (err) {
-      setErrorMessage(err.message);
+      showErrorToast(err.message);
     } finally {
       setBookmarking(false);
     }
   }, [file, info, infoKey, mutate]);
-
-  const displayError = error?.message || errorMessage;
 
   useFileToolbar({
     file,
@@ -178,11 +170,11 @@ export default function FileViewer({ file }) {
     onToggleBookmark: handleToggleBookmark,
   });
 
-  if (displayError)
+  if (error?.message)
     return (
       <div className="min-h-full flex flex-col">
         <div className="flex-1 flex items-center justify-center">
-          <ErrorDisplay message={displayError} file={file} />
+          <ErrorDisplay message={error?.message} file={file} />
         </div>
       </div>
     );
