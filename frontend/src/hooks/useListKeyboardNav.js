@@ -14,7 +14,7 @@ export default function useListKeyboardNav({
       if (prev >= items.length) return items.length - 1;
       return prev;
     });
-  }, [items]);
+  }, [items.length]);
 
   const handleSelect = useEffectEvent((index) => {
     if (items[index]) onSelect(items[index], index);
