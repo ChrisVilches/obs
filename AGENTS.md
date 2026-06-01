@@ -49,4 +49,4 @@ npm run start         # node backend/src/server.js (production)
 
 - Multi-stage Dockerfile (`FROM node:22-alpine`)
 - Env: `PORT` (default 5000), `DATA_ROOT_DIR`, `CONFIG_PATH`, `EVENT_CHANNEL` (stdout|stderr|file://)
-- `EVENT_CHANNEL` emits JSON-line events for file_bookmarked, file_unbookmarked, file_updated, file_checkbox_checked, file_checkbox_unchecked, config_updated
+- `EVENT_CHANNEL` emits JSON-line events for bookmark_added, bookmark_removed, file_updated, file_checkbox_checked, file_checkbox_unchecked, config_updated

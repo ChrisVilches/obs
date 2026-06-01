@@ -50,7 +50,7 @@ async function addBookmark(bookmarksFile, filePath, rootDir) {
     );
   }
   emit({
-    type: "file_bookmarked",
+    type: "bookmark_added",
     file: filePath,
     timestamp: new Date().toISOString(),
   });
@@ -61,7 +61,7 @@ async function removeBookmark(bookmarksFile, filePath) {
   data.items = removeBookmarkFromItems(data.items, filePath);
   await fs.promises.writeFile(bookmarksFile, serializeBookmarks(data), "utf-8");
   emit({
-    type: "file_unbookmarked",
+    type: "bookmark_removed",
     file: filePath,
     timestamp: new Date().toISOString(),
   });
