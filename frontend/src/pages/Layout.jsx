@@ -102,6 +102,9 @@ export default function Layout() {
   // TODO: The side menu state is reset each time the modal is closed and reopened.
   // This causes expanded tree nodes to collapse, resulting in a less seamless UX.
   // (cause: component gets mounted and unmounted each time)
+  // I think this can be fixed by keeping the state alive (lift it up) and lower
+  // the dialog, so that the state is kept alive even if the dialog (or its content)
+  // gets unmounted.
   return (
     <div className="h-screen flex overflow-hidden bg-gray-950">
       <Dialog.Root open={sidebarOpen} onOpenChange={setSidebarOpen}>
