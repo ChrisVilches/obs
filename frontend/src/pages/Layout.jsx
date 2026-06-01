@@ -101,6 +101,7 @@ export default function Layout() {
 
   // TODO: The side menu state is reset each time the modal is closed and reopened.
   // This causes expanded tree nodes to collapse, resulting in a less seamless UX.
+  // (cause: component gets mounted and unmounted each time)
   return (
     <div className="h-screen flex overflow-hidden bg-gray-950">
       <Dialog.Root open={sidebarOpen} onOpenChange={setSidebarOpen}>
