@@ -318,7 +318,6 @@ export default function Sidemenu({
   // and won't trigger.
   const { canScroll, fileFocusCount } = useExpandTreeToFile(setSelectedFile, setExpandedSet);
 
-  // TODO: This comment is outdated (it talks about scrollDone, which was changed to canScroll).
   // On mobile, the sidemenu unmounts and remounts from scratch each time it opens.
   // This causes tree nodes to re-expand, re-rendering the selected file and
   // triggering the callback ref below. If the sidemenu were simply hidden and shown
@@ -327,7 +326,7 @@ export default function Sidemenu({
   // Resizing from mobile to desktop does not re-scroll — the desktop sidemenu is
   // always mounted and doesn't remount on resize.
   //
-  // `scrollDone` prevents the auto-scroll from firing again when the user collapses
+  // `canScroll` prevents the auto-scroll from firing again when the user collapses
   // and re-expands an ancestor of the selected file (which unmounts and remounts
   // the selected file's element, triggering the callback ref).
   const selectedNodeRef = useCallback((elem) => {
