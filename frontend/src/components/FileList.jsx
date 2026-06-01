@@ -8,6 +8,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
+import { usePubSub } from "../hooks/usePubSub"
 
 const extToIcon = {
   // images
@@ -112,11 +113,14 @@ function FolderItem({ path, onClick }) {
   // NOTE: Currently folders don't appear in search results, so they can't be
   // selected using the keyboard.
 
+  const fileFocusedDispatch = usePubSub("file-focused")
+
+  // TODO: style the button properly
   return (
     <button
       type="button"
       onClick={(ev) => {
-        document.dispatchEvent(new CustomEvent("file-focused", { detail: { path } }));
+        fileFocusedDispatch({ path, important: true })
         if (onClick) onClick(ev)
       }}
       className="flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors text-gray-400 hover:bg-gray-800 hover:text-gray-200"

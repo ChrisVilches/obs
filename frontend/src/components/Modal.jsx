@@ -14,6 +14,7 @@ export default function Modal({
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-dialog-overlay-show data-[state=closed]:animate-dialog-overlay-hide" />
         <Dialog.Content
+          aria-describedby={undefined}
           className={`
             fixed left-1/2 top-1/2 z-50
             w-[calc(100vw-2rem)] max-w-md
