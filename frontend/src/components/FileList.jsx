@@ -115,7 +115,6 @@ function FolderItem({ path, onClick }) {
 
   const fileFocusedDispatch = usePubSub("file-focused")
 
-  // TODO: style the button properly
   return (
     <button
       type="button"
@@ -123,7 +122,7 @@ function FolderItem({ path, onClick }) {
         fileFocusedDispatch({ path, important: true })
         if (onClick) onClick(ev)
       }}
-      className="flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors text-gray-400 hover:bg-gray-800 hover:text-gray-200"
+      className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors text-gray-400 hover:bg-gray-800 hover:text-gray-200"
     >
       <FolderIcon className="w-4 h-4 shrink-0" />
       <div className="flex-1 min-w-0">
