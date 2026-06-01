@@ -31,6 +31,12 @@ function useBookmarksModal() {
   };
 }
 
+function isMobile(desktopSidebarRef) {
+  const rect = desktopSidebarRef.current.getBoundingClientRect();
+  const desktopSidebarVisible = rect.width !== 0 && rect.height !== 0
+  return !desktopSidebarVisible
+}
+
 // NOTE: `desktopSidebarRef` is used to avoid opening the sidebar when on
 // desktop. This is to avoid an aria related error (prints warning and freezes
 // the UI).
@@ -39,10 +45,7 @@ function useOpenSidebarOnFileFocus(desktopSidebarRef, setSidebarOpen) {
   const fileParam = searchParams.get("f");
 
   const onFileFocused = useCallback(({ important }) => {
-    const rect = desktopSidebarRef.current.getBoundingClientRect();
-    const desktopSidebarVisible = rect.width !== 0 && rect.height !== 0
-
-    if (important && !desktopSidebarVisible) {
+    if (important && isMobile(desktopSidebarRef)) {
       setSidebarOpen(true)
     }
   }, [])
