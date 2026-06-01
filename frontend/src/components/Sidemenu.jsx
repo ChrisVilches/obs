@@ -337,7 +337,7 @@ export default function Sidemenu({
     const rect = elem.getBoundingClientRect();
     if (rect.width === 0 || rect.height === 0) return;
 
-    elem.scrollIntoView({ behavior: "smooth", block: "center" });
+    elem.scrollIntoView({ behavior: "smooth", block: "start" });
     canScroll.current = false
   }, [fileFocusCount]);
 
