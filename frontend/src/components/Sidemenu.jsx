@@ -5,7 +5,7 @@ import {
   MagnifyingGlassIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffectEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 
 const GITHUB_URL = "https://github.com/ChrisVilches/obs";
@@ -14,19 +14,12 @@ const GITHUB_URL = "https://github.com/ChrisVilches/obs";
 // so this effect runs on every open. If the sidemenu ever switches to show/hide
 // (keeping the same instance mounted), the open/close state would need to be
 // added as a dependency.
-function useExpandTreeToFile(selectedFile, files, setExpandedSet) {
-  useEffect(() => {
-    if (
-      !selectedFile ||
-      !files?.includes(selectedFile) ||
-      !selectedFile.includes("/")
-    ) {
-      return;
-    }
-
-    const ancestors = selectedFile
+function useExpandTreeToFile(fileParam, setSelectedFile, files, setExpandedSet, scrollDone) {
+  // TODO: verify this usage of useEffectEvent
+  const expand = useEffectEvent((path) => {
+    const ancestors = path
       .split("/")
-      .slice(0, -1)
+      // .slice(0, -1)
       .reduce((paths, _, i, parts) => {
         paths.push(parts.slice(0, i + 1).join("/"));
         return paths;
@@ -34,10 +27,31 @@ function useExpandTreeToFile(selectedFile, files, setExpandedSet) {
 
     setExpandedSet((prev) => {
       const next = new Set(prev);
-      ancestors.forEach((path) => next.add(path));
+      ancestors.forEach((p) => next.add(p));
       return next.size === prev.size ? prev : next;
     });
-  }, [selectedFile, files, setExpandedSet]);
+  })
+
+  useEffect(() => {
+    const handler = ({ detail }) => {
+      setSelectedFile(detail.path)
+      console.log(detail.path)
+      expand(detail.path)
+      scrollDone.current = false
+    }
+
+    document.addEventListener("file-focused", handler);
+    return () => document.removeEventListener("file-focused", handler);
+  }, [setSelectedFile])
+
+  useEffect(() => {
+    // TODO: Maybe some of these checks aren't that necessary.
+    if (!fileParam || !files?.includes(fileParam) || !fileParam.includes("/")) return;
+    setSelectedFile(fileParam)
+    console.log(fileParam)
+    expand(fileParam)
+    scrollDone.current = false
+  }, [fileParam, files, setSelectedFile]);
 }
 
 function SidemenuFooter() {
@@ -181,18 +195,19 @@ function TreeNode({
   onToggle,
   selectedNodeRef,
 }) {
+  const isSelected = node.path === selectedFile;
+  const style = isSelected
+    ? "bg-indigo-900/40 text-indigo-300 font-medium"
+    : "text-gray-400 hover:bg-gray-800 hover:text-gray-200"
+
   if (node.type === "file") {
-    const isSelected = node.path === selectedFile;
     return (
       <li>
         <Link
           to={`/file?f=${encodeURIComponent(node.path)}`}
           ref={isSelected ? selectedNodeRef : null}
           onClick={onClose}
-          className={`block px-3 py-1.5 rounded-md text-sm transition-colors ${isSelected
-              ? "bg-indigo-900/40 text-indigo-300 font-medium"
-              : "text-gray-400 hover:bg-gray-800 hover:text-gray-200"
-            }`}
+          className={`block px-3 py-1.5 rounded-md text-sm transition-colors ${style}`}
           style={{ paddingLeft: `${12 + depth * 16}px` }}
         >
           <span className="truncate block">{node.name}</span>
@@ -208,7 +223,8 @@ function TreeNode({
       <button
         type="button"
         onClick={() => onToggle(node.path)}
-        className="w-full flex items-center gap-1 px-3 py-1.5 rounded-md text-sm text-gray-400 hover:bg-gray-800 hover:text-gray-200 transition-colors"
+        ref={isSelected ? selectedNodeRef : null}
+        className={`w-full flex items-center gap-1 px-3 py-1.5 rounded-md text-sm transition-colors ${style}`}
         style={{ paddingLeft: `${12 + depth * 16}px` }}
       >
         <ChevronRightIcon
@@ -293,7 +309,8 @@ export default function Sidemenu({
 }) {
   const [searchParams] = useSearchParams();
   // NOTE: This query parameter can be present on any page, not just the file viewer.
-  const selectedFile = searchParams.get("f");
+  const fileParam = searchParams.get("f");
+  const [selectedFile, setSelectedFile] = useState(null)
 
   const tree = useMemo(() => buildTree(files), [files]);
 
@@ -311,12 +328,8 @@ export default function Sidemenu({
     });
   }
 
-  useExpandTreeToFile(selectedFile, files, setExpandedSet);
-
   const scrollDone = useRef(false);
-  useEffect(() => {
-    scrollDone.current = false;
-  }, [selectedFile]);
+  useExpandTreeToFile(fileParam, setSelectedFile, files, setExpandedSet, scrollDone);
 
   // On mobile, the sidemenu unmounts and remounts from scratch each time it opens.
   // This causes tree nodes to re-expand, re-rendering the selected file and

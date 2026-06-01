@@ -58,8 +58,8 @@ export function getFileIcon(path) {
   return extToIcon[ext] || DocumentIcon;
 }
 
-function FileIcon({ path, type, className }) {
-  const Icon = type === "folder" ? FolderIcon : getFileIcon(path);
+function FileIcon({ path, className }) {
+  const Icon = getFileIcon(path);
   return <Icon className={className} />;
 }
 
@@ -78,6 +78,60 @@ export function formatRelativeTime(isoString) {
   if (days < 30) return `${days}d ago`;
   const months = Math.floor(days / 30);
   return `${months}mo ago`;
+}
+
+function FileItem({ selected, onClick, path, mtime }) {
+  return (
+    <Link
+      to={`/file?f=${encodeURIComponent(path)}`}
+      onClick={onClick}
+      className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${selected
+        ? "bg-gray-800 text-gray-200"
+        : "text-gray-400 hover:bg-gray-800 hover:text-gray-200"
+        }`}
+    >
+      <FileIcon path={path} className="w-4 h-4 shrink-0" />
+      <div className="flex-1 min-w-0">
+        <span className="truncate block">
+          {path.split("/").pop()}
+        </span>
+        <span className="text-xs text-gray-600 truncate block">
+          {dirPath(path)}
+        </span>
+      </div>
+      {mtime && (
+        <span className="text-xs text-gray-600 shrink-0">
+          {formatRelativeTime(mtime)}
+        </span>
+      )}
+    </Link>
+  )
+}
+
+function FolderItem({ path, onClick }) {
+  // NOTE: Currently folders don't appear in search results, so they can't be
+  // selected using the keyboard.
+
+  return (
+    <button
+      type="button"
+      onClick={(ev) => {
+        document.dispatchEvent(new CustomEvent("file-focused", { detail: { path } }));
+        if (onClick) onClick(ev)
+      }}
+      className="flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors text-gray-400 hover:bg-gray-800 hover:text-gray-200"
+    >
+      <FolderIcon className="w-4 h-4 shrink-0" />
+      <div className="flex-1 min-w-0">
+        <span className="truncate block">
+          {path.split("/").pop()}
+        </span>
+        <span className="text-xs text-gray-600 truncate block">
+          {dirPath(path)}
+        </span>
+      </div>
+    </button>
+  )
 }
 
 export default function FileList({
@@ -117,30 +171,18 @@ export default function FileList({
     <ul ref={listRef} className="space-y-0.5">
       {items.map((item, index) => (
         <li key={item.path || index}>
-          <Link
-            to={`/file?f=${encodeURIComponent(item.path)}`}
-            onClick={onItemClick ? () => onItemClick(item) : undefined}
-            className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
-              index === selectedIndex
-                ? "bg-gray-800 text-gray-200"
-                : "text-gray-400 hover:bg-gray-800 hover:text-gray-200"
-            }`}
-          >
-            <FileIcon path={item.path} type={item.type} className="w-4 h-4 shrink-0" />
-            <div className="flex-1 min-w-0">
-              <span className="truncate block">
-                {item.path.split("/").pop()}
-              </span>
-              <span className="text-xs text-gray-600 truncate block">
-                {dirPath(item.path)}
-              </span>
-            </div>
-            {showTime && item.mtime && (
-              <span className="text-xs text-gray-600 shrink-0">
-                {formatRelativeTime(item.mtime)}
-              </span>
-            )}
-          </Link>
+          {item.type === "folder" ? (
+            <FolderItem
+              onClick={onItemClick ? () => onItemClick(item) : undefined}
+              path={item.path}
+            />
+          ) : (
+            <FileItem
+              onClick={onItemClick ? () => onItemClick(item) : undefined}
+              path={item.path}
+              mtime={showTime ? item.mtime : null}
+              selected={index === selectedIndex} />
+          )}
         </li>
       ))}
     </ul>
