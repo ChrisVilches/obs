@@ -17,7 +17,7 @@ async function getBookmarks(bookmarksFile) {
       serializeBookmarks(defaultBookmarkFileContent),
       "utf-8",
     );
-    return defaultBookmarkFileContent;
+    return { items: [] };
   }
 
   await fs.promises.mkdir(path.dirname(bookmarksFile), { recursive: true });
@@ -29,7 +29,7 @@ async function getBookmarks(bookmarksFile) {
     return data;
   } catch (err) {
     if (err.code === "ENOENT") {
-      return reset();
+      return await reset();
     }
     throw err;
   }
