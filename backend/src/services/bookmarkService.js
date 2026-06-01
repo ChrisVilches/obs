@@ -24,7 +24,9 @@ async function getBookmarks(bookmarksFile) {
 
   try {
     const raw = await fs.promises.readFile(bookmarksFile, "utf-8");
-    return parseBookmarkData(raw);
+    const data = parseBookmarkData(raw);
+    data.items.reverse();
+    return data;
   } catch (err) {
     if (err.code === "ENOENT") {
       return reset();
