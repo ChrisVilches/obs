@@ -10,11 +10,11 @@ function parseBookmarkData(raw) {
   return JSON.parse(trimmed);
 }
 
-function addBookmarkToItems(items, filePath) {
+function addBookmarkToItems(items, filePath, type) {
   if (items.some((item) => item.path === filePath)) {
     return items;
   }
-  return [...items, { type: "file", path: filePath }];
+  return [...items, { type, path: filePath }];
 }
 
 function removeBookmarkFromItems(items, filePath) {

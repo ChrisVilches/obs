@@ -35,9 +35,12 @@ async function getBookmarks(bookmarksFile) {
   }
 }
 
-async function addBookmark(bookmarksFile, filePath) {
+async function addBookmark(bookmarksFile, filePath, rootDir) {
   const data = await getBookmarks(bookmarksFile);
-  const newItems = addBookmarkToItems(data.items, filePath);
+  const absPath = path.resolve(rootDir, filePath);
+  const stat = await fs.promises.stat(absPath);
+  const entryType = stat.isDirectory() ? "folder" : "file";
+  const newItems = addBookmarkToItems(data.items, filePath, entryType);
   if (newItems !== data.items) {
     data.items = newItems;
     await fs.promises.writeFile(

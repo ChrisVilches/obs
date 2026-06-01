@@ -1,6 +1,7 @@
 import {
   DocumentIcon,
   DocumentTextIcon,
+  FolderIcon,
   MusicalNoteIcon,
   PhotoIcon,
   VideoCameraIcon,
@@ -57,8 +58,8 @@ export function getFileIcon(path) {
   return extToIcon[ext] || DocumentIcon;
 }
 
-function FileIcon({ path, className }) {
-  const Icon = getFileIcon(path);
+function FileIcon({ path, type, className }) {
+  const Icon = type === "folder" ? FolderIcon : getFileIcon(path);
   return <Icon className={className} />;
 }
 
@@ -125,7 +126,7 @@ export default function FileList({
                 : "text-gray-400 hover:bg-gray-800 hover:text-gray-200"
             }`}
           >
-            <FileIcon path={item.path} className="w-4 h-4 shrink-0" />
+            <FileIcon path={item.path} type={item.type} className="w-4 h-4 shrink-0" />
             <div className="flex-1 min-w-0">
               <span className="truncate block">
                 {item.path.split("/").pop()}

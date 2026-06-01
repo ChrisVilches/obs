@@ -51,20 +51,26 @@ describe("parseBookmarkData", () => {
 describe("addBookmarkToItems", () => {
   it("adds a new bookmark item", () => {
     const items = [];
-    const result = addBookmarkToItems(items, "notes.md");
+    const result = addBookmarkToItems(items, "notes.md", "file");
     assert.deepEqual(result, [{ type: "file", path: "notes.md" }]);
     assert.notEqual(result, items);
   });
 
+  it("uses folder type when provided", () => {
+    const items = [];
+    const result = addBookmarkToItems(items, "projects", "folder");
+    assert.deepEqual(result, [{ type: "folder", path: "projects" }]);
+  });
+
   it("does not duplicate existing bookmarks", () => {
     const items = [{ type: "file", path: "notes.md" }];
-    const result = addBookmarkToItems(items, "notes.md");
+    const result = addBookmarkToItems(items, "notes.md", "file");
     assert.equal(result, items);
   });
 
   it("adds to existing bookmarks", () => {
     const items = [{ type: "file", path: "notes.md" }];
-    const result = addBookmarkToItems(items, "todo.md");
+    const result = addBookmarkToItems(items, "todo.md", "file");
     assert.equal(result.length, 2);
     assert.ok(result.some((i) => i.path === "notes.md"));
     assert.ok(result.some((i) => i.path === "todo.md"));

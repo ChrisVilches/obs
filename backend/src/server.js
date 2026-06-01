@@ -53,7 +53,7 @@ app.get("/api/bookmarks", async (_req, res) => {
 
 app.post("/api/bookmarks", async (req, res) => {
   const { path } = z.object({ path: pathSchema }).parse(req.body);
-  await addBookmark(BOOKMARKS_FILE, path);
+  await addBookmark(BOOKMARKS_FILE, path, ROOT_DIR);
   res.json({ isBookmarked: true });
 });
 
