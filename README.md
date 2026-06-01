@@ -119,6 +119,7 @@ server {
 - Light theme
 - More Markdown components (e.g. Mermaid diagrams, video embeds)
 - Syntax highlighting for source files and code blocks
+- Support full Obsidian bookmark protocol: bookmark directories, assign custom titles, etc.
 - **Idea:** webhooks as an HTTP-based alternative to event streaming for external integrations
 - Add new transport methods for event streaming such as Redis
 - Multi-vault support
