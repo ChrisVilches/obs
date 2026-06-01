@@ -10,8 +10,8 @@ const extractFragment = (s) => {
   return m ? m[0] : "";
 };
 
-// TODO: test the app with a real svg image with layers.
 export function rehypeFixImgURL(file) {
+  const cleanedFile = cleanPath(file ?? "");
   return (tree) => {
     visit(tree, "element", (node) => {
       if (node.tagName !== "img") return;
@@ -21,7 +21,7 @@ export function rehypeFixImgURL(file) {
 
       node.properties.src = isExternalURL(src)
         ? src
-        : `/api/files/raw?file=${cleanPath(src)}&current=${cleanPath(file ?? "")}${extractFragment(src)}`;
+        : `/api/files/raw?file=${cleanPath(src)}&current=${cleanedFile}${extractFragment(src)}`;
     });
   };
 }
