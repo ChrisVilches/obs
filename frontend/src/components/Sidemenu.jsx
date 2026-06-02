@@ -11,7 +11,9 @@ import { usePubSub } from "../hooks/usePubSub"
 
 const GITHUB_URL = "https://github.com/ChrisVilches/obs";
 
-function useExpandTreeToFile(setSelectedFile, setExpandedSet) {
+function useExpandTreeToFile(setExpandedSet) {
+  const [selectedFile, setSelectedFile] = useState(null);
+
   const expand = (path) => {
     const ancestors = path
       .split("/")
@@ -37,7 +39,17 @@ function useExpandTreeToFile(setSelectedFile, setExpandedSet) {
 
   const { lastDispatched: fileFocusTimestamp } = usePubSub("file-focused", onFileFocused, { trackTimestamp: true })
 
-  return { canScroll, fileFocusTimestamp }
+  const selectedNodeRef = useCallback((elem) => {
+    if (!elem || !canScroll.current) return;
+
+    const rect = elem.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) return;
+
+    elem.scrollIntoView({ behavior: "smooth", block: "center" });
+    canScroll.current = false
+  }, [fileFocusTimestamp]);
+
+  return { selectedFile, selectedNodeRef }
 }
 
 function SidemenuFooter() {
@@ -293,8 +305,6 @@ export default function Sidemenu({
   onSearchClick,
   onSettingsClick,
 }) {
-  const [selectedFile, setSelectedFile] = useState(null)
-
   const tree = useMemo(() => buildTree(files), [files]);
 
   const [expandedSet, setExpandedSet] = useState(() => new Set());
@@ -311,35 +321,7 @@ export default function Sidemenu({
     });
   }
 
-  // TODO: outdated comment since now it's a timestamp (and it comes from pubsub hook)
-  // NOTE: `fileFocusCount` is to reset the callback ref as a way to force a scroll
-  // when we go from file -> dashboard -> file (same as before). Without this, the
-  // callback ref will be the same function, attached to the same element in the tree
-  // and won't trigger.
-  const { canScroll, fileFocusTimestamp } = useExpandTreeToFile(setSelectedFile, setExpandedSet);
-
-  // On mobile, the sidemenu unmounts and remounts from scratch each time it opens.
-  // This causes tree nodes to re-expand, re-rendering the selected file and
-  // triggering the callback ref below. If the sidemenu were simply hidden and shown
-  // (e.g. display: none), the open/close state would need to be an effect dependency.
-  //
-  // Resizing from mobile to desktop does not re-scroll — the desktop sidemenu is
-  // always mounted and doesn't remount on resize.
-  //
-  // `canScroll` prevents the auto-scroll from firing again when the user collapses
-  // and re-expands an ancestor of the selected file (which unmounts and remounts
-  // the selected file's element, triggering the callback ref).
-  const selectedNodeRef = useCallback((elem) => {
-    if (!elem || !canScroll.current) return;
-    // TODO: check this function once again. Check that it doesn't execute too often.
-
-    // Ignore it when it's hidden.
-    const rect = elem.getBoundingClientRect();
-    if (rect.width === 0 || rect.height === 0) return;
-
-    elem.scrollIntoView({ behavior: "smooth", block: "center" });
-    canScroll.current = false
-  }, [fileFocusTimestamp]);
+  const { selectedFile, selectedNodeRef } = useExpandTreeToFile(setExpandedSet);
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
