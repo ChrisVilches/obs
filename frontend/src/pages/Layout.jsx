@@ -1,6 +1,6 @@
-import * as Dialog from "@radix-ui/react-dialog";
 import { Bars3Icon } from "@heroicons/react/24/outline";
-import { useState, useRef, useEffect, useCallback } from "react";
+import * as Dialog from "@radix-ui/react-dialog";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Outlet, useSearchParams } from "react-router-dom";
 import useSWR from "swr";
 import FileList from "../components/FileList";
@@ -8,6 +8,7 @@ import Modal from "../components/Modal";
 import SearchBar from "../components/SearchBar";
 import SettingsModal from "../components/SettingsModal";
 import Sidemenu from "../components/Sidemenu";
+import useFilePathExpandSet from "../hooks/useFilePathExpandSet";
 import useKeyShortcut from "../hooks/useKeyShortcut";
 import { usePubSub } from "../hooks/usePubSub";
 
@@ -64,39 +65,6 @@ function useOpenSidebarOnFileFocus(desktopSidebarRef, setSidebarOpen) {
   }, [fileParam]);
 }
 
-function useFilePathExpandSet() {
-  const [expandedSet, setExpandedSet] = useState(() => new Set());
-
-  const expandPathAll = useCallback((path) => {
-    const ancestors = path
-      .split("/")
-      .reduce((paths, _, i, parts) => {
-        paths.push(parts.slice(0, i + 1).join("/"));
-        return paths;
-      }, []);
-
-    setExpandedSet((prev) => {
-      const next = new Set(prev);
-      ancestors.forEach((p) => next.add(p));
-      return next.size === prev.size ? prev : next;
-    });
-  }, [])
-
-  const togglePathSingle = useCallback((path) => {
-    setExpandedSet((prev) => {
-      const next = new Set(prev);
-      if (next.has(path)) {
-        next.delete(path);
-      } else {
-        next.add(path);
-      }
-      return next;
-    });
-  }, [])
-
-  return { expandedSet, expandPathAll, togglePathSingle }
-}
-
 export default function Layout() {
   const {
     data: filesData,
@@ -119,7 +87,7 @@ export default function Layout() {
   const desktopSidebarRef = useRef(null);
   useOpenSidebarOnFileFocus(desktopSidebarRef, setSidebarOpen);
 
-  const filePathExpandSet = useFilePathExpandSet()
+  const filePathExpandSet = useFilePathExpandSet();
 
   if (filesError)
     return <div className="p-4 text-red-400">Error: {filesError.message}</div>;
