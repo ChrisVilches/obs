@@ -33,7 +33,6 @@ function useExpandTreeToFile(setSelectedFile, setExpandedSet) {
     setSelectedFile(path)
     expand(path)
     canScroll.current = true
-    setFileFocusCount(prev => prev + 1)
   }, [])
 
   const { lastDispatched: fileFocusTimestamp } = usePubSub("file-focused", onFileFocused, { trackTimestamp: true })
