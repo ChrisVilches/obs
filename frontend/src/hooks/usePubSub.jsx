@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 const channels = new Map();
 
@@ -17,11 +17,11 @@ function getChannel(name) {
   return channel;
 }
 
-export function usePubSub(eventName, handler = null) {
-  const channel = useMemo(
-    () => getChannel(eventName),
-    [eventName]
-  );
+export function usePubSub(eventName, handler = null, options = {}) {
+  const { trackTimestamp = false } = options;
+  const [lastDispatched, setLastDispatched] = useState(null);
+
+  const channel = useMemo(() => getChannel(eventName), [eventName]);
 
   useEffect(() => {
     if (!handler) return;
@@ -37,14 +37,20 @@ export function usePubSub(eventName, handler = null) {
     };
   }, [channel, handler]);
 
-  return useCallback(
+  const dispatch = useCallback(
     (payload) => {
       channel.latest = payload;
 
       for (const listener of channel.listeners) {
         listener(payload);
       }
+
+      if (trackTimestamp) {
+        setLastDispatched(Date.now());
+      }
     },
-    [channel]
+    [channel, trackTimestamp],
   );
+
+  return { dispatch, lastDispatched };
 }

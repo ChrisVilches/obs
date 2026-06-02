@@ -17,7 +17,9 @@ import { usePubSub } from "../hooks/usePubSub";
 function useBookmarksModal() {
   const [isOpen, setIsOpen] = useState(false);
   const fetched = useRef(false);
-  const { data, isLoading, mutate } = useSWR((isOpen || fetched.current) && "/api/bookmarks");
+  const { data, isLoading, mutate } = useSWR(
+    (isOpen || fetched.current) && "/api/bookmarks",
+  );
   return {
     open: async () => {
       if (fetched.current) await mutate();
@@ -33,8 +35,8 @@ function useBookmarksModal() {
 
 function isMobile(desktopSidebarRef) {
   const rect = desktopSidebarRef.current.getBoundingClientRect();
-  const desktopSidebarVisible = rect.width !== 0 && rect.height !== 0
-  return !desktopSidebarVisible
+  const desktopSidebarVisible = rect.width !== 0 && rect.height !== 0;
+  return !desktopSidebarVisible;
 }
 
 // NOTE: `desktopSidebarRef` is used to avoid opening the sidebar when on
@@ -46,15 +48,18 @@ function useOpenSidebarOnFileFocus(desktopSidebarRef, setSidebarOpen) {
 
   const onFileFocused = useCallback(({ important }) => {
     if (important && isMobile(desktopSidebarRef)) {
-      setSidebarOpen(true)
+      setSidebarOpen(true);
     }
-  }, [])
+  }, []);
 
-  const fileFocusedDispatch = usePubSub("file-focused", onFileFocused)
+  const { dispatch: fileFocusedDispatch } = usePubSub(
+    "file-focused",
+    onFileFocused,
+  );
 
   useEffect(() => {
     if (fileParam) {
-      fileFocusedDispatch({ path: fileParam, important: false })
+      fileFocusedDispatch({ path: fileParam, important: false });
     }
   }, [fileParam]);
 }
@@ -78,8 +83,8 @@ export default function Layout() {
   useKeyShortcut("/", () => setSearchModalOpen(true));
   const bookmarksModal = useBookmarksModal();
 
-  const desktopSidebarRef = useRef(null)
-  useOpenSidebarOnFileFocus(desktopSidebarRef, setSidebarOpen)
+  const desktopSidebarRef = useRef(null);
+  useOpenSidebarOnFileFocus(desktopSidebarRef, setSidebarOpen);
 
   if (filesError)
     return <div className="p-4 text-red-400">Error: {filesError.message}</div>;
@@ -117,7 +122,10 @@ export default function Layout() {
       <Dialog.Root open={sidebarOpen} onOpenChange={setSidebarOpen}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-dialog-overlay-show data-[state=closed]:animate-dialog-overlay-hide md:hidden" />
-          <Dialog.Content aria-describedby={undefined} className="fixed left-0 top-0 z-50 h-full w-5/6 bg-gray-900 border-r border-gray-800 flex flex-col outline-none data-[state=open]:animate-drawer-show data-[state=closed]:animate-drawer-hide md:hidden">
+          <Dialog.Content
+            aria-describedby={undefined}
+            className="fixed left-0 top-0 z-50 h-full w-5/6 bg-gray-900 border-r border-gray-800 flex flex-col outline-none data-[state=open]:animate-drawer-show data-[state=closed]:animate-drawer-hide md:hidden"
+          >
             <Dialog.Title className="sr-only">Navigation</Dialog.Title>
             <Sidemenu
               {...sideMenuProps}
@@ -127,7 +135,10 @@ export default function Layout() {
         </Dialog.Portal>
       </Dialog.Root>
 
-      <aside ref={desktopSidebarRef} className="hidden md:flex flex-shrink-0 w-64 lg:w-72 xl:w-80 bg-gray-900 border-r border-gray-800 flex-col">
+      <aside
+        ref={desktopSidebarRef}
+        className="hidden md:flex flex-shrink-0 w-64 lg:w-72 xl:w-80 bg-gray-900 border-r border-gray-800 flex-col"
+      >
         <Sidemenu {...sideMenuProps} />
       </aside>
 
@@ -178,9 +189,7 @@ export default function Layout() {
         className="h-[70vh] flex flex-col overflow-hidden"
         childrenClass="flex-1 min-h-0"
       >
-        <SearchBar
-          onClose={() => setSearchModalOpen(false)}
-        />
+        <SearchBar onClose={() => setSearchModalOpen(false)} />
       </Modal>
 
       <SettingsModal

@@ -8,7 +8,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { usePubSub } from "../hooks/usePubSub"
+import { usePubSub } from "../hooks/usePubSub";
 
 const extToIcon = {
   // images
@@ -93,9 +93,7 @@ function FileItem({ selected, onClick, path, mtime }) {
     >
       <FileIcon path={path} className="w-4 h-4 shrink-0" />
       <div className="flex-1 min-w-0">
-        <span className="truncate block">
-          {path.split("/").pop()}
-        </span>
+        <span className="truncate block">{path.split("/").pop()}</span>
         <span className="text-xs text-gray-600 truncate block">
           {dirPath(path)}
         </span>
@@ -106,35 +104,33 @@ function FileItem({ selected, onClick, path, mtime }) {
         </span>
       )}
     </Link>
-  )
+  );
 }
 
 function FolderItem({ path, onClick }) {
   // NOTE: Currently folders don't appear in search results, so they can't be
   // selected using the keyboard.
 
-  const fileFocusedDispatch = usePubSub("file-focused")
+  const { dispatch } = usePubSub("file-focused");
 
   return (
     <button
       type="button"
       onClick={(ev) => {
-        fileFocusedDispatch({ path, important: true })
-        if (onClick) onClick(ev)
+        dispatch({ path, important: true });
+        if (onClick) onClick(ev);
       }}
       className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors text-gray-400 hover:bg-gray-800 hover:text-gray-200"
     >
       <FolderIcon className="w-4 h-4 shrink-0" />
       <div className="flex-1 min-w-0">
-        <span className="truncate block">
-          {path.split("/").pop()}
-        </span>
+        <span className="truncate block">{path.split("/").pop()}</span>
         <span className="text-xs text-gray-600 truncate block">
           {dirPath(path)}
         </span>
       </div>
     </button>
-  )
+  );
 }
 
 export default function FileList({
@@ -184,7 +180,8 @@ export default function FileList({
               onClick={onItemClick ? () => onItemClick(item) : undefined}
               path={item.path}
               mtime={showTime ? item.mtime : null}
-              selected={index === selectedIndex} />
+              selected={index === selectedIndex}
+            />
           )}
         </li>
       ))}

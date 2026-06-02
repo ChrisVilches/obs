@@ -29,8 +29,6 @@ function useExpandTreeToFile(setSelectedFile, setExpandedSet) {
 
   const canScroll = useRef(true);
 
-  const [fileFocusCount, setFileFocusCount] = useState(0)
-
   const onFileFocused = useCallback(({ path }) => {
     setSelectedFile(path)
     expand(path)
@@ -38,9 +36,9 @@ function useExpandTreeToFile(setSelectedFile, setExpandedSet) {
     setFileFocusCount(prev => prev + 1)
   }, [])
 
-  usePubSub("file-focused", onFileFocused)
+  const { lastDispatched: fileFocusTimestamp } = usePubSub("file-focused", onFileFocused, { trackTimestamp: true })
 
-  return { canScroll, fileFocusCount }
+  return { canScroll, fileFocusTimestamp }
 }
 
 function SidemenuFooter() {
@@ -314,11 +312,12 @@ export default function Sidemenu({
     });
   }
 
+  // TODO: outdated comment since now it's a timestamp (and it comes from pubsub hook)
   // NOTE: `fileFocusCount` is to reset the callback ref as a way to force a scroll
   // when we go from file -> dashboard -> file (same as before). Without this, the
   // callback ref will be the same function, attached to the same element in the tree
   // and won't trigger.
-  const { canScroll, fileFocusCount } = useExpandTreeToFile(setSelectedFile, setExpandedSet);
+  const { canScroll, fileFocusTimestamp } = useExpandTreeToFile(setSelectedFile, setExpandedSet);
 
   // On mobile, the sidemenu unmounts and remounts from scratch each time it opens.
   // This causes tree nodes to re-expand, re-rendering the selected file and
@@ -341,7 +340,7 @@ export default function Sidemenu({
 
     elem.scrollIntoView({ behavior: "smooth", block: "center" });
     canScroll.current = false
-  }, [fileFocusCount]);
+  }, [fileFocusTimestamp]);
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
