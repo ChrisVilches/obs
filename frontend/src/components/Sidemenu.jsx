@@ -39,6 +39,16 @@ function useExpandTreeToFile(setExpandedSet) {
 
   const { lastDispatched: fileFocusTimestamp } = usePubSub("file-focused", onFileFocused, { trackTimestamp: true })
 
+  // fileFocusTimestamp resets the callback ref to force a scroll when navigating
+  // from file -> dashboard -> file (same file). Without a changing dep, the
+  // callback ref is the same function, attached to the same element, and won't
+  // re-invoke. `canScroll` prevents re-scrolling when the user collapses and
+  // re-expands an ancestor of the selected file (which unmounts/remounts the
+  // element, also triggering the callback ref).
+  //
+  // On mobile the sidemenu unmounts/remounts on open — the tree re-expands,
+  // the selected file element is rendered fresh, and the callback ref fires.
+  // Desktop sidemenu is always mounted and doesn't remount on resize.
   const selectedNodeRef = useCallback((elem) => {
     if (!elem || !canScroll.current) return;
 
