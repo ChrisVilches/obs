@@ -11,29 +11,13 @@ import { usePubSub } from "../hooks/usePubSub"
 
 const GITHUB_URL = "https://github.com/ChrisVilches/obs";
 
-function useExpandTreeToFile(setExpandedSet, smoothScroll = true) {
+function useExpandTreeToFile(expandPathAll, smoothScroll = true) {
   const [selectedFile, setSelectedFile] = useState(null);
-
-  const expand = (path) => {
-    const ancestors = path
-      .split("/")
-      .reduce((paths, _, i, parts) => {
-        paths.push(parts.slice(0, i + 1).join("/"));
-        return paths;
-      }, []);
-
-    setExpandedSet((prev) => {
-      const next = new Set(prev);
-      ancestors.forEach((p) => next.add(p));
-      return next.size === prev.size ? prev : next;
-    });
-  }
-
   const canScroll = useRef(true);
 
   const onFileFocused = useCallback(({ path }) => {
     setSelectedFile(path)
-    expand(path)
+    expandPathAll(path)
     canScroll.current = true
   }, [])
 
@@ -314,25 +298,14 @@ export default function Sidemenu({
   onBookmarkClick,
   onSearchClick,
   onSettingsClick,
+  expandedSet,
+  expandPathAll,
+  togglePathSingle,
   smoothScroll = true,
 }) {
   const tree = useMemo(() => buildTree(files), [files]);
 
-  const [expandedSet, setExpandedSet] = useState(() => new Set());
-
-  function handleToggle(path) {
-    setExpandedSet((prev) => {
-      const next = new Set(prev);
-      if (next.has(path)) {
-        next.delete(path);
-      } else {
-        next.add(path);
-      }
-      return next;
-    });
-  }
-
-  const { selectedFile, selectedNodeRef } = useExpandTreeToFile(setExpandedSet, smoothScroll);
+  const { selectedFile, selectedNodeRef } = useExpandTreeToFile(expandPathAll, smoothScroll);
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
@@ -357,7 +330,7 @@ export default function Sidemenu({
                 selectedFile={selectedFile}
                 onClose={onClose}
                 expandedSet={expandedSet}
-                onToggle={handleToggle}
+                onToggle={togglePathSingle}
               />
             ))}
           </ul>

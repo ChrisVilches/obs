@@ -64,6 +64,39 @@ function useOpenSidebarOnFileFocus(desktopSidebarRef, setSidebarOpen) {
   }, [fileParam]);
 }
 
+function useFilePathExpandSet() {
+  const [expandedSet, setExpandedSet] = useState(() => new Set());
+
+  const expandPathAll = useCallback((path) => {
+    const ancestors = path
+      .split("/")
+      .reduce((paths, _, i, parts) => {
+        paths.push(parts.slice(0, i + 1).join("/"));
+        return paths;
+      }, []);
+
+    setExpandedSet((prev) => {
+      const next = new Set(prev);
+      ancestors.forEach((p) => next.add(p));
+      return next.size === prev.size ? prev : next;
+    });
+  }, [])
+
+  const togglePathSingle = useCallback((path) => {
+    setExpandedSet((prev) => {
+      const next = new Set(prev);
+      if (next.has(path)) {
+        next.delete(path);
+      } else {
+        next.add(path);
+      }
+      return next;
+    });
+  }, [])
+
+  return { expandedSet, expandPathAll, togglePathSingle }
+}
+
 export default function Layout() {
   const {
     data: filesData,
@@ -86,6 +119,8 @@ export default function Layout() {
   const desktopSidebarRef = useRef(null);
   useOpenSidebarOnFileFocus(desktopSidebarRef, setSidebarOpen);
 
+  const filePathExpandSet = useFilePathExpandSet()
+
   if (filesError)
     return <div className="p-4 text-red-400">Error: {filesError.message}</div>;
 
@@ -93,6 +128,7 @@ export default function Layout() {
     files,
     loading: filesLoading,
     folderName,
+    ...filePathExpandSet,
     onBookmarkClick: () => {
       setSidebarOpen(false);
       bookmarksModal.open();
