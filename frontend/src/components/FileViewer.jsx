@@ -92,14 +92,19 @@ export default function FileViewer({ file }) {
       setShowConflictModal(false);
 
       try {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append(
+          "content",
+          new Blob([fileContentRef.current.value], { type: "text/plain" }),
+          file,
+        );
+        formData.append("mtime", info.mtime);
+        formData.append("force", force);
+
         const saveData = await fetcher("/api/files/content", {
           method: "PUT",
-          body: {
-            file,
-            content: fileContentRef.current.value,
-            mtime: info.mtime,
-            force,
-          },
+          body: formData,
         });
 
         await mutate(infoKey);

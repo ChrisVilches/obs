@@ -30,7 +30,8 @@ const { fromError, createErrorMap } = require("zod-validation-error");
 const env = require("./env");
 const initApp = require("./initApp");
 
-const { app, ROOT_DIR, BOOKMARKS_FILE, APP_CONFIG_FILE, PORT } = initApp();
+const { app, ROOT_DIR, BOOKMARKS_FILE, APP_CONFIG_FILE, PORT, upload } =
+  initApp();
 
 z.config({
   customError: createErrorMap(),
@@ -94,14 +95,11 @@ app.get("/api/files/info", async (req, res) => {
   res.json(await getFileInfo(ROOT_DIR, BOOKMARKS_FILE, file));
 });
 
-app.put("/api/files/content", async (req, res) => {
-  const { file, content, mtime, force } = z
+app.put("/api/files/content", upload.single("content"), async (req, res) => {
+  const content = req.file?.buffer.toString("utf-8") ?? "";
+  const { file, mtime, force } = z
     .object({
       file: pathSchema,
-      content: z
-        .string()
-        .optional()
-        .transform((v) => v ?? ""),
       mtime: z.iso.datetime(),
       force: z.coerce.boolean().default(false),
     })

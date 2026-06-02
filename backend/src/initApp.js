@@ -1,5 +1,6 @@
 const express = require("express");
 const path = require("node:path");
+const multer = require("multer");
 const env = require("./env");
 
 function initApp() {
@@ -11,6 +12,8 @@ function initApp() {
 
   app.use(express.json());
 
+  const upload = multer({ storage: multer.memoryStorage() });
+
   return {
     app,
     ROOT_DIR: env.DATA_ROOT_DIR,
@@ -18,6 +21,7 @@ function initApp() {
     BOOKMARKS_FILE,
     APP_CONFIG_FILE,
     PORT: env.PORT,
+    upload,
   };
 }
 

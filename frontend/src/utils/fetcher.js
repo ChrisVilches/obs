@@ -1,16 +1,19 @@
+function withSerializedBody(opts) {
+  if (!opts.body) return opts;
+  if (opts.body instanceof FormData) return opts;
+  if (typeof opts.body === "object") {
+    return { ...opts, body: JSON.stringify(opts.body) };
+  }
+  return opts;
+}
+
 function withJsonHeaders(opts) {
+  if (opts.body instanceof FormData) return opts;
   const headers = new Headers(opts.headers);
   if (!headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
   return { ...opts, headers };
-}
-
-function withSerializedBody(opts) {
-  if (opts.body && typeof opts.body === "object") {
-    return { ...opts, body: JSON.stringify(opts.body) };
-  }
-  return opts;
 }
 
 async function parseResponse(res) {
