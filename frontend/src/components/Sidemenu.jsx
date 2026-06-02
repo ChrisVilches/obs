@@ -191,8 +191,9 @@ function TreeNode({
 
   if (node.type === "file") {
     return (
-      <li ref={isSelected ? selectedNodeRef : null}>
+      <li>
         <Link
+          ref={isSelected ? selectedNodeRef : null}
           to={`/file?f=${encodeURIComponent(node.path)}`}
           onClick={onClose}
           className={`block px-3 py-1.5 rounded-md text-sm transition-colors ${style}`}
@@ -207,8 +208,9 @@ function TreeNode({
   const isExpanded = expandedSet.has(node.path);
 
   return (
-    <li ref={isSelected ? selectedNodeRef : null}>
+    <li>
       <button
+        ref={isSelected ? selectedNodeRef : null}
         type="button"
         onClick={() => onToggle(node.path)}
         className={`w-full flex items-center gap-1 px-3 py-1.5 rounded-md text-sm transition-colors ${style}`}
@@ -337,7 +339,7 @@ export default function Sidemenu({
     const rect = elem.getBoundingClientRect();
     if (rect.width === 0 || rect.height === 0) return;
 
-    elem.scrollIntoView({ behavior: "smooth", block: "start" });
+    elem.scrollIntoView({ behavior: "smooth", block: "center" });
     canScroll.current = false
   }, [fileFocusCount]);
 
