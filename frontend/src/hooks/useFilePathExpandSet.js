@@ -1,5 +1,8 @@
 import { useCallback, useState } from "react";
 
+// Tracks which directory paths are expanded in the file tree.
+// `expandPathAll` expands every ancestor of a file path so a deep file is
+// visible. `togglePathSingle` toggles a single directory.
 export default function useFilePathExpandSet() {
   const [expandedSet, setExpandedSet] = useState(() => new Set());
 
