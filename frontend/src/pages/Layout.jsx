@@ -129,6 +129,7 @@ export default function Layout() {
             <Dialog.Title className="sr-only">Navigation</Dialog.Title>
             <Sidemenu
               {...sideMenuProps}
+              smoothScroll={false}
               onClose={() => setSidebarOpen(false)}
             />
           </Dialog.Content>

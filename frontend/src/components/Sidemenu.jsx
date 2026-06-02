@@ -11,7 +11,7 @@ import { usePubSub } from "../hooks/usePubSub"
 
 const GITHUB_URL = "https://github.com/ChrisVilches/obs";
 
-function useExpandTreeToFile(setExpandedSet) {
+function useExpandTreeToFile(setExpandedSet, smoothScroll = true) {
   const [selectedFile, setSelectedFile] = useState(null);
 
   const expand = (path) => {
@@ -55,9 +55,9 @@ function useExpandTreeToFile(setExpandedSet) {
     const rect = elem.getBoundingClientRect();
     if (rect.width === 0 || rect.height === 0) return;
 
-    elem.scrollIntoView({ behavior: "smooth", block: "center" });
+    elem.scrollIntoView({ behavior: smoothScroll ? "smooth" : "instant", block: "center" });
     canScroll.current = false
-  }, [fileFocusTimestamp]);
+  }, [smoothScroll, fileFocusTimestamp]);
 
   return { selectedFile, selectedNodeRef }
 }
@@ -314,6 +314,7 @@ export default function Sidemenu({
   onBookmarkClick,
   onSearchClick,
   onSettingsClick,
+  smoothScroll = true,
 }) {
   const tree = useMemo(() => buildTree(files), [files]);
 
@@ -331,7 +332,7 @@ export default function Sidemenu({
     });
   }
 
-  const { selectedFile, selectedNodeRef } = useExpandTreeToFile(setExpandedSet);
+  const { selectedFile, selectedNodeRef } = useExpandTreeToFile(setExpandedSet, smoothScroll);
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
