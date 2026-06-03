@@ -192,11 +192,34 @@ function TreeNode({
     ? "bg-indigo-900/40 text-indigo-300 font-medium"
     : "text-gray-400 hover:bg-gray-800 hover:text-gray-200"
 
+  // NOTE:
+  //
+  // Issue #1: Unexpected callback ref invocations
+  // - Attaching the callback ref to the <Link> causes it to be called frequently
+  //   when expanding/collapsing unrelated nodes in the tree.
+  // - The file node is not actually being mounted/unmounted, but the callback is
+  //   still invoked with `null` and then the element again.
+  // - Attaching the ref to the wrapping <li> avoids this behavior.
+  //
+  // Issue #2: Incorrect scroll centering for folders
+  // - Using the <li> as the scroll target works for files, but not for folders.
+  // - A folder <li> contains both the folder row and its nested <ul>.
+  // - When scrolling with `block: "center"`, the browser centers the entire <li>
+  //   (including descendants) instead of the folder row itself.
+  //
+  // Workaround
+  // - Files: attach the ref to the wrapping <li> to avoid the frequent callback
+  //   invocations observed when using <Link>.
+  // - Folders: attach the ref to the folder <button> instead of the <li>. This
+  //   does not exhibit the callback issue and allows scrolling to center the
+  //   folder row rather than its nested content.
+  //
+  // Current status
+  // - The workaround behaves correctly and no additional fix is currently needed.
   if (node.type === "file") {
     return (
-      <li>
+      <li ref={isSelected ? selectedNodeRef : null}>
         <Link
-          ref={isSelected ? selectedNodeRef : null}
           to={`/file?f=${encodeURIComponent(node.path)}`}
           onClick={onClose}
           className={`block px-3 py-1.5 rounded-md text-sm transition-colors ${style}`}
