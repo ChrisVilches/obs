@@ -1,3 +1,31 @@
+/**
+ * KNOWN ISSUES
+ *
+ * 1. Mobile-only overlay must not activate on desktop
+ *    The sidemenu uses a Radix Dialog (<Dialog.Root>) for the mobile drawer. On
+ *    desktop, the overlay and content are hidden via `md:hidden`, but the dialog
+ *    portal itself remains active. If `sidebarOpen` is ever set to `true` while
+ *    on desktop, the portal locks body scroll and may interfere with pointer
+ *    events, making interactive elements unresponsive. Because of this, several
+ *    call sites must explicitly guard with `isMobile(...)` before
+ *    toggling `sidebarOpen`, which clutters the code with visibility checks.
+ *
+ * 2. Mobile sidebar lingers after viewport resize
+ *    Steps to reproduce: open the sidebar on mobile, then resize the viewport to
+ *    desktop width without closing the sidebar. The Radix overlay/content become
+ *    `display: none` (via `md:hidden`), but the portal is still mounted and
+ *    continues to intercept clicks across the page. The only way to recover is
+ *    to click anywhere (which triggers the overlay's close handler) or to
+ *    programmatically close the sidebar — neither of which happens
+ *    automatically on resize.
+ *
+ * 3. Folder bookmark navigation discards tree focus
+ *    Selecting a folder bookmark expands and scrolls to that folder in the tree,
+ *    but the currently viewed file loses its highlight. This makes it hard for
+ *    the user to reorient themselves, especially on mobile where the full tree
+ *    context is harder to scan.
+ */
+
 import {
   BookmarkIcon,
   ChevronRightIcon,
