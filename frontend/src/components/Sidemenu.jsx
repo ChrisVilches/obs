@@ -14,16 +14,19 @@ const GITHUB_URL = "https://github.com/ChrisVilches/obs";
 function useExpandTreeToFile(expandPathAll, smoothScroll = true) {
   const [selectedFile, setSelectedFile] = useState(null);
   const canScroll = useRef(true);
+  const [key, setKey] = useState(0)
 
   const onFileFocused = useCallback(({ path }) => {
     setSelectedFile(path)
     expandPathAll(path)
+    setKey((prev) => prev + 1)
     canScroll.current = true
   }, [])
 
-  const { lastDispatched: fileFocusTimestamp } = usePubSub("file-focused", onFileFocused, { trackTimestamp: true })
+  usePubSub("file-focused", onFileFocused)
 
-  // fileFocusTimestamp resets the callback ref to force a scroll when navigating
+  // TODO: Must update this comment
+  // lastDispatched resets the callback ref to force a scroll when navigating
   // from file -> dashboard -> file (same file). Without a changing dep, the
   // callback ref is the same function, attached to the same element, and won't
   // re-invoke. `canScroll` prevents re-scrolling when the user collapses and
@@ -41,7 +44,7 @@ function useExpandTreeToFile(expandPathAll, smoothScroll = true) {
 
     elem.scrollIntoView({ behavior: smoothScroll ? "smooth" : "instant", block: "center" });
     canScroll.current = false
-  }, [smoothScroll, fileFocusTimestamp]);
+  }, [smoothScroll, key]);
 
   return { selectedFile, selectedNodeRef }
 }
