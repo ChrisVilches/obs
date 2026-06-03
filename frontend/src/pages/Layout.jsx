@@ -53,10 +53,7 @@ function useOpenSidebarOnFileFocus(desktopSidebarRef, setSidebarOpen) {
     }
   }, []);
 
-  const { dispatch: fileFocusedDispatch } = usePubSub(
-    "file-focused",
-    onFileFocused,
-  );
+  const fileFocusedDispatch = usePubSub("file-focused", onFileFocused);
 
   useEffect(() => {
     if (fileParam) {

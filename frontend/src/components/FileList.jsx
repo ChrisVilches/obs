@@ -86,10 +86,11 @@ function FileItem({ selected, onClick, path, mtime }) {
     <Link
       to={`/file?f=${encodeURIComponent(path)}`}
       onClick={onClick}
-      className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${selected
-        ? "bg-gray-800 text-gray-200"
-        : "text-gray-400 hover:bg-gray-800 hover:text-gray-200"
-        }`}
+      className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
+        selected
+          ? "bg-gray-800 text-gray-200"
+          : "text-gray-400 hover:bg-gray-800 hover:text-gray-200"
+      }`}
     >
       <FileIcon path={path} className="w-4 h-4 shrink-0" />
       <div className="flex-1 min-w-0">
@@ -111,7 +112,7 @@ function FolderItem({ path, onClick }) {
   // NOTE: Currently folders don't appear in search results, so they can't be
   // selected using the keyboard.
 
-  const { dispatch } = usePubSub("file-focused");
+  const dispatch = usePubSub("file-focused");
 
   return (
     <button

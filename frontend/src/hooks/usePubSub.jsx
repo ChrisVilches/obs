@@ -45,5 +45,5 @@ export function usePubSub(eventName, handler = null) {
     [channel],
   );
 
-  return { dispatch };
+  return dispatch;
 }
