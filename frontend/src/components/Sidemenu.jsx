@@ -37,10 +37,6 @@ function useExpandTreeToFile(expandPathAll, smoothScroll = true) {
   // Desktop sidemenu is always mounted and doesn't remount on resize.
   const selectedNodeRef = useCallback((elem) => {
     if (!elem || !canScroll.current) return;
-
-    const rect = elem.getBoundingClientRect();
-    if (rect.width === 0 || rect.height === 0) return;
-
     elem.scrollIntoView({ behavior: smoothScroll ? "smooth" : "instant", block: "center" });
     canScroll.current = false
   }, [smoothScroll, key]);
