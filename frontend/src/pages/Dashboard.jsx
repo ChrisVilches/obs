@@ -16,6 +16,9 @@ export default function Dashboard() {
   );
   const { data: bookmarksData, isLoading: bookmarksLoading } =
     useSWR("/api/bookmarks");
+  const { data: viewedData, isLoading: viewedLoading } = useSWR(
+    "/api/files/recently-viewed",
+  );
 
   useEffect(() => {
     setLayoutTopContent({
@@ -48,17 +51,28 @@ export default function Dashboard() {
               emptyMessage="No open TODOs found."
             />
           </section>
+          <section>
+            <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+              Recently Viewed
+            </h2>
+            <FileList
+              items={viewedData?.recentlyViewed || []}
+              showTime
+              loading={viewedLoading}
+              emptyMessage="No recently viewed files."
+            />
+          </section>
+          <section>
+            <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+              Bookmarks
+            </h2>
+            <FileList
+              items={bookmarksData?.items || []}
+              loading={bookmarksLoading}
+              emptyMessage="No bookmarks found."
+            />
+          </section>
         </div>
-        <section>
-          <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
-            Bookmarks
-          </h2>
-          <FileList
-            items={bookmarksData?.items || []}
-            loading={bookmarksLoading}
-            emptyMessage="No bookmarks found."
-          />
-        </section>
       </div>
     </div>
   );

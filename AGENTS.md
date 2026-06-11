@@ -35,6 +35,7 @@ npm run start         # node backend/src/server.js (production)
 | GET | `/api/files/search?q=<query>` | Full-text search (filenames + content via ripgrep) |
 | GET/POST/DELETE | `/api/bookmarks` | Reads/writes `bookmarks.json` in `CONFIG_PATH` |
 | GET/PATCH | `/api/config` | Reads/writes `app.json` in `CONFIG_PATH` |
+| GET | `/api/files/recently-viewed` | Last 10 files accessed via `/api/files/info`, stored in `/tmp/obs-recently-viewed.json` |
 | GET | `/api` | Status endpoint (deps, event channel info) |
 
 ## Frontend
@@ -43,7 +44,7 @@ npm run start         # node backend/src/server.js (production)
 - `react-router-dom` v7 with `BrowserRouter`
 - Routes: `/` (Dashboard), `/file?f=` (FilePage), `*` fallback to Dashboard
 - File viewer supports: text, markdown (react-markdown), images, audio/video, binary
-- Dashboard shows recently modified files, ongoing TODOs, and bookmarks
+- Dashboard shows recently modified files, ongoing TODOs, recently viewed files, and bookmarks
 
 ## Deployment
 

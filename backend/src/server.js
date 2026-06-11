@@ -25,6 +25,10 @@ const {
 } = require("./services/appConfigService");
 const { searchFiles } = require("./services/searchService");
 const { getStatus } = require("./services/statusService");
+const {
+  getRecentlyViewed,
+  recordView,
+} = require("./services/recentlyViewedService");
 const { z } = require("zod");
 const { fromError, createErrorMap } = require("zod-validation-error");
 const env = require("./env");
@@ -90,9 +94,18 @@ app.get("/api/files/todos", async (req, res) => {
   res.json(await getTodoFiles(ROOT_DIR, n));
 });
 
+app.get("/api/files/recently-viewed", async (_req, res) => {
+  res.json(await getRecentlyViewed());
+});
+
 app.get("/api/files/info", async (req, res) => {
   const { file } = z.object({ file: pathSchema }).parse(req.query);
-  res.json(await getFileInfo(ROOT_DIR, BOOKMARKS_FILE, file));
+  const info = await getFileInfo(ROOT_DIR, BOOKMARKS_FILE, file);
+  // The frontend may trigger /api/files/info several times (e.g. when it
+  // needs to re-fetch data), so recording a view here is not 100% accurate,
+  // but it is a reasonable proxy for when the user has actually seen a file.
+  recordView(file);
+  res.json(info);
 });
 
 app.put("/api/files/content", upload.single("content"), async (req, res) => {
