@@ -1,6 +1,6 @@
 import { ListBulletIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import * as Dialog from "@radix-ui/react-dialog";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { visit } from "unist-util-visit";
 
 export function slugify(text) {
@@ -103,14 +103,17 @@ export default function MarkdownToc({ containerRef }) {
   const [activeSlug, setActiveSlug] = useState(null);
   const prevHeaders = useRef(null);
 
-  // On open: extract headings, pick the one closest to viewport midpoint,
-  // scroll it into center of the nav. On click: highlight the clicked item.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: ref, fires once on open
-  const headers = useMemo(() => {
-    if (!open || !containerRef.current) return prevHeaders.current;
+  const [headers, setHeaders] = useState(null);
+
+  useLayoutEffect(() => {
+    if (!containerRef.current) return;
+    if (!open && prevHeaders.current !== null) {
+      setHeaders(prevHeaders.current);
+      return;
+    }
     const result = extractHeaders(containerRef.current);
     prevHeaders.current = result;
-    return result;
+    setHeaders(result);
   }, [open]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: ref, fires once on open
@@ -170,15 +173,14 @@ export default function MarkdownToc({ containerRef }) {
                       href={`#${h.slug}`}
                       data-toc-slug={h.slug}
                       onClick={() => setActiveSlug(h.slug)}
-                      className={`block py-1 px-2 text-sm rounded hover:bg-gray-800 active:bg-gray-700 transition-colors wrap-anywhere ${
-                        h.slug === activeSlug
-                          ? "bg-indigo-900/40 text-indigo-200"
-                          : h.level === 1
-                            ? "text-gray-200 font-medium"
-                            : h.level === 2
-                              ? "text-gray-300"
-                              : "text-gray-400"
-                      }`}
+                      className={`block py-1 px-2 text-sm rounded hover:bg-gray-800 active:bg-gray-700 transition-colors wrap-anywhere ${h.slug === activeSlug
+                        ? "bg-indigo-900/40 text-indigo-200"
+                        : h.level === 1
+                          ? "text-gray-200 font-medium"
+                          : h.level === 2
+                            ? "text-gray-300"
+                            : "text-gray-400"
+                        }`}
                     >
                       {h.text}
                     </a>
