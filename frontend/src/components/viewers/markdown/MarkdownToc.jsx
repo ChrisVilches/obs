@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { ListBulletIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { visit } from "unist-util-visit";
 
@@ -40,6 +40,7 @@ export function remarkHeadingIds() {
       node.data = node.data || {};
       node.data.hProperties = node.data.hProperties || {};
       node.data.hProperties.id = slug;
+      node.data.hProperties["data-heading"] = String(node.depth);
     });
   };
 }
@@ -52,29 +53,25 @@ export function createHeadingComponent(level) {
   return Heading;
 }
 
-function extractHeaders(content) {
-  if (!content) return [];
-  const counts = new Map();
-  const headers = [];
-  for (const line of content.split("\n")) {
-    const match = line.match(/^(#{1,3})\s+(.+)$/);
-    if (!match) continue;
-    const text = match[2].trim();
-    let slug = slugify(text);
-    const count = counts.get(slug) || 0;
-    counts.set(slug, count + 1);
-    if (count > 0) slug = `${slug}-${count + 1}`;
-    headers.push({ level: match[1].length, text, slug });
-  }
-  return headers;
-}
-
-export default function MarkdownToc({ content }) {
+export default function MarkdownToc({ containerRef }) {
   const [open, setOpen] = useState(false);
+  const [headers, setHeaders] = useState([]);
+  const [hasComputed, setHasComputed] = useState(false);
 
-  const headers = useMemo(() => extractHeaders(content), [content]);
+  useEffect(() => {
+    if (!open || !containerRef.current) return;
+    const elements = containerRef.current.querySelectorAll("[data-heading]");
+    setHeaders(
+      Array.from(elements).map((el) => ({
+        level: parseInt(el.dataset.heading, 10),
+        text: el.textContent,
+        slug: el.id,
+      })),
+    );
+    setHasComputed(true);
+  }, [open]);
 
-  if (headers.length === 0) return null;
+  if (hasComputed && headers.length === 0 && !open) return null;
 
   return (
     <>
@@ -87,16 +84,18 @@ export default function MarkdownToc({ content }) {
       </button>
 
       <div
-        className={`fixed inset-0 z-40 bg-black/50 transition-opacity duration-200 ${open ? "opacity-100" : "opacity-0 pointer-events-none"
-          }`}
+        className={`fixed inset-0 z-40 bg-black/50 transition-opacity duration-200 ${
+          open ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
         onClick={() => setOpen(false)}
       />
 
       <div
-        className={`fixed top-0 right-0 z-50 h-full w-72 bg-gray-900 border-l border-gray-800 shadow-xl transform transition-transform duration-200 ${open
-          ? "translate-x-0"
-          : "translate-x-full pointer-events-none"
-          }`}
+        className={`fixed top-0 right-0 z-50 h-full w-72 bg-gray-900 border-l border-gray-800 shadow-xl transform transition-transform duration-200 ${
+          open
+            ? "translate-x-0"
+            : "translate-x-full pointer-events-none"
+        }`}
       >
         <div className="flex items-center justify-between p-4 border-b border-gray-800 shrink-0">
           <h2 className="text-sm font-semibold text-gray-300">Contents</h2>
@@ -114,12 +113,13 @@ export default function MarkdownToc({ content }) {
               <li key={i} style={{ paddingLeft: `${(h.level - 1) * 0.75}rem` }}>
                 <a
                   href={`#${h.slug}`}
-                  className={`block py-1 px-2 text-sm rounded hover:bg-gray-800 transition-colors truncate ${h.level === 1
-                    ? "text-gray-200 font-medium"
-                    : h.level === 2
-                      ? "text-gray-300"
-                      : "text-gray-400"
-                    }`}
+                  className={`block py-1 px-2 text-sm rounded hover:bg-gray-800 transition-colors truncate ${
+                    h.level === 1
+                      ? "text-gray-200 font-medium"
+                      : h.level === 2
+                        ? "text-gray-300"
+                        : "text-gray-400"
+                  }`}
                 >
                   {h.text}
                 </a>

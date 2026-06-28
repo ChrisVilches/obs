@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
@@ -39,12 +39,13 @@ const markdownComponents = {
 export default function MarkdownViewer({ file, content, mtime }) {
   const [loading, setLoading] = useState(false);
   const { config } = useAppConfig();
+  const containerRef = useRef(null);
 
   return (
     <InteractiveCheckboxContext.Provider
       value={{ file, mtime, loading, setLoading }}
     >
-      <div className="p-6 prose prose-invert max-w-full markdown-container">
+      <div ref={containerRef} className="p-6 prose prose-invert max-w-full markdown-container">
         <ReactMarkdown
           key={file}
           remarkPlugins={[
@@ -66,7 +67,7 @@ export default function MarkdownViewer({ file, content, mtime }) {
           {content || ""}
         </ReactMarkdown>
       </div>
-      <MarkdownToc content={content} />
+      <MarkdownToc containerRef={containerRef} />
     </InteractiveCheckboxContext.Provider>
   );
 }
