@@ -8,8 +8,10 @@
   --animate-dialog-overlay-hide: dialog-overlay-hide var(--dialog-transition-duration) ease-out forwards;
   --animate-dialog-content-show: dialog-content-show var(--dialog-transition-duration) ease-out;
   --animate-dialog-content-hide: dialog-content-hide var(--dialog-transition-duration) ease-out forwards;
-  --animate-drawer-show: drawer-show var(--dialog-transition-duration) ease-out;
-  --animate-drawer-hide: drawer-hide var(--dialog-transition-duration) ease-out forwards;
+  --animate-left-drawer-show: left-drawer-show var(--dialog-transition-duration) ease-out;
+  --animate-left-drawer-hide: left-drawer-hide var(--dialog-transition-duration) ease-out forwards;
+  --animate-right-drawer-show: right-drawer-show var(--dialog-transition-duration) ease-out;
+  --animate-right-drawer-hide: right-drawer-hide var(--dialog-transition-duration) ease-out forwards;
 }
 
 @keyframes dialog-overlay-show {
@@ -28,13 +30,21 @@
   from { opacity: 1; transform: scale(1); }
   to { opacity: 0; transform: scale(0.9); }
 }
-@keyframes drawer-show {
+@keyframes left-drawer-show {
   from { transform: translateX(-100%); }
   to { transform: translateX(0); }
 }
-@keyframes drawer-hide {
+@keyframes left-drawer-hide {
   from { transform: translateX(0); }
   to { transform: translateX(-100%); }
+}
+@keyframes right-drawer-show {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+@keyframes right-drawer-hide {
+  from { transform: translateX(0); }
+  to { transform: translateX(100%); }
 }
 
 button, [role="button"], [role="switch"], [role="tab"] {

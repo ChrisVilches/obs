@@ -115,7 +115,7 @@ export default function Layout() {
           <Dialog.Overlay className="fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-dialog-overlay-show data-[state=closed]:animate-dialog-overlay-hide md:hidden" />
           <Dialog.Content
             aria-describedby={undefined}
-            className="fixed left-0 top-0 z-50 h-full w-5/6 bg-gray-900 border-r border-gray-800 flex flex-col outline-none data-[state=open]:animate-drawer-show data-[state=closed]:animate-drawer-hide md:hidden"
+            className="fixed left-0 top-0 z-50 h-full w-5/6 bg-gray-900 border-r border-gray-800 flex flex-col outline-none data-[state=open]:animate-left-drawer-show data-[state=closed]:animate-left-drawer-hide md:hidden"
           >
             <Dialog.Title className="sr-only">Navigation</Dialog.Title>
             <Sidemenu

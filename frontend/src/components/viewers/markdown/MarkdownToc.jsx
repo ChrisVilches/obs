@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from "react";
+import * as Dialog from "@radix-ui/react-dialog";
 import { ListBulletIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { visit } from "unist-util-visit";
 
@@ -81,48 +82,47 @@ export default function MarkdownToc({ containerRef }) {
         <ListBulletIcon className="w-5 h-5" />
       </button>
 
-      <div
-        className={`fixed inset-0 z-40 bg-black/50 transition-opacity duration-200 ${open ? "opacity-100" : "opacity-0 pointer-events-none"
-          }`}
-        onClick={() => setOpen(false)}
-      />
-
-      <div
-        className={`fixed top-0 right-0 z-50 h-full w-5/6 md:w-72 bg-gray-900 border-l border-gray-800 shadow-xl transform transition-transform duration-200 ${open
-          ? "translate-x-0"
-          : "translate-x-full pointer-events-none"
-          }`}
-      >
-        <div className="flex items-center justify-between p-4 border-b border-gray-800 shrink-0">
-          <h2 className="text-sm font-semibold text-gray-300">Contents</h2>
-          <button
-            className="p-1 rounded-md text-gray-500 hover:text-white hover:bg-gray-800 transition-colors"
-            onClick={() => setOpen(false)}
-            aria-label="Close table of contents"
+      <Dialog.Root open={open} onOpenChange={setOpen}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 z-40 bg-black/60 data-[state=open]:animate-dialog-overlay-show data-[state=closed]:animate-dialog-overlay-hide" />
+          <Dialog.Content
+            aria-describedby={undefined}
+            className="fixed top-0 right-0 z-50 h-full w-5/6 md:w-72 bg-gray-900 border-l border-gray-800 flex flex-col outline-none data-[state=open]:animate-right-drawer-show data-[state=closed]:animate-right-drawer-hide"
           >
-            <XMarkIcon className="w-5 h-5" />
-          </button>
-        </div>
-        <nav className="p-4 overflow-y-auto h-[calc(100%-3.5rem)]">
-          <ul className="space-y-0.5">
-            {headers && headers.map((h, i) => (
-              <li key={i} style={{ paddingLeft: `${(h.level - 1) * 0.75}rem` }}>
-                <a
-                  href={`#${h.slug}`}
-                  className={`block py-1 px-2 text-sm rounded hover:bg-gray-800 transition-colors truncate ${h.level === 1
-                    ? "text-gray-200 font-medium"
-                    : h.level === 2
-                      ? "text-gray-300"
-                      : "text-gray-400"
-                    }`}
+            <Dialog.Title className="sr-only">Table of contents</Dialog.Title>
+            <div className="flex items-center justify-between p-4 border-b border-gray-800 shrink-0">
+              <h2 className="text-sm font-semibold text-gray-300">Contents</h2>
+              <Dialog.Close asChild>
+                <button
+                  className="p-1 rounded-md text-gray-500 hover:text-white hover:bg-gray-800 transition-colors"
+                  aria-label="Close table of contents"
                 >
-                  {h.text}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      </div>
+                  <XMarkIcon className="w-5 h-5" />
+                </button>
+              </Dialog.Close>
+            </div>
+            <nav className="p-4 overflow-y-auto flex-1 min-h-0">
+              <ul className="space-y-0.5">
+                {headers && headers.map((h, i) => (
+                  <li key={i} style={{ paddingLeft: `${(h.level - 1) * 0.75}rem` }}>
+                    <a
+                      href={`#${h.slug}`}
+                      className={`block py-1 px-2 text-sm rounded hover:bg-gray-800 transition-colors truncate ${h.level === 1
+                        ? "text-gray-200 font-medium"
+                        : h.level === 2
+                          ? "text-gray-300"
+                          : "text-gray-400"
+                        }`}
+                    >
+                      {h.text}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
     </>
   );
 }
