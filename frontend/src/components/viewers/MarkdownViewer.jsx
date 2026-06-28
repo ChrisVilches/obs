@@ -20,6 +20,21 @@ import {
 } from "./markdown/rehypeImgPlugins";
 import rehypeUnwrapSingleParagraphListItems from "./markdown/rehypeUnwrapSingleParagraphListItems";
 import Table from "./markdown/Table";
+import MarkdownToc, {
+  createHeadingComponent,
+  remarkHeadingIds,
+} from "./markdown/MarkdownToc";
+
+const markdownComponents = {
+  h1: createHeadingComponent(1),
+  h2: createHeadingComponent(2),
+  h3: createHeadingComponent(3),
+  ul: ListComponent,
+  ol: ListComponent,
+  li: LiComponent,
+  table: Table,
+  code: Code,
+};
 
 export default function MarkdownViewer({ file, content, mtime }) {
   const [loading, setLoading] = useState(false);
@@ -35,6 +50,7 @@ export default function MarkdownViewer({ file, content, mtime }) {
           remarkPlugins={[
             remarkGfm,
             remarkMath,
+            remarkHeadingIds,
             !config.strictLineBreaks ? remarkBreaks : null,
           ].filter((x) => x)}
           rehypePlugins={[
@@ -45,17 +61,12 @@ export default function MarkdownViewer({ file, content, mtime }) {
             rehypeListMetadata,
             process.env.NODE_ENV !== "production" ? rehypeDebugLists : null,
           ].filter((x) => x)}
-          components={{
-            ul: ListComponent,
-            ol: ListComponent,
-            li: LiComponent,
-            table: Table,
-            code: Code,
-          }}
+          components={markdownComponents}
         >
           {content || ""}
         </ReactMarkdown>
       </div>
+      <MarkdownToc content={content} />
     </InteractiveCheckboxContext.Provider>
   );
 }
