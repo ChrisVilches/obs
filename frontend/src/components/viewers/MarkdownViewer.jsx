@@ -14,16 +14,16 @@ import {
   rehypeDebugLists,
   rehypeListMetadata,
 } from "./markdown/List";
-import {
-  rehypeStandaloneImages,
-  rehypeFixImgURL,
-} from "./markdown/rehypeImgPlugins";
-import rehypeUnwrapSingleParagraphListItems from "./markdown/rehypeUnwrapSingleParagraphListItems";
-import Table from "./markdown/Table";
 import MarkdownToc, {
   createHeadingComponent,
   remarkHeadingIds,
 } from "./markdown/MarkdownToc";
+import {
+  rehypeFixImgURL,
+  rehypeStandaloneImages,
+} from "./markdown/rehypeImgPlugins";
+import rehypeUnwrapSingleParagraphListItems from "./markdown/rehypeUnwrapSingleParagraphListItems";
+import Table from "./markdown/Table";
 
 const markdownComponents = {
   h1: createHeadingComponent(1),
@@ -45,7 +45,10 @@ export default function MarkdownViewer({ file, content, mtime }) {
     <InteractiveCheckboxContext.Provider
       value={{ file, mtime, loading, setLoading }}
     >
-      <div ref={containerRef} className="p-6 prose prose-invert max-w-full markdown-container">
+      <div
+        ref={containerRef}
+        className="p-6 prose prose-invert max-w-full markdown-container"
+      >
         <ReactMarkdown
           key={file}
           remarkPlugins={[
@@ -67,7 +70,7 @@ export default function MarkdownViewer({ file, content, mtime }) {
           {content || ""}
         </ReactMarkdown>
       </div>
-      <MarkdownToc containerRef={containerRef} />
+      <MarkdownToc containerRef={containerRef} key={`${file}-${mtime}`} />
     </InteractiveCheckboxContext.Provider>
   );
 }
