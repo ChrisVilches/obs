@@ -87,7 +87,7 @@ export default function MarkdownToc({ containerRef }) {
           <Dialog.Overlay className="fixed inset-0 z-40 bg-black/60 data-[state=open]:animate-dialog-overlay-show data-[state=closed]:animate-dialog-overlay-hide" />
           <Dialog.Content
             aria-describedby={undefined}
-            className="fixed top-0 right-0 z-50 h-full w-5/6 md:w-72 bg-gray-900/90 border-l border-gray-800 flex flex-col outline-none data-[state=open]:animate-right-drawer-show data-[state=closed]:animate-right-drawer-hide"
+            className="fixed top-0 right-0 z-50 h-full w-5/6 md:w-72 bg-gray-900 border-l border-gray-800 flex flex-col outline-none data-[state=open]:animate-right-drawer-show data-[state=closed]:animate-right-drawer-hide"
           >
             <Dialog.Title className="sr-only">Table of contents</Dialog.Title>
             <div className="flex items-center justify-between p-4 border-b border-gray-800 shrink-0">
