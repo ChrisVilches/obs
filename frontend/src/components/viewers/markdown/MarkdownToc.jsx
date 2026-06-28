@@ -107,7 +107,7 @@ export default function MarkdownToc({ containerRef }) {
                   <li key={i} style={{ paddingLeft: `${(h.level - 1) * 0.75}rem` }}>
                     <a
                       href={`#${h.slug}`}
-                      className={`block py-1 px-2 text-sm rounded hover:bg-gray-800 transition-colors truncate ${h.level === 1
+                      className={`block py-1 px-2 text-sm rounded hover:bg-gray-800 active:bg-gray-700 transition-colors truncate ${h.level === 1
                         ? "text-gray-200 font-medium"
                         : h.level === 2
                           ? "text-gray-300"
