@@ -1,6 +1,6 @@
-import { useMemo, useRef, useState } from "react";
-import * as Dialog from "@radix-ui/react-dialog";
 import { ListBulletIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import * as Dialog from "@radix-ui/react-dialog";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { visit } from "unist-util-visit";
 
 export function slugify(text) {
@@ -49,7 +49,11 @@ export function remarkHeadingIds() {
 export function createHeadingComponent(level) {
   const Tag = `h${level}`;
   function Heading({ children, node: _node, ...props }) {
-    return <Tag className="scroll-mt-34" {...props}>{children}</Tag>;
+    return (
+      <Tag className="scroll-mt-34" {...props}>
+        {children}
+      </Tag>
+    );
   }
   return Heading;
 }
@@ -58,8 +62,12 @@ export default function MarkdownToc({ containerRef }) {
   const [open, setOpen] = useState(false);
   const prevHeaders = useRef(null);
 
-  const headers = useMemo(() => {
-    if (!open || !containerRef.current) return prevHeaders.current;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: fires once on open only
+  const { headers, activeSlug } = useMemo(() => {
+    // Active heading: visible heading closest to viewport vertical midpoint.
+    // Headings below the viewport are skipped (content hasn't reached them).
+    if (!open || !containerRef.current)
+      return { headers: prevHeaders.current, activeSlug: null };
     const elements = containerRef.current.querySelectorAll("[data-heading]");
     const result = Array.from(elements).map((el) => ({
       level: parseInt(el.dataset.heading, 10),
@@ -67,14 +75,49 @@ export default function MarkdownToc({ containerRef }) {
       slug: el.id,
     }));
     prevHeaders.current = result;
-    return result;
+
+    const scrollContainer =
+      containerRef.current.closest("main") ||
+      containerRef.current.closest('[class*="overflow-y-auto"]');
+    const viewportTop = scrollContainer
+      ? scrollContainer.getBoundingClientRect().top
+      : 0;
+    const viewportBottom = scrollContainer
+      ? scrollContainer.getBoundingClientRect().bottom
+      : window.innerHeight;
+    const viewportMid = (viewportTop + viewportBottom) / 2;
+
+    let active = result.length > 0 ? result[0].slug : null;
+    let minDist = Infinity;
+    for (const el of elements) {
+      if (el.getBoundingClientRect().top >= viewportBottom) break;
+      const dist = Math.abs(el.getBoundingClientRect().top - viewportMid);
+      if (dist < minDist) {
+        minDist = dist;
+        active = el.id;
+      }
+    }
+
+    return { headers: result, activeSlug: active };
   }, [open]);
+
+  useEffect(() => {
+    if (!open || !activeSlug) return;
+    const timer = setTimeout(() => {
+      const el = document.querySelector(
+        `[data-toc-slug="${CSS.escape(activeSlug)}"]`,
+      );
+      if (el) el.scrollIntoView({ block: "nearest", behavior: "instant" });
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [open, activeSlug]);
 
   if (headers !== null && headers.length === 0 && !open) return null;
 
   return (
     <>
       <button
+        type="button"
         className="flex fixed right-4 top-1/2 -translate-y-1/2 z-30 w-10 h-10 items-center justify-center rounded-full bg-gray-800 border border-gray-700 text-gray-400 hover:text-white hover:bg-gray-700 transition-colors shadow-lg"
         onClick={() => setOpen(true)}
         aria-label="Table of contents"
@@ -94,6 +137,7 @@ export default function MarkdownToc({ containerRef }) {
               <h2 className="text-sm font-semibold text-gray-300">Contents</h2>
               <Dialog.Close asChild>
                 <button
+                  type="button"
                   className="p-1 rounded-md text-gray-500 hover:text-white hover:bg-gray-800 transition-colors"
                   aria-label="Close table of contents"
                 >
@@ -103,16 +147,23 @@ export default function MarkdownToc({ containerRef }) {
             </div>
             <nav className="p-4 overflow-y-auto flex-1 min-h-0">
               <ul className="space-y-0.5">
-                {headers && headers.map((h, i) => (
-                  <li key={i} style={{ paddingLeft: `${(h.level - 1) * 0.75}rem` }}>
+                {headers?.map((h) => (
+                  <li
+                    key={h.slug}
+                    style={{ paddingLeft: `${(h.level - 1) * 0.75}rem` }}
+                  >
                     <a
                       href={`#${h.slug}`}
-                      className={`block py-1 px-2 text-sm rounded hover:bg-gray-800 active:bg-gray-700 transition-colors wrap-anywhere ${h.level === 1
-                        ? "text-gray-200 font-medium"
-                        : h.level === 2
-                          ? "text-gray-300"
-                          : "text-gray-400"
-                        }`}
+                      data-toc-slug={h.slug}
+                      className={`block py-1 px-2 text-sm rounded hover:bg-gray-800 active:bg-gray-700 transition-colors wrap-anywhere ${
+                        h.slug === activeSlug
+                          ? "bg-indigo-900/40 text-indigo-200"
+                          : h.level === 1
+                            ? "text-gray-200 font-medium"
+                            : h.level === 2
+                              ? "text-gray-300"
+                              : "text-gray-400"
+                      }`}
                     >
                       {h.text}
                     </a>
