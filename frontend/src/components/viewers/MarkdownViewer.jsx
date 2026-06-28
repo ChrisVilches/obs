@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
@@ -40,6 +40,14 @@ export default function MarkdownViewer({ file, content, mtime }) {
   const [loading, setLoading] = useState(false);
   const { config } = useAppConfig();
   const containerRef = useRef(null);
+
+  useLayoutEffect(() => {
+    const hash = window.location.hash;
+    if (hash) {
+      const el = document.getElementById(hash.slice(1));
+      if (el) el.scrollIntoView();
+    }
+  }, []);
 
   return (
     <InteractiveCheckboxContext.Provider
