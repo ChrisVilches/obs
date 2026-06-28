@@ -58,57 +58,65 @@ export function createHeadingComponent(level) {
   return Heading;
 }
 
+function extractHeaders(containerEl) {
+  const elements = containerEl.querySelectorAll("[data-heading]");
+  return Array.from(elements).map((el) => ({
+    level: parseInt(el.dataset.heading, 10),
+    text: el.textContent,
+    slug: el.id,
+  }));
+}
+
+function findActiveSlug(containerEl) {
+  const elements = containerEl.querySelectorAll("[data-heading]");
+  const scrollContainer =
+    containerEl.closest("main") ||
+    containerEl.closest('[class*="overflow-y-auto"]');
+  const viewportTop = scrollContainer
+    ? scrollContainer.getBoundingClientRect().top
+    : 0;
+  const viewportBottom = scrollContainer
+    ? scrollContainer.getBoundingClientRect().bottom
+    : window.innerHeight;
+  const viewportMid = (viewportTop + viewportBottom) / 2;
+
+  let active = elements.length > 0 ? elements[0].id : null;
+  let minDist = Infinity;
+  for (const el of elements) {
+    if (el.getBoundingClientRect().top >= viewportBottom) break;
+    const dist = Math.abs(el.getBoundingClientRect().top - viewportMid);
+    if (dist < minDist) {
+      minDist = dist;
+      active = el.id;
+    }
+  }
+  return active;
+}
+
+function scrollToTocItem(slug) {
+  const el = document.querySelector(`[data-toc-slug="${CSS.escape(slug)}"]`);
+  el?.scrollIntoView({ block: "center", behavior: "instant" });
+}
+
 export default function MarkdownToc({ containerRef }) {
   const [open, setOpen] = useState(false);
   const prevHeaders = useRef(null);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: fires once on open only
   const { headers, activeSlug } = useMemo(() => {
-    // Active heading: visible heading closest to viewport vertical midpoint.
-    // Headings below the viewport are skipped (content hasn't reached them).
     if (!open || !containerRef.current)
       return { headers: prevHeaders.current, activeSlug: null };
-    const elements = containerRef.current.querySelectorAll("[data-heading]");
-    const result = Array.from(elements).map((el) => ({
-      level: parseInt(el.dataset.heading, 10),
-      text: el.textContent,
-      slug: el.id,
-    }));
+    const result = extractHeaders(containerRef.current);
     prevHeaders.current = result;
-
-    const scrollContainer =
-      containerRef.current.closest("main") ||
-      containerRef.current.closest('[class*="overflow-y-auto"]');
-    const viewportTop = scrollContainer
-      ? scrollContainer.getBoundingClientRect().top
-      : 0;
-    const viewportBottom = scrollContainer
-      ? scrollContainer.getBoundingClientRect().bottom
-      : window.innerHeight;
-    const viewportMid = (viewportTop + viewportBottom) / 2;
-
-    let active = result.length > 0 ? result[0].slug : null;
-    let minDist = Infinity;
-    for (const el of elements) {
-      if (el.getBoundingClientRect().top >= viewportBottom) break;
-      const dist = Math.abs(el.getBoundingClientRect().top - viewportMid);
-      if (dist < minDist) {
-        minDist = dist;
-        active = el.id;
-      }
-    }
-
-    return { headers: result, activeSlug: active };
+    return {
+      headers: result,
+      activeSlug: findActiveSlug(containerRef.current),
+    };
   }, [open]);
 
   useEffect(() => {
     if (!open || !activeSlug) return;
-    const timer = setTimeout(() => {
-      const el = document.querySelector(
-        `[data-toc-slug="${CSS.escape(activeSlug)}"]`,
-      );
-      if (el) el.scrollIntoView({ block: "nearest", behavior: "instant" });
-    }, 150);
+    const timer = setTimeout(() => scrollToTocItem(activeSlug), 150);
     return () => clearTimeout(timer);
   }, [open, activeSlug]);
 
