@@ -4,6 +4,9 @@ import useSWR from "swr";
 import FileList from "../components/FileList";
 import useInterval from "../hooks/useInterval";
 
+const toTimestamp = (items) =>
+  items.map((item) => ({ ...item, timestamp: item.mtime }));
+
 export default function Dashboard() {
   const { setLayoutTopContent } = useOutletContext();
   const [, setTick] = useState(0);
@@ -35,7 +38,7 @@ export default function Dashboard() {
               Recently Modified
             </h2>
             <FileList
-              items={recentData?.recent || []}
+              items={toTimestamp(recentData?.recent || [])}
               showTime
               loading={recentLoading}
               emptyMessage="No recent files found."

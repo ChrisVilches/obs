@@ -55,10 +55,10 @@ describe("FileList", () => {
     expect(onItemClick).toHaveBeenCalledWith({ path: "file.txt" });
   });
 
-  test("shows time column when showTime and mtime are present", () => {
+  test("shows time column when showTime and timestamp are present", () => {
     renderFileList({
       showTime: true,
-      items: [{ path: "x.txt", mtime: new Date().toISOString() }],
+      items: [{ path: "x.txt", timestamp: new Date().toISOString() }],
     });
     expect(screen.getByText("just now")).toBeInTheDocument();
   });

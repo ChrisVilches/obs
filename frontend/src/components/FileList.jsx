@@ -81,16 +81,15 @@ export function formatRelativeTime(isoString) {
   return `${months}mo ago`;
 }
 
-function FileItem({ selected, onClick, path, mtime }) {
+function FileItem({ selected, onClick, path, timestamp }) {
   return (
     <Link
       to={`/file?f=${encodeURIComponent(path)}`}
       onClick={onClick}
-      className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
-        selected
-          ? "bg-gray-800 text-gray-200"
-          : "text-gray-400 hover:bg-gray-800 hover:text-gray-200"
-      }`}
+      className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${selected
+        ? "bg-gray-800 text-gray-200"
+        : "text-gray-400 hover:bg-gray-800 hover:text-gray-200"
+        }`}
     >
       <FileIcon path={path} className="w-4 h-4 shrink-0" />
       <div className="flex-1 min-w-0">
@@ -99,9 +98,9 @@ function FileItem({ selected, onClick, path, mtime }) {
           {dirPath(path)}
         </span>
       </div>
-      {mtime && (
+      {timestamp && (
         <span className="text-xs text-gray-600 shrink-0">
-          {formatRelativeTime(mtime)}
+          {formatRelativeTime(timestamp)}
         </span>
       )}
     </Link>
@@ -180,7 +179,7 @@ export default function FileList({
             <FileItem
               onClick={onItemClick ? () => onItemClick(item) : undefined}
               path={item.path}
-              mtime={showTime ? item.mtime : null}
+              timestamp={showTime ? item.timestamp : null}
               selected={index === selectedIndex}
             />
           )}

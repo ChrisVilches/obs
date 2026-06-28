@@ -33,7 +33,7 @@ async function recordView(filePath) {
     );
     data.recentlyViewed.unshift({
       path: filePath,
-      mtime: new Date().toISOString(),
+      timestamp: new Date().toISOString(),
     });
     data.recentlyViewed = data.recentlyViewed.slice(0, MAX_ITEMS);
 
