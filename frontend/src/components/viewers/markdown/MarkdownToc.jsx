@@ -100,18 +100,24 @@ function scrollToTocItem(slug) {
 
 export default function MarkdownToc({ containerRef }) {
   const [open, setOpen] = useState(false);
+  const [activeSlug, setActiveSlug] = useState(null);
   const prevHeaders = useRef(null);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: fires once on open only
-  const { headers, activeSlug } = useMemo(() => {
-    if (!open || !containerRef.current)
-      return { headers: prevHeaders.current, activeSlug: null };
+  // On open: extract headings, pick the one closest to viewport midpoint,
+  // scroll it into center of the nav. On click: highlight the clicked item.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: ref, fires once on open
+  const headers = useMemo(() => {
+    if (!open || !containerRef.current) return prevHeaders.current;
     const result = extractHeaders(containerRef.current);
     prevHeaders.current = result;
-    return {
-      headers: result,
-      activeSlug: findActiveSlug(containerRef.current),
-    };
+    return result;
+  }, [open]);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: ref, fires once on open
+  useEffect(() => {
+    if (open && containerRef.current) {
+      setActiveSlug(findActiveSlug(containerRef.current));
+    }
   }, [open]);
 
   useEffect(() => {
@@ -163,6 +169,7 @@ export default function MarkdownToc({ containerRef }) {
                     <a
                       href={`#${h.slug}`}
                       data-toc-slug={h.slug}
+                      onClick={() => setActiveSlug(h.slug)}
                       className={`block py-1 px-2 text-sm rounded hover:bg-gray-800 active:bg-gray-700 transition-colors wrap-anywhere ${
                         h.slug === activeSlug
                           ? "bg-indigo-900/40 text-indigo-200"
