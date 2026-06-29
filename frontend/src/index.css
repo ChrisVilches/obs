@@ -140,7 +140,7 @@ body[data-scroll-locked] main {
 .sidebar-link:hover {
   @apply bg-gray-800 text-gray-200;
 }
-.sidebar-link--active {
+.sidebar-link.sidebar-link--active {
   @apply bg-indigo-900/40 text-indigo-300 font-medium;
 }
 .sidebar-link:active {
