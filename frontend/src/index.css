@@ -133,3 +133,16 @@ body[data-scroll-locked] main {
   from { opacity: 1; transform: translateY(0); }
   to   { opacity: 0; transform: translateY(-1rem); }
 }
+
+.sidebar-link {
+  @apply block text-sm transition-colors text-gray-400;
+}
+.sidebar-link:hover {
+  @apply bg-gray-800 text-gray-200;
+}
+.sidebar-link--active {
+  @apply bg-indigo-900/40 text-indigo-300 font-medium;
+}
+.sidebar-link:active {
+  @apply bg-gray-700;
+}

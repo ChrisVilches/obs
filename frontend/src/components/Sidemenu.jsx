@@ -214,9 +214,6 @@ function TreeNode({
   selectedNodeRef,
 }) {
   const isSelected = node.path === selectedFile;
-  const style = isSelected
-    ? "bg-indigo-900/40 text-indigo-300 font-medium"
-    : "text-gray-400 hover:bg-gray-800 hover:text-gray-200"
 
   // NOTE:
   //
@@ -248,7 +245,7 @@ function TreeNode({
         <Link
           to={`/file?f=${encodeURIComponent(node.path)}`}
           onClick={onClose}
-          className={`block px-3 py-1.5 rounded-md text-sm transition-colors ${style}`}
+          className={`sidebar-link px-3 py-1.5 rounded-md ${isSelected ? "sidebar-link--active" : ""}`}
           style={{ paddingLeft: `${12 + depth * 16}px` }}
         >
           <span className="truncate block">{node.name}</span>
@@ -265,7 +262,7 @@ function TreeNode({
         ref={isSelected ? selectedNodeRef : null}
         type="button"
         onClick={() => onToggle(node.path)}
-        className={`w-full flex items-center gap-1 px-3 py-1.5 rounded-md text-sm transition-colors ${style}`}
+        className={`sidebar-link w-full flex items-center gap-1 px-3 py-1.5 rounded-md ${isSelected ? "sidebar-link--active" : ""}`}
         style={{ paddingLeft: `${12 + depth * 16}px` }}
       >
         <ChevronRightIcon
