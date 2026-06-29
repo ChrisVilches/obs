@@ -173,7 +173,7 @@ export default function MarkdownToc({ containerRef }) {
                       href={`#${h.slug}`}
                       data-toc-slug={h.slug}
                       onClick={() => setActiveSlug(h.slug)}
-                      className={`sidebar-link py-1 px-2 rounded wrap-anywhere ${h.slug === activeSlug ? "sidebar-link--active" : ""}`}
+                      className={`sidebar-link block py-1 px-2 rounded wrap-anywhere ${h.slug === activeSlug ? "sidebar-link--active" : ""}`}
                     >
                       {h.text}
                     </a>

@@ -245,7 +245,7 @@ function TreeNode({
         <Link
           to={`/file?f=${encodeURIComponent(node.path)}`}
           onClick={onClose}
-          className={`sidebar-link px-3 py-1.5 rounded-md ${isSelected ? "sidebar-link--active" : ""}`}
+          className={`sidebar-link block px-3 py-1.5 rounded-md ${isSelected ? "sidebar-link--active" : ""}`}
           style={{ paddingLeft: `${12 + depth * 16}px` }}
         >
           <span className="truncate block">{node.name}</span>

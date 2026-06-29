@@ -135,7 +135,7 @@ body[data-scroll-locked] main {
 }
 
 .sidebar-link {
-  @apply block text-sm transition-colors text-gray-400;
+  @apply text-sm transition-colors text-gray-400;
 }
 .sidebar-link:hover {
   @apply bg-gray-800 text-gray-200;
